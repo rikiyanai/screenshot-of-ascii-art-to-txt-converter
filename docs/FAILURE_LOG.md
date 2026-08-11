@@ -216,3 +216,11 @@
 - Highest supported state: **visual evidence Verified; converter remains an
   Executed experimental candidate**. Forty of 78 emitted non-space cells remain
   unresolved, source coverage remains unknown, and recovery is not Accepted.
+## P0C-01 · 2026-08-12 — first renamed-repository push correctly rejected concurrent README work
+
+- Push of local visual-proof commit `750016a` was rejected as non-fast-forward.
+  The renamed private remote had advanced from `dcc50d3` to user-authored
+  `f8c17a8`, which adds the screenshot-to-text motivation to `README.md`.
+- No force push or overwrite is permitted. The successor must preserve that
+  remote motivation, integrate the local experimental/HOLD qualification and
+  GIF proof on top, rerun all contracts, and push only a fast-forward history.
