@@ -4,6 +4,8 @@ Private standalone extraction of LateLetter's fail-closed raster-to-ASCII
 recovery tool. It measures a fixed character lattice, records Tesseract box
 evidence, and writes `?` for unresolved cells instead of inventing glyphs.
 
+![Run the fixed-grid recovery and inspect the 22-row result](docs/fixed-grid-recovery.gif)
+
 ## Run the bundled sample
 
 Requirements: Python 3.11+, Tesseract, NumPy, and Pillow.
@@ -28,4 +30,6 @@ This repository contains only the recovery script, one hash-bound sample image,
 its calibration, the wrapper, and focused tests. It excludes the LateLetter
 product, transcription pipeline, session history, caches, and unrelated data.
 
-See [docs/provenance.md](docs/provenance.md) for the source identities.
+See [docs/provenance.md](docs/provenance.md) for source identities and
+[docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) for the pinned runtime dependency
+and license map.
