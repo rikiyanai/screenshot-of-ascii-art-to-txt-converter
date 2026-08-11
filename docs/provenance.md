@@ -14,5 +14,10 @@ The packaged calibration changes only `source_png` from the source machine's
 absolute path to `sample/source.normalized.png`; the hash records that deliberate
 standalone-path normalization.
 
+`scripts/generate_visual_evidence.py`, its receipt, and its GIF were created in
+this standalone repository during the 2026-08-12 acceptance re-audit. They are
+not represented as copied LateLetter source. The receipt binds them to the
+source and generated `machine-ocr.txt` hashes above.
+
 The source checkout was dirty with unrelated user work. Extraction copied only
 the three reviewed paths and did not stage, commit, or alter that checkout.

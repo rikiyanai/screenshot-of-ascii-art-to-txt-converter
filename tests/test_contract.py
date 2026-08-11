@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import subprocess
@@ -7,8 +8,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from PIL import Image
+
 
 ROOT = Path(__file__).resolve().parents[1]
+VISUAL_GIF = ROOT / "docs/screenshot-to-txt-comparison.gif"
+VISUAL_RECEIPT = ROOT / "docs/screenshot-to-txt-comparison.receipt.json"
 
 
 class BundledSampleContract(unittest.TestCase):
@@ -82,6 +87,127 @@ class BundledSampleContract(unittest.TestCase):
                 while expected_lines and not expected_lines[-1]:
                     expected_lines.pop()
                 self.assertEqual(observed, "\n".join(expected_lines))
+                generated_gif = Path(parent) / "screenshot-to-txt-comparison.gif"
+                generated_receipt = (
+                    Path(parent) / "screenshot-to-txt-comparison.receipt.json"
+                )
+                subprocess.run(
+                    [
+                        "python3",
+                        str(ROOT / "scripts/generate_visual_evidence.py"),
+                        "--source",
+                        str(ROOT / "sample/source.normalized.png"),
+                        "--machine-output",
+                        str(output / "machine-ocr.txt"),
+                        "--quality",
+                        str(output / "quality.json"),
+                        "--calibration",
+                        str(ROOT / "sample/calibration.json"),
+                        "--gif",
+                        str(generated_gif),
+                        "--receipt",
+                        str(generated_receipt),
+                    ],
+                    check=True,
+                )
+                self.assertEqual(generated_gif.read_bytes(), VISUAL_GIF.read_bytes())
+                generated = json.loads(generated_receipt.read_text())
+                packaged = json.loads(VISUAL_RECEIPT.read_text())
+                self.assertEqual(generated, packaged)
+
+    def test_visual_evidence_contract(self) -> None:
+        receipt = json.loads(VISUAL_RECEIPT.read_text())
+        source_hash = hashlib.sha256(
+            (ROOT / "sample/source.normalized.png").read_bytes()
+        ).hexdigest()
+        self.assertEqual(receipt["schema"], "lateletter.fixed_grid_visual_evidence.v1")
+        self.assertEqual(receipt["artifact"], "screenshot-to-txt-comparison.gif")
+        self.assertEqual(receipt["canvas_px"], {"width": 1400, "height": 860})
+        self.assertEqual(receipt["frame_count"], 4)
+        self.assertEqual(
+            receipt["hold_label_on_every_frame"],
+            "EXPERIMENTAL — 40 unresolved / 78 emitted; source coverage unknown",
+        )
+        self.assertEqual(receipt["acceptance_status"], "experimental_unaccepted")
+        self.assertEqual(
+            receipt["source_coverage_status"],
+            "unknown_without_accepted_transcript",
+        )
+        self.assertEqual(receipt["source_sha256"], source_hash)
+        self.assertEqual(
+            receipt["machine_output_sha256"],
+            "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6",
+        )
+        self.assertEqual(
+            receipt["quality_receipt_sha256"],
+            "e0beab20f939d65c31684ff432d1e5e766b789238ec535584468e17faf0559e5",
+        )
+        self.assertEqual(
+            receipt["gif_sha256"], hashlib.sha256(VISUAL_GIF.read_bytes()).hexdigest()
+        )
+        frames = receipt["semantic_frames"]
+        self.assertEqual(
+            [frame["id"] for frame in frames],
+            [
+                "full-source-and-full-output",
+                "matched-closeup-1",
+                "matched-closeup-2",
+                "matched-closeup-3",
+            ],
+        )
+        self.assertEqual(
+            [frame["output_rows_zero_based_half_open"] for frame in frames],
+            [[0, 22], [0, 5], [7, 12], [14, 19]],
+        )
+        self.assertEqual(
+            [frame["source_crop_px"] for frame in frames],
+            [
+                [0, 0, 424, 468],
+                [0, 8, 424, 113],
+                [0, 155, 424, 260],
+                [0, 302, 424, 407],
+            ],
+        )
+        self.assertTrue(
+            all(frame["source_sha256"] == source_hash for frame in frames)
+        )
+        self.assertTrue(
+            all(
+                frame["machine_output_sha256"] == receipt["machine_output_sha256"]
+                for frame in frames
+            )
+        )
+
+        with Image.open(VISUAL_GIF) as gif:
+            self.assertEqual(gif.size, (1400, 860))
+            self.assertEqual(gif.n_frames, 4)
+            hold_masks = []
+            frame_hashes = []
+            durations = []
+            for index in range(gif.n_frames):
+                gif.seek(index)
+                rgb = gif.convert("RGB")
+                durations.append(gif.info["duration"])
+                hold_masks.append(
+                    rgb.crop((0, 60, 1400, 116))
+                    .convert("L")
+                    .point(lambda value: 255 if value < 120 else 0)
+                )
+                frame_hashes.append(hashlib.sha256(rgb.tobytes()).hexdigest())
+            self.assertEqual(len(set(frame_hashes)), 4)
+            self.assertEqual(durations, [4200, 3600, 3600, 4200])
+            self.assertEqual(
+                durations,
+                [frame["duration_ms"] for frame in receipt["semantic_frames"]],
+            )
+            self.assertTrue(
+                all(mask.getbbox() == (30, 22, 800, 44) for mask in hold_masks)
+            )
+            foreground_counts = [
+                sum(bool(pixel) for pixel in mask.get_flattened_data())
+                for mask in hold_masks
+            ]
+            self.assertLessEqual(max(foreground_counts) - min(foreground_counts), 10)
 
     def test_wrapper_refuses_existing_output(self) -> None:
         with tempfile.TemporaryDirectory() as output:

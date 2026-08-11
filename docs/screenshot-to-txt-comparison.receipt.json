@@ -1,0 +1,82 @@
+{
+  "schema": "lateletter.fixed_grid_visual_evidence.v1",
+  "artifact": "screenshot-to-txt-comparison.gif",
+  "canvas_px": {
+    "width": 1400,
+    "height": 860
+  },
+  "frame_count": 4,
+  "hold_label_on_every_frame": "EXPERIMENTAL \u2014 40 unresolved / 78 emitted; source coverage unknown",
+  "acceptance_status": "experimental_unaccepted",
+  "source_coverage_status": "unknown_without_accepted_transcript",
+  "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
+  "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6",
+  "quality_receipt_sha256": "e0beab20f939d65c31684ff432d1e5e766b789238ec535584468e17faf0559e5",
+  "gif_sha256": "175c6fc1e701e18762dd575beeda88dadf9e4ddb222f0dac8bf9474de268caef",
+  "semantic_frames": [
+    {
+      "id": "full-source-and-full-output",
+      "duration_ms": 4200,
+      "source_crop_px": [
+        0,
+        0,
+        424,
+        468
+      ],
+      "output_rows_zero_based_half_open": [
+        0,
+        22
+      ],
+      "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
+      "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6"
+    },
+    {
+      "id": "matched-closeup-1",
+      "duration_ms": 3600,
+      "source_crop_px": [
+        0,
+        8,
+        424,
+        113
+      ],
+      "output_rows_zero_based_half_open": [
+        0,
+        5
+      ],
+      "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
+      "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6"
+    },
+    {
+      "id": "matched-closeup-2",
+      "duration_ms": 3600,
+      "source_crop_px": [
+        0,
+        155,
+        424,
+        260
+      ],
+      "output_rows_zero_based_half_open": [
+        7,
+        12
+      ],
+      "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
+      "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6"
+    },
+    {
+      "id": "matched-closeup-3",
+      "duration_ms": 4200,
+      "source_crop_px": [
+        0,
+        302,
+        424,
+        407
+      ],
+      "output_rows_zero_based_half_open": [
+        14,
+        19
+      ],
+      "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
+      "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6"
+    }
+  ]
+}
