@@ -224,3 +224,21 @@
 - No force push or overwrite is permitted. The successor must preserve that
   remote motivation, integrate the local experimental/HOLD qualification and
   GIF proof on top, rerun all contracts, and push only a fast-forward history.
+
+## P0C-01 · 2026-08-12 — concurrent README motivation preserved
+
+- The local proof history was rebased onto user commit `f8c17a8`. The README
+  keeps the user's online/Instagram screenshot motivation, adds the exact
+  requested repository identity, and retains the one-sample experimental/HOLD
+  boundary beside the source/output GIF.
+
+## P0C-01 · 2026-08-12 — conflict wording had to preserve the user's exact text
+
+- The post-rebase failure-log wording overstated the conflict resolution as if
+  the agent-owned README wording were the source of truth. The acceptance
+  surface is the user-authored `f8c17a8` heading and motivation paragraph:
+  `Screenshot-of-ascii-art to actual ascii art txt converter pipeline.` and
+  the online/Instagram screenshot motivation.
+- The successor keeps those exact README lines from `f8c17a8` intact, leaves
+  the experimental/HOLD proof below them, and confirms the README contains no
+  redundant private-visibility wording.
