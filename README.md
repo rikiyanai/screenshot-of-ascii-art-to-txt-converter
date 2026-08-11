@@ -4,7 +4,11 @@ Private standalone extraction of LateLetter's fail-closed raster-to-ASCII
 recovery tool. It measures a fixed character lattice, records Tesseract box
 evidence, and writes `?` for unresolved cells instead of inventing glyphs.
 
-![Run the fixed-grid recovery and inspect the 22-row result](docs/fixed-grid-recovery.gif)
+**Status: acceptance hold.** This is an experimental OCR candidate generator,
+not a completed ASCII recovery. The 2026-08-12 re-audit observed 40 unresolved
+`?` cells among 78 non-space output cells in the bundled sample. The prior GIF
+was removed because it showed shell commands and output rather than a standalone
+TUI or a human-judgeable recovery result.
 
 ## Run the bundled sample
 
