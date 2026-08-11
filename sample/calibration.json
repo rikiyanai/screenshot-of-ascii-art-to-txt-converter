@@ -3,7 +3,7 @@
     "name": "LateLetter monospace grid calibrator",
     "version": "grid-calibrator-4-pitch-phase-review"
   },
-  "source_png": "/Users/r/Projects/LateLetter/tracked/LateLetterResearch/transcription-parity/horse-animation-sheet/source/source.normalized.png",
+  "source_png": "sample/source.normalized.png",
   "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
   "canvas": {
     "width_px": 424,
