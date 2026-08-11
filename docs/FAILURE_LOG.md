@@ -24,3 +24,5 @@
 - Highest supported stage: **Executed experimental candidate**, not Verified or
   Accepted. A replacement proof must show the source and recovered grid at a
   readable scale and preserve the unresolved-cell count.
+- The rejected `.tape` recipe was deleted because running it would recreate the
+  invalid proof without first satisfying that product and judgment surface.
