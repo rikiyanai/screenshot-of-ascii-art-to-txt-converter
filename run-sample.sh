@@ -43,4 +43,54 @@ python3 "$repo_root/scripts/recover_monospace_ascii.py" \
   "$output" \
   --calibration "$repo_root/sample/calibration.json"
 
+python3 - "$output/machine-ocr.txt" "$output/quality.json" <<'PY'
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+text_path = Path(sys.argv[1])
+quality_path = Path(sys.argv[2])
+text = text_path.read_text(encoding="utf-8")
+lines = text.splitlines()
+line_lengths = [len(line) for line in lines]
+if not lines or len(set(line_lengths)) != 1:
+    raise RuntimeError(f"recovery did not produce a rectangular grid: {line_lengths}")
+emitted_non_space_cells = sum(1 for char in text if not char.isspace())
+unresolved_emitted_cells = text.count("?")
+tesseract_version = subprocess.run(
+    ["tesseract", "--version"],
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout.splitlines()[0]
+receipt = {
+    "schema": "lateletter.fixed_grid_recovery_quality.v2",
+    "acceptance_status": "experimental_unaccepted",
+    "source_coverage_status": "unknown_without_accepted_transcript",
+    "grid_rows": len(lines),
+    "grid_columns": line_lengths[0],
+    "grid_cells": sum(line_lengths),
+    "emitted_non_space_cells": emitted_non_space_cells,
+    "recognized_emitted_cells": emitted_non_space_cells - unresolved_emitted_cells,
+    "unresolved_emitted_cells": unresolved_emitted_cells,
+    "unresolved_among_emitted_fraction": (
+        unresolved_emitted_cells / emitted_non_space_cells
+        if emitted_non_space_cells
+        else None
+    ),
+    "tesseract_version": tesseract_version,
+    "acceptance_note": (
+        "Output-only counts do not measure omitted source glyphs. No accepted "
+        "transcript, recovery threshold, or operator acceptance is recorded."
+    ),
+}
+quality_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+print(
+    f"emitted-output result: {unresolved_emitted_cells}/"
+    f"{emitted_non_space_cells} emitted non-space cells unresolved; "
+    "source_coverage=unknown; status=experimental_unaccepted"
+)
+PY
+
 printf 'recovered text: %s\n' "$output/machine-ocr.txt"

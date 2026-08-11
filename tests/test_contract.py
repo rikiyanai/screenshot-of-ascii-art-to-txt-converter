@@ -33,12 +33,55 @@ class BundledSampleContract(unittest.TestCase):
 
             self.assertEqual(
                 {path.name for path in output.iterdir()},
-                {"machine-ocr.txt", "tesseract-boxes.json", "calibration.json"},
+                {
+                    "machine-ocr.txt",
+                    "tesseract-boxes.json",
+                    "calibration.json",
+                    "quality.json",
+                },
             )
             self.assertEqual(
                 len((output / "machine-ocr.txt").read_text().splitlines()),
                 22,
             )
+            machine_text = (output / "machine-ocr.txt").read_text()
+            self.assertEqual({len(line) for line in machine_text.splitlines()}, {37})
+            quality = json.loads((output / "quality.json").read_text())
+            self.assertEqual(quality["schema"], "lateletter.fixed_grid_recovery_quality.v2")
+            self.assertEqual(quality["acceptance_status"], "experimental_unaccepted")
+            self.assertEqual(
+                quality["source_coverage_status"],
+                "unknown_without_accepted_transcript",
+            )
+            self.assertEqual(quality["grid_rows"], 22)
+            self.assertEqual(quality["grid_columns"], 37)
+            self.assertEqual(quality["grid_cells"], 814)
+            self.assertGreater(quality["emitted_non_space_cells"], 0)
+            self.assertGreater(quality["unresolved_emitted_cells"], 0)
+            self.assertEqual(
+                quality["recognized_emitted_cells"]
+                + quality["unresolved_emitted_cells"],
+                quality["emitted_non_space_cells"],
+            )
+            self.assertAlmostEqual(
+                quality["unresolved_among_emitted_fraction"],
+                quality["unresolved_emitted_cells"]
+                / quality["emitted_non_space_cells"],
+            )
+            self.assertTrue(quality["tesseract_version"].startswith("tesseract "))
+            self.assertIn("do not measure omitted source glyphs", quality["acceptance_note"])
+            if quality["tesseract_version"] == "tesseract 5.5.1":
+                self.assertEqual(quality["emitted_non_space_cells"], 78)
+                self.assertEqual(quality["unresolved_emitted_cells"], 40)
+                readme = (ROOT / "README.md").read_text()
+                self.assertIn("40 unresolved `?` cells among 78 emitted", readme)
+                observed = readme.split("<!-- observed-output-start -->", 1)[1]
+                observed = observed.split("<!-- observed-output-end -->", 1)[0]
+                observed = observed.split("```text\n", 1)[1].rsplit("\n```", 1)[0]
+                expected_lines = [line.rstrip() for line in machine_text.splitlines()]
+                while expected_lines and not expected_lines[-1]:
+                    expected_lines.pop()
+                self.assertEqual(observed, "\n".join(expected_lines))
 
     def test_wrapper_refuses_existing_output(self) -> None:
         with tempfile.TemporaryDirectory() as output:
