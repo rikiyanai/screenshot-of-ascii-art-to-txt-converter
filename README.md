@@ -1,8 +1,7 @@
-# LateLetter Fixed-Grid ASCII Recovery
-
-Private standalone extraction of LateLetter's fail-closed raster-to-ASCII
+# Screenshot-of-ascii-art to actual ascii art txt converter pipeline. 
+Motivation: I would see cool ascii art online/on instagram etc, take a screenshot to save for later, and I would have a bunch of pictures of ascii art with no real way of converting.  Extraction tooling for LateLetter development: a  fail-closed raster-to-ASCII
 recovery tool. It measures a fixed character lattice, records Tesseract box
-evidence, and writes `?` for unresolved cells instead of inventing glyphs.
+evidence, and writes `?` for unresolved cells instead of inventing glyphs. 
 
 **Status: acceptance hold.** This is an experimental OCR candidate generator,
 not a completed ASCII recovery. With Tesseract 5.5.1, the 2026-08-12 re-audit
