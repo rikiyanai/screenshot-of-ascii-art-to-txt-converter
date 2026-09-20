@@ -242,3 +242,22 @@
 - The successor keeps those exact README lines from `f8c17a8` intact, leaves
   the experimental/HOLD proof below them, and confirms the README contains no
   redundant private-visibility wording.
+
+## P0C-02 · 2026-09-20 — custom-font-informed recovery gap opened
+
+- GitHub issue: https://github.com/rikiyanai/screenshot-of-ascii-art-to-txt-converter/issues/2
+- Intended product: screenshot capture should let the user save ASCII art seen
+  anywhere online as editable text, whether the source is a message reaction,
+  an explore-page post, a tutorial plate, or another screenshot source.
+- Observed mismatch: this repository still has only an executed experimental
+  candidate. The prior Tesseract-first fixed-grid path left unresolved emitted
+  cells, unknown source coverage, and no accepted broad screenshot recovery.
+- New hypothesis: recovery needs to be custom-font-informed. The Stone Story
+  tutorial reference matters because its font is a custom Courier Sans-derived
+  family with small grid-aligned sizes, so glyph metrics and font dimensions
+  can become segmentation/classification evidence instead of generic OCR noise.
+- Optional integration: evaluate JEV only if it improves glyph identification,
+  alignment, review, or receipt quality without hiding unknown cells.
+- Acceptance remains open until multiple screenshot sources produce useful TXT
+  candidates with receipts that record font-model assumptions, segmentation
+  parameters, unknown cells, omitted-source risk, and a human-judgment surface.
