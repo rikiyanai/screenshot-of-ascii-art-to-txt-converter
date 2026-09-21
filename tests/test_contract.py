@@ -30,7 +30,6 @@ class BundledSampleContract(unittest.TestCase):
         requirements = (ROOT / "requirements.txt").read_text().splitlines()
         self.assertEqual(requirements, ["numpy==2.4.1", "Pillow==12.1.0"])
 
-    @unittest.skipUnless(shutil.which("tesseract"), "tesseract is required")
     def test_bundled_sample_produces_expected_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as parent:
             output = Path(parent) / "recovery"
@@ -39,88 +38,73 @@ class BundledSampleContract(unittest.TestCase):
             self.assertEqual(
                 {path.name for path in output.iterdir()},
                 {
-                    "machine-ocr.txt",
-                    "tesseract-boxes.json",
-                    "calibration.json",
+                    'machine-ocr.txt',
                     "quality.json",
+                    "cell-decisions.json",
+                    "reconstruction.png",
                 },
             )
-            self.assertEqual(
-                len((output / "machine-ocr.txt").read_text().splitlines()),
-                22,
-            )
-            machine_text = (output / "machine-ocr.txt").read_text()
-            self.assertEqual({len(line) for line in machine_text.splitlines()}, {37})
+            machine_text = (output / 'machine-ocr.txt').read_text()
             quality = json.loads((output / "quality.json").read_text())
-            self.assertEqual(quality["schema"], "lateletter.fixed_grid_recovery_quality.v2")
+
+            self.assertEqual(quality["schema"], "fixed_grid_recovery.v3")
             self.assertEqual(quality["acceptance_status"], "experimental_unaccepted")
+
+            # The lattice is measured, not taken from the calibration prior.
+            lattice = quality["measured_lattice"]
+            self.assertGreater(lattice["cell_advance_x_px"], 0)
+            self.assertGreater(lattice["line_height_px"], 0)
+            self.assertEqual(lattice["columns"], 37)
+
+            # The prior is recorded beside the measurement, so a disagreement is
+            # visible instead of silent.
+            prior = quality["declared_prior"]
+            self.assertEqual(prior["declared_columns"], 37)
+            self.assertIsNotNone(prior["measured_minus_declared_x"])
+
+            # The typeface is a fitted parameter carrying a reported residual.
+            typeface = quality["inferred_typeface"]
+            self.assertTrue(typeface["font"])
+            self.assertGreater(typeface["size"], 0)
+            self.assertGreaterEqual(typeface["residual"], 0.0)
+
+            # Coverage counts ink-bearing SOURCE cells, and every such cell is
+            # either resolved or explicitly ambiguous. This is the check the old
+            # receipt could not make, because it divided output by output.
+            coverage = quality["coverage"]
+            self.assertGreater(coverage["ink_bearing_source_cells"], 0)
             self.assertEqual(
-                quality["source_coverage_status"],
-                "unknown_without_accepted_transcript",
+                coverage["resolved_cells"] + coverage["ambiguous_cells"],
+                coverage["ink_bearing_source_cells"],
             )
-            self.assertEqual(quality["grid_rows"], 22)
-            self.assertEqual(quality["grid_columns"], 37)
-            self.assertEqual(quality["grid_cells"], 814)
-            self.assertGreater(quality["emitted_non_space_cells"], 0)
-            self.assertGreater(quality["unresolved_emitted_cells"], 0)
-            calibration_copy = json.loads((output / "calibration.json").read_text())
-            self.assertTrue(
-                calibration_copy["emission_policy"]["non_ascii_stays_unknown"]
+            self.assertLessEqual(
+                coverage["ink_bearing_source_cells"], coverage["grid_cells"]
             )
-            self.assertTrue(
-                calibration_copy["emission_policy"]["single_cell_unconflicted_only"]
-            )
-            self.assertEqual(
-                quality["recognized_emitted_cells"]
-                + quality["unresolved_emitted_cells"],
-                quality["emitted_non_space_cells"],
-            )
-            self.assertAlmostEqual(
-                quality["unresolved_among_emitted_fraction"],
-                quality["unresolved_emitted_cells"]
-                / quality["emitted_non_space_cells"],
-            )
-            self.assertTrue(quality["tesseract_version"].startswith("tesseract "))
-            self.assertIn("do not measure omitted source glyphs", quality["acceptance_note"])
-            if quality["tesseract_version"] == "tesseract 5.5.1":
-                self.assertEqual(quality["emitted_non_space_cells"], 78)
-                self.assertEqual(quality["unresolved_emitted_cells"], 16)
-                readme = (ROOT / "README.md").read_text()
-                self.assertIn("16 unresolved `?` cells among 78 emitted", readme)
-                observed = readme.split("<!-- observed-output-start -->", 1)[1]
-                observed = observed.split("<!-- observed-output-end -->", 1)[0]
-                observed = observed.split("```text\n", 1)[1].rsplit("\n```", 1)[0]
-                expected_lines = [line.rstrip() for line in machine_text.splitlines()]
-                while expected_lines and not expected_lines[-1]:
-                    expected_lines.pop()
-                self.assertEqual(observed, "\n".join(expected_lines))
-                generated_gif = Path(parent) / "screenshot-to-txt-comparison.gif"
-                generated_receipt = (
-                    Path(parent) / "screenshot-to-txt-comparison.receipt.json"
-                )
-                subprocess.run(
-                    [
-                        "python3",
-                        str(ROOT / "scripts/generate_visual_evidence.py"),
-                        "--source",
-                        str(ROOT / "sample/source.normalized.png"),
-                        "--machine-output",
-                        str(output / "machine-ocr.txt"),
-                        "--quality",
-                        str(output / "quality.json"),
-                        "--calibration",
-                        str(ROOT / "sample/calibration.json"),
-                        "--gif",
-                        str(generated_gif),
-                        "--receipt",
-                        str(generated_receipt),
-                    ],
-                    check=True,
-                )
-                self.assertEqual(generated_gif.read_bytes(), VISUAL_GIF.read_bytes())
-                generated = json.loads(generated_receipt.read_text())
-                packaged = json.loads(VISUAL_RECEIPT.read_text())
-                self.assertEqual(generated, packaged)
+
+            # Every decision carries the score that produced it.
+            decisions = json.loads((output / "cell-decisions.json").read_text())
+            self.assertEqual(len(decisions), coverage["ink_bearing_source_cells"])
+            for decision in decisions:
+                self.assertIn("best", decision)
+                self.assertIn("runner_up", decision)
+                self.assertIn("margin", decision)
+
+            # The margin policy is recorded, not implied.
+            policy = quality["decision_policy"]
+            self.assertGreater(policy["margin_required"], 0)
+            self.assertIn("margin", policy["rule"])
+
+            # Question marks are ambiguous cells, never invented glyphs.
+            self.assertEqual(machine_text.count("?"), coverage["ambiguous_cells"])
+
+    def test_tesseract_is_not_required_to_run(self) -> None:
+        wrapper = (ROOT / "run-sample.sh").read_text()
+        self.assertNotIn("command -v tesseract", wrapper)
+
+    def test_no_cell_aspect_is_hard_coded(self) -> None:
+        source = (ROOT / "scripts/recover_monospace_ascii.py").read_text()
+        for forbidden in ("16 / 29", "16/29", "0.5517"):
+            self.assertNotIn(forbidden, source)
 
     def test_visual_evidence_contract(self) -> None:
         receipt = json.loads(VISUAL_RECEIPT.read_text())

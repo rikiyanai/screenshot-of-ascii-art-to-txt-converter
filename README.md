@@ -1,18 +1,61 @@
 # Screenshot of ASCII Art to TXT Converter
 
-Experimental converter for turning screenshots of fixed-grid ASCII art back into text.
+Experimental converter for turning screenshots of fixed-grid character art back into text.
 
-The converter measures a character grid, uses Tesseract box data, and writes `?` when it cannot identify a cell. It does not guess missing glyphs.
+Nothing about the source is assumed. The converter measures the character lattice
+from the image, infers the typeface and size by fitting a library of monospaced
+fonts to that measured cell, and decides every cell by a recorded score. A cell is
+written only when its best candidate beats the runner-up by a recorded margin;
+otherwise it is `?`. It does not guess missing glyphs.
 
-On the bundled sample with Tesseract 5.5.1, 16 unresolved `?` cells among 78 emitted non-space cells remain. Single-cell unconflicted ASCII letters, digits, and punctuation are transcribed; conflicts, multi-cell boxes, and non-ASCII recognitions stay `?`. That count does not include source characters that OCR may have missed entirely, so total source coverage is unknown. That count does not include source characters that OCR may have missed entirely, so total source coverage is unknown.
+No cell aspect is built in. 1:1, 1:2 and 16:29 are all just fits, and the measured
+aspect is reported in the receipt.
 
-![Bundled screenshot compared with the fixed-grid text result](docs/screenshot-to-txt-comparison.gif)
+Tesseract is no longer used by default. It stays reachable through
+`--engine tesseract` for comparison only, because it classifies against an
+unbounded prose alphabet with no score — which is how earlier versions of this
+tool emitted letters, an em dash and a euro sign on art containing no letters at
+all.
 
-The GIF shows the source screenshot beside the current text result, followed by enlarged matching regions. It is a README comparison, not evidence that the converter is generally accurate.
+## What the numbers are
+
+Accuracy is measured two ways, because they answer different questions.
+
+**Round-trip on synthetic sheets, where the source font is installed.** These
+render text the pipeline has never seen, at a cell geometry it is not told, and
+demand the characters back. Measured with Menlo on 2026-09-21:
+
+| Sheet | Cell | Exact | Ambiguous | Reconstruction IoU | Typeface recovered |
+|---|---|---|---|---|---|
+| line art | 11 x 22 (1:2) | 40/40 (100%) | 0 | 0.992 | Menlo @ 19 |
+| code | 8 x 9 (near square) | 27/29 (93%) | 0 | 0.866 | Menlo @ 13 |
+| line art | 16 x 29 | 40/40 (100%) | 0 | 1.000 | Menlo @ 27 |
+
+The typeface and size are recovered correctly in each case, which is the part
+that proves the machinery rather than the fixture.
+
+**The bundled sample, where the source font is not installed.** The sample is
+Stone Story RPG art. Its typeface is a custom unnamed face that is not publicly
+downloadable, so the fit necessarily lands on the nearest installed
+approximation. There is no accepted transcript for this image, so no exact
+accuracy can be quoted for it — only the self-consistency figures:
+
+- measured lattice 11.560 x 21.510 px, aspect 0.5374, 37 columns
+- inferred typeface SFNSMono @ 18px, residual 12.49
+- 106 of 106 ink-bearing cells resolved
+- reconstruction agreement, ink IoU: 0.557
+
+An IoU of 0.557 is the honest signal that the reference typeface does not match
+the source. Treat the bundled result as a candidate, not a reconstruction.
+
+**Known gap.** On the bundled sample the run reports zero ambiguous cells despite
+that 0.557 agreement. The margin threshold is not yet calibrated against a
+reference-font mismatch, so it is not yet refusing cells it should refuse. Do not
+read "0 ambiguous" as confidence.
 
 ## Run the bundled sample
 
-Requirements: Python 3.11+, Tesseract, NumPy, and Pillow.
+Requirements: Python 3.11+, NumPy, and Pillow. Tesseract is not required.
 
 ```sh
 python3 -m pip install -r requirements.txt
@@ -21,12 +64,14 @@ python3 -m pip install -r requirements.txt
 
 The output directory must not already exist. A successful run creates:
 
-- `machine-ocr.txt`
-- `tesseract-boxes.json`
-- `calibration.json`
-- `quality.json`
+- `machine-ocr.txt` — the recovered grid
+- `quality.json` — measured lattice, inferred typeface, coverage, agreement
+- `cell-decisions.json` — per-cell best, runner-up, margin, ink and state
+- `reconstruction.png` — the recovered text re-rendered at the measured lattice
 
-The bundled horse-sheet sample produces a 22-row text grid. Question marks mark unresolved cells.
+The bundled calibration file is passed as a **prior only**. The lattice is
+measured from the image, and the receipt records how far the measurement fell
+from the declaration.
 
 ## Current bundled result
 
@@ -34,36 +79,51 @@ Source image:
 
 ![Horse animation sheet source raster](sample/source.normalized.png)
 
-Observed Tesseract 5.5.1 output on 2026-08-12, with trailing blank cells omitted here:
+Observed on 2026-09-21:
 
 <!-- observed-output-start -->
 ```text
+   ,--_
+   |/\ =_ _ ~
+    _( )_( )\~~
+    \,\  _|\ \~~~
+       \`   \
+       `    `
 
-    [/\ ?  _ ~
-     ?? ? C )\e~
-     ? N  ||N \nem
-        \    \
+   ((^--__
+   | /\  --___ __
+      (  /  \  ) \\
+      / |~~~~/  \  \\
+    /    \ /      \
 
-
-    ((%?=__
-    | /\   ? ?
-       (  /  \  Y ?
-       / |www?/  \  NN
-     /    \ /      \
-
-
-    1 ?\
-    ~ P  ?  ?
-      (       ?
-     ?-\ere [\  \
-        y o_   ?
+    ,
+   /,`\
+   ` | \____\\
+    _(      ) \
+    \-\~~~_|\  \
+       \ `   \  `
+       `     `
 ```
 <!-- observed-output-end -->
 
-This output is still an OCR candidate, not an accepted reconstruction.
+This output is a machine candidate, not an accepted reconstruction.
+
+## Coverage accounting
+
+Coverage is measured against ink-bearing source cells, never against the tool's
+own output. An earlier version reported "16 of 78 emitted cells unresolved",
+which divided the output by itself and hid 43 source cells that had been dropped
+to spaces without ever being scored. A space inside the ink region is now a
+scored decision that the blank template won.
 
 ## Repository contents
 
-This repository contains the converter, one bundled sample image, calibration data, tests, and the comparison GIF. It does not include the larger LateLetter application or unrelated application data.
+This repository contains the converter, one bundled sample image, calibration
+data, tests, and the comparison GIF. It does not include the larger LateLetter
+application or unrelated application data.
 
-See [docs/provenance.md](docs/provenance.md) for source information and [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) for runtime dependencies and licenses.
+The comparison GIF in `docs/` still shows the old Tesseract-era result and needs
+regenerating.
+
+See [docs/provenance.md](docs/provenance.md) for source information and
+[docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) for runtime dependencies and licenses.

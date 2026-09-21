@@ -18,14 +18,13 @@ command -v python3 >/dev/null 2>&1 || {
   echo "python3 is required" >&2
   exit 69
 }
-command -v tesseract >/dev/null 2>&1 || {
-  echo "tesseract is required" >&2
-  exit 69
-}
-python3 -c 'import numpy; from PIL import Image' >/dev/null 2>&1 || {
+python3 -c 'import numpy; from PIL import Image, ImageFont' >/dev/null 2>&1 || {
   echo "NumPy and Pillow are required; install requirements.txt" >&2
   exit 69
 }
+
+# Tesseract is no longer required. It remains reachable through
+# `--engine tesseract` for comparison only.
 
 source_hash=$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$repo_root/sample/source.normalized.png")
 calibration_hash=$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$repo_root/sample/calibration.json")
@@ -38,6 +37,9 @@ if [ "$calibration_hash" != "f8a1aca96ccc43a08b1981a7fff0d34ebe773f7cc45fe148178
   exit 65
 fi
 
+# The calibration is passed as a PRIOR only. The lattice is measured from the
+# image, and the receipt records how far the measurement fell from the
+# declaration.
 python3 "$repo_root/scripts/recover_monospace_ascii.py" \
   "$repo_root/sample/source.normalized.png" \
   "$output" \
@@ -45,52 +47,51 @@ python3 "$repo_root/scripts/recover_monospace_ascii.py" \
 
 python3 - "$output/machine-ocr.txt" "$output/quality.json" <<'PY'
 import json
-import subprocess
 import sys
 from pathlib import Path
 
 text_path = Path(sys.argv[1])
 quality_path = Path(sys.argv[2])
-text = text_path.read_text(encoding="utf-8")
-lines = text.splitlines()
-line_lengths = [len(line) for line in lines]
-if not lines or len(set(line_lengths)) != 1:
-    raise RuntimeError(f"recovery did not produce a rectangular grid: {line_lengths}")
-emitted_non_space_cells = sum(1 for char in text if not char.isspace())
-unresolved_emitted_cells = text.count("?")
-tesseract_version = subprocess.run(
-    ["tesseract", "--version"],
-    check=True,
-    capture_output=True,
-    text=True,
-).stdout.splitlines()[0]
-receipt = {
-    "schema": "lateletter.fixed_grid_recovery_quality.v2",
-    "acceptance_status": "experimental_unaccepted",
-    "source_coverage_status": "unknown_without_accepted_transcript",
-    "grid_rows": len(lines),
-    "grid_columns": line_lengths[0],
-    "grid_cells": sum(line_lengths),
-    "emitted_non_space_cells": emitted_non_space_cells,
-    "recognized_emitted_cells": emitted_non_space_cells - unresolved_emitted_cells,
-    "unresolved_emitted_cells": unresolved_emitted_cells,
-    "unresolved_among_emitted_fraction": (
-        unresolved_emitted_cells / emitted_non_space_cells
-        if emitted_non_space_cells
-        else None
-    ),
-    "tesseract_version": tesseract_version,
-    "acceptance_note": (
-        "Output-only counts do not measure omitted source glyphs. No accepted "
-        "transcript, recovery threshold, or operator acceptance is recorded."
-    ),
-}
-quality_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+receipt = json.loads(quality_path.read_text(encoding="utf-8"))
+lines = text_path.read_text(encoding="utf-8").splitlines()
+if not lines:
+    raise RuntimeError("recovery produced no rows")
+
+coverage = receipt["coverage"]
+lattice = receipt["measured_lattice"]
+typeface = receipt["inferred_typeface"]
+agreement = receipt["reconstruction_agreement"]["ink_intersection_over_union"]
+
 print(
-    f"emitted-output result: {unresolved_emitted_cells}/"
-    f"{emitted_non_space_cells} emitted non-space cells unresolved; "
-    "source_coverage=unknown; status=experimental_unaccepted"
+    "coverage: {resolved}/{ink} ink-bearing source cells resolved, "
+    "{ambiguous} ambiguous".format(
+        resolved=coverage["resolved_cells"],
+        ink=coverage["ink_bearing_source_cells"],
+        ambiguous=coverage["ambiguous_cells"],
+    )
 )
+print(
+    "measured lattice: {x:.3f} x {y:.3f} px, aspect {a:.4f}, {c} columns x {r} rows".format(
+        x=lattice["cell_advance_x_px"],
+        y=lattice["line_height_px"],
+        a=lattice["cell_aspect_w_over_h"],
+        c=lattice["columns"],
+        r=lattice["rows"],
+    )
+)
+print(
+    "inferred typeface: {font} @ {size}px, residual {residual:.2f}".format(
+        font=Path(typeface["font"]).name,
+        size=typeface["size"],
+        residual=typeface["residual"],
+    )
+)
+print(
+    "reconstruction agreement (ink IoU): "
+    + ("n/a" if agreement is None else f"{agreement:.3f}")
+)
+print("status: " + receipt["acceptance_status"])
 PY
 
 printf 'recovered text: %s\n' "$output/machine-ocr.txt"
+printf 'reconstruction: %s\n' "$output/reconstruction.png"
