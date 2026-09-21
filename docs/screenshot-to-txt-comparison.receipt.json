@@ -6,13 +6,13 @@
     "height": 860
   },
   "frame_count": 4,
-  "hold_label_on_every_frame": "EXPERIMENTAL \u2014 40 unresolved / 78 emitted; source coverage unknown",
+  "hold_label_on_every_frame": "EXPERIMENTAL \u2014 16 unresolved / 78 emitted; source coverage unknown",
   "acceptance_status": "experimental_unaccepted",
   "source_coverage_status": "unknown_without_accepted_transcript",
   "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
-  "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6",
-  "quality_receipt_sha256": "e0beab20f939d65c31684ff432d1e5e766b789238ec535584468e17faf0559e5",
-  "gif_sha256": "175c6fc1e701e18762dd575beeda88dadf9e4ddb222f0dac8bf9474de268caef",
+  "machine_output_sha256": "22608d602c07c329264853fc0b087e0e1454d1e4c266f810c8758f32851fcad1",
+  "quality_receipt_sha256": "837f2979e71ffaac0690a39639cefb98c2d25364b11c4fcc7dc3588700c04668",
+  "gif_sha256": "4b415aed2e12df9a50a21095a0bf5f6aa56193730996059f27008ff373d3d6a4",
   "semantic_frames": [
     {
       "id": "full-source-and-full-output",
@@ -28,7 +28,7 @@
         22
       ],
       "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
-      "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6"
+      "machine_output_sha256": "22608d602c07c329264853fc0b087e0e1454d1e4c266f810c8758f32851fcad1"
     },
     {
       "id": "matched-closeup-1",
@@ -44,7 +44,7 @@
         5
       ],
       "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
-      "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6"
+      "machine_output_sha256": "22608d602c07c329264853fc0b087e0e1454d1e4c266f810c8758f32851fcad1"
     },
     {
       "id": "matched-closeup-2",
@@ -60,7 +60,7 @@
         12
       ],
       "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
-      "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6"
+      "machine_output_sha256": "22608d602c07c329264853fc0b087e0e1454d1e4c266f810c8758f32851fcad1"
     },
     {
       "id": "matched-closeup-3",
@@ -76,7 +76,7 @@
         19
       ],
       "source_sha256": "9ea8eab2c0b378ed89ad2337515a6baea4ec81d0eace6ba042fab4abee63a3d3",
-      "machine_output_sha256": "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6"
+      "machine_output_sha256": "22608d602c07c329264853fc0b087e0e1454d1e4c266f810c8758f32851fcad1"
     }
   ]
 }

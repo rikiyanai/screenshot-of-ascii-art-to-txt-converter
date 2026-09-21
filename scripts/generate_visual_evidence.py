@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 CANVAS_SIZE = (1400, 860)
 DURATIONS_MS = (4200, 3600, 3600, 4200)
-HOLD_LABEL = "EXPERIMENTAL — 40 unresolved / 78 emitted; source coverage unknown"
+HOLD_LABEL = "EXPERIMENTAL — 16 unresolved / 78 emitted; source coverage unknown"
 CLOSEUP_ROWS = ((0, 5), (7, 12), (14, 19))
 
 
@@ -72,7 +72,7 @@ def common_header(image: Image.Image) -> None:
     draw.rectangle((0, 60, CANVAS_SIZE[0], 116), fill="#ffd166")
     hold_font = font(23)
     prefix = "EXPERIMENTAL "
-    suffix = " 40 unresolved / 78 emitted; source coverage unknown"
+    suffix = " 16 unresolved / 78 emitted; source coverage unknown"
     draw.text((28, 76), prefix, font=hold_font, fill="#351c00")
     dash_x = 28 + round(draw.textlength(prefix, font=hold_font))
     # Pillow's packaged font has no em dash. Drawing the long horizontal mark
@@ -197,9 +197,9 @@ def main() -> None:
         or quality["source_coverage_status"] != "unknown_without_accepted_transcript"
         or quality["emitted_non_space_cells"] != emitted
         or quality["unresolved_emitted_cells"] != unresolved
-        or (unresolved, emitted) != (40, 78)
+        or (unresolved, emitted) != (16, 78)
     ):
-        raise ValueError("quality receipt does not match the held 40/78 sample")
+        raise ValueError("quality receipt does not match the held 16/78 sample")
 
     source_hash = sha256(args.source)
     output_hash = sha256(args.machine_output)
@@ -231,9 +231,10 @@ def main() -> None:
 
     args.gif.parent.mkdir(parents=True, exist_ok=True)
     first_palette = frames[0].quantize(colors=256)
-    palette_frames = [first_palette] + [
-        frame.quantize(palette=first_palette) for frame in frames[1:]
-    ]
+    # Remap every frame, including the palette source, through the one
+    # palette: identical RGB regions (the common header) then quantize
+    # identically instead of leaving frame 0 unsnapped while the rest snap.
+    palette_frames = [frame.quantize(palette=first_palette) for frame in frames]
     palette_frames[0].save(
         args.gif,
         save_all=True,

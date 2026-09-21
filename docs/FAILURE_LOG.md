@@ -261,3 +261,29 @@
 - Acceptance remains open until multiple screenshot sources produce useful TXT
   candidates with receipts that record font-model assumptions, segmentation
   parameters, unknown cells, omitted-source risk, and a human-judgment surface.
+
+## P0C-03 · 2026-09-21 — ASCII emission widened past punctuation; 16/78 still unaccepted
+
+- Cause measured, not guessed: of the 40 `?` cells, the dominant class was
+  single-cell unconflicted Tesseract boxes outside the punctuation safe set
+  (letters, digits, `~`, `%`, `,`, `1`), plus 4 multi-cell boxes, 4 conflicts,
+  and non-ASCII recognitions (em dash, euro). Font-template matching (DejaVu,
+  Courier New) and per-cell Tesseract psm-10 both scored ~0 agreement with
+  Tesseract on safe cells at 12px glyph size, so neither is the classifier.
+- Fix: `scripts/recover_monospace_ascii.py` now emits single-cell
+  unconflicted ASCII letters, digits, and common punctuation (`EMITTABLE_EXTRA`);
+  non-ASCII stays `?` (output contract is ASCII text). Conflict, width, and
+  out-of-grid rules unchanged. Receipt records the policy in
+  `emission_policy` (output `calibration.json`).
+- Result on the bundled sample (Tesseract 5.5.1): 16/78 emitted cells
+  unresolved, down from 40/78. Still `experimental_unaccepted`: 16 remain
+  (conflicts, wide boxes, non-ASCII, unboxed ink) and source coverage stays
+  unknown without an accepted transcript. Blank-but-inked cells (omitted
+  source) remain the open gap; neither template nor psm-10 recovers them.
+- Collateral honesty repairs: the README wording pin and observed-output
+  markers had drifted at HEAD (suite already red); both restored against the
+  new output, and the evidence GIF is remapped through one shared palette so
+  the common header quantizes identically on all frames (was: frame-0
+  unsnapped, 34px spread against a 10px gate).
+- Highest stage: Executed improved candidate, not Verified or Accepted. Issue
+  #2 acceptance (multiple screenshot sources judged) remains open.

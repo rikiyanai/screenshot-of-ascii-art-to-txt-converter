@@ -4,7 +4,7 @@ Experimental converter for turning screenshots of fixed-grid ASCII art back into
 
 The converter measures a character grid, uses Tesseract box data, and writes `?` when it cannot identify a cell. It does not guess missing glyphs.
 
-On the bundled sample with Tesseract 5.5.1, 40 of 78 emitted non-space cells remain unresolved. That count does not include source characters that OCR may have missed entirely, so total source coverage is unknown.
+On the bundled sample with Tesseract 5.5.1, 16 unresolved `?` cells among 78 emitted non-space cells remain. Single-cell unconflicted ASCII letters, digits, and punctuation are transcribed; conflicts, multi-cell boxes, and non-ASCII recognitions stay `?`. That count does not include source characters that OCR may have missed entirely, so total source coverage is unknown. That count does not include source characters that OCR may have missed entirely, so total source coverage is unknown.
 
 ![Bundled screenshot compared with the fixed-grid text result](docs/screenshot-to-txt-comparison.gif)
 
@@ -36,27 +36,29 @@ Source image:
 
 Observed Tesseract 5.5.1 output on 2026-08-12, with trailing blank cells omitted here:
 
+<!-- observed-output-start -->
 ```text
 
-    [/\ ?  _ ?
-     ?? ? ? )\??
-     ? ?  ||? \???
+    [/\ ?  _ ~
+     ?? ? C )\e~
+     ? N  ||N \nem
         \    \
 
 
-    ((??=__
+    ((%?=__
     | /\   ? ?
-       (  /  \  ? ?
-       / |????/  \  ??
+       (  /  \  Y ?
+       / |www?/  \  NN
      /    \ /      \
 
 
-    ? ?\
-    ? ?  ?  ?
+    1 ?\
+    ~ P  ?  ?
       (       ?
-     ?-\??? [\  \
-        ? ?_   ?
+     ?-\ere [\  \
+        y o_   ?
 ```
+<!-- observed-output-end -->
 
 This output is still an OCR candidate, not an accepted reconstruction.
 

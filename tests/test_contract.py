@@ -63,6 +63,13 @@ class BundledSampleContract(unittest.TestCase):
             self.assertEqual(quality["grid_cells"], 814)
             self.assertGreater(quality["emitted_non_space_cells"], 0)
             self.assertGreater(quality["unresolved_emitted_cells"], 0)
+            calibration_copy = json.loads((output / "calibration.json").read_text())
+            self.assertTrue(
+                calibration_copy["emission_policy"]["non_ascii_stays_unknown"]
+            )
+            self.assertTrue(
+                calibration_copy["emission_policy"]["single_cell_unconflicted_only"]
+            )
             self.assertEqual(
                 quality["recognized_emitted_cells"]
                 + quality["unresolved_emitted_cells"],
@@ -77,9 +84,9 @@ class BundledSampleContract(unittest.TestCase):
             self.assertIn("do not measure omitted source glyphs", quality["acceptance_note"])
             if quality["tesseract_version"] == "tesseract 5.5.1":
                 self.assertEqual(quality["emitted_non_space_cells"], 78)
-                self.assertEqual(quality["unresolved_emitted_cells"], 40)
+                self.assertEqual(quality["unresolved_emitted_cells"], 16)
                 readme = (ROOT / "README.md").read_text()
-                self.assertIn("40 unresolved `?` cells among 78 emitted", readme)
+                self.assertIn("16 unresolved `?` cells among 78 emitted", readme)
                 observed = readme.split("<!-- observed-output-start -->", 1)[1]
                 observed = observed.split("<!-- observed-output-end -->", 1)[0]
                 observed = observed.split("```text\n", 1)[1].rsplit("\n```", 1)[0]
@@ -126,7 +133,7 @@ class BundledSampleContract(unittest.TestCase):
         self.assertEqual(receipt["frame_count"], 4)
         self.assertEqual(
             receipt["hold_label_on_every_frame"],
-            "EXPERIMENTAL — 40 unresolved / 78 emitted; source coverage unknown",
+            "EXPERIMENTAL — 16 unresolved / 78 emitted; source coverage unknown",
         )
         self.assertEqual(receipt["acceptance_status"], "experimental_unaccepted")
         self.assertEqual(
@@ -136,11 +143,11 @@ class BundledSampleContract(unittest.TestCase):
         self.assertEqual(receipt["source_sha256"], source_hash)
         self.assertEqual(
             receipt["machine_output_sha256"],
-            "d74fea7577fa486b4a016aea023d95c2cab42a81b23e00c93ba6cd011527d7d6",
+            "22608d602c07c329264853fc0b087e0e1454d1e4c266f810c8758f32851fcad1",
         )
         self.assertEqual(
             receipt["quality_receipt_sha256"],
-            "e0beab20f939d65c31684ff432d1e5e766b789238ec535584468e17faf0559e5",
+            "837f2979e71ffaac0690a39639cefb98c2d25364b11c4fcc7dc3588700c04668",
         )
         self.assertEqual(
             receipt["gif_sha256"], hashlib.sha256(VISUAL_GIF.read_bytes()).hexdigest()

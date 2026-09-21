@@ -2,9 +2,9 @@
 """Recover a fail-closed, fixed-grid ASCII candidate from a raster reference.
 
 This is deliberately not a general-purpose OCR wrapper. It measures the raster lattice, records
-Tesseract's character boxes, maps only unambiguous single-cell punctuation into the grid, and
-writes ``?`` for conflicts or unsupported recognitions. That preserves spaces and makes every
-unrecovered cell explicit instead of inventing text.
+Tesseract's character boxes, maps only unambiguous single-cell ASCII into the grid, and
+writes ``?`` for conflicts, multi-cell boxes, or non-ASCII recognitions. That preserves
+spaces and makes every unrecovered cell explicit instead of inventing text.
 """
 
 from __future__ import annotations
@@ -20,6 +20,15 @@ from PIL import Image
 
 
 SAFE_GLYPHS = set("()[]/\\|_.:-=")
+# Single-cell Tesseract classifications outside the punctuation safe set are still
+# emitted when they are plain ASCII letters, digits, or common ASCII punctuation:
+# the classifier already committed to the glyph, so transcribing it is not a guess.
+# Non-ASCII recognitions (em dash, euro, CJK) stay ``?``: the output contract is
+# ASCII text and the source font model does not cover them.
+EMITTABLE_EXTRA = set(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    "~%,;^'\"*+#@&!?$"
+)
 PIPE_ALIASES = {"I", "l", "L"}
 
 
@@ -114,7 +123,7 @@ def main() -> None:
             continue
         if glyph in PIPE_ALIASES:
             glyph = "|"
-        if glyph not in SAFE_GLYPHS or width_cells != 1 or grid[row][column] != " ":
+        if glyph not in SAFE_GLYPHS and glyph not in EMITTABLE_EXTRA or width_cells != 1 or grid[row][column] != " ":
             grid[row][column] = "?"
         else:
             grid[row][column] = glyph
@@ -139,6 +148,13 @@ def main() -> None:
                 "calibration": str(args.calibration),
                 "status": "machine_candidate_only",
                 "note": "Question marks are unresolved cells, not glyph guesses.",
+                "emission_policy": {
+                    "punctuation": sorted(SAFE_GLYPHS),
+                    "extra_ascii": "letters, digits, ~%,;^'\"*+#@&!?$",
+                    "pipe_aliases": sorted(PIPE_ALIASES),
+                    "single_cell_unconflicted_only": True,
+                    "non_ascii_stays_unknown": True,
+                },
             },
             indent=2,
         )
