@@ -666,6 +666,55 @@ def classify(
     return grid, decisions, tally, placement
 
 
+def learn_empirical_templates(
+    cells: np.ndarray,
+    templates: np.ndarray,
+    decisions: list[CellDecision],
+    alphabet: str,
+    minimum_exemplars: int,
+    margin_quantile: float,
+) -> tuple[np.ndarray, dict[str, int]]:
+    """Rebuild templates from the image's own cells.
+
+    The synthetic templates come from whatever installed face fits best, and on
+    a source whose typeface is not installed that face is only an approximation
+    — which is exactly where the surviving errors live, as `=` read for `-` or
+    `#` read for `=`. But the source contains many instances of each character,
+    and they are identical to each other by construction. So the confidently
+    read cells of a character are a better template for that character than any
+    substitute font's rendering of it.
+
+    Only the cells that won by a wide margin are used, because bootstrapping
+    from uncertain reads would entrench them. The caller keeps this pass only
+    if it improves agreement with the source.
+    """
+    cell_h, cell_w = cells.shape[2], cells.shape[3]
+    confident = [d for d in decisions if d.state in {"resolved", "resolved-space"}]
+    if not confident:
+        return templates, {}
+    cutoff = float(np.quantile([d.margin for d in confident], margin_quantile))
+
+    grouped: dict[str, list[np.ndarray]] = {}
+    for decision in confident:
+        if decision.margin < cutoff:
+            continue
+        grouped.setdefault(decision.glyph, []).append(cells[decision.row, decision.column])
+
+    learned = templates.copy()
+    counts: dict[str, int] = {}
+    for glyph, patches in grouped.items():
+        if len(patches) < minimum_exemplars or glyph not in alphabet:
+            continue
+        index = alphabet.index(glyph)
+        average = np.mean(np.stack(patches), axis=0).astype(np.float32)
+        # One empirical template replaces every sub-pixel variant: the exemplars
+        # already come from the measured lattice, so they carry the source's own
+        # placement.
+        learned[:, index] = average
+        counts[glyph] = len(patches)
+    return learned, counts
+
+
 def render_reconstruction(
     grid: list[list[str]],
     templates: np.ndarray,
@@ -760,6 +809,14 @@ def main() -> None:
     parser.add_argument("--margin", type=float, default=0.6)
     parser.add_argument("--ink-floor", type=float, default=0.8)
     parser.add_argument("--sample-limit", type=int, default=160)
+    parser.add_argument(
+        "--adapt",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="rebuild templates from the image's own confident reads and re-classify",
+    )
+    parser.add_argument("--min-exemplars", type=int, default=2)
+    parser.add_argument("--margin-quantile", type=float, default=0.35)
     args = parser.parse_args()
 
     alphabet = args.alphabet
@@ -797,6 +854,32 @@ def main() -> None:
     )
     reconstruction = render_reconstruction(grid, templates, alphabet, cell, placement)
     scores = agreement(reconstruction, cells)
+
+    # Second pass: rebuild the templates from the image's own confident reads,
+    # then classify again. Kept only if it agrees with the source better, so a
+    # bootstrap that entrenches a mistake is discarded rather than shipped.
+    adaptation: dict[str, object] = {"enabled": bool(args.adapt), "accepted": False}
+    if args.adapt:
+        learned, counts = learn_empirical_templates(
+            cells, templates, decisions, alphabet, args.min_exemplars, args.margin_quantile
+        )
+        adaptation["templates_learned"] = len(counts)
+        adaptation["exemplars_per_glyph"] = counts
+        adaptation["agreement_before"] = scores["ink_intersection_over_union"]
+        if counts:
+            grid2, decisions2, tally2, placement2 = classify(
+                cells, learned, alphabet, args.ink_floor, args.margin
+            )
+            reconstruction2 = render_reconstruction(grid2, learned, alphabet, cell, placement2)
+            scores2 = agreement(reconstruction2, cells)
+            adaptation["agreement_after"] = scores2["ink_intersection_over_union"]
+            before = scores["ink_intersection_over_union"] or 0.0
+            after = scores2["ink_intersection_over_union"] or 0.0
+            if after > before:
+                adaptation["accepted"] = True
+                grid, decisions, tally = grid2, decisions2, tally2
+                templates, placement = learned, placement2
+                reconstruction, scores = reconstruction2, scores2
 
     text = "\n".join("".join(row).rstrip() for row in grid).rstrip("\n") + "\n"
     (args.output / "machine-ocr.txt").write_text(text, encoding="utf-8")
@@ -863,6 +946,7 @@ def main() -> None:
             ),
         },
         "reconstruction_agreement": scores,
+        "adaptation": adaptation,
         "note": "Question marks are scored-but-ambiguous cells. Spaces inside the ink region are scored decisions, not drops.",
     }
     (args.output / "quality.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
