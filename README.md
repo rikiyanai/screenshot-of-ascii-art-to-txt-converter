@@ -34,10 +34,33 @@ demand the characters back. Measured with Menlo on 2026-09-21:
 The typeface and size are recovered correctly in each case, which is the part
 that proves the machinery rather than the fixture.
 
-**The bundled sample, where the source font is not installed.** The sample is
+**A real screenshot with an operator transcript.** This is the strongest
+evidence: a screen capture, not a render, scored against a transcript supplied by
+hand. Measured 2026-09-21 on `sample/bonsai.source.png`:
+
+- **54 of 67 characters exact (80.6%)**, 1 ambiguous
+- measured lattice 15.72 x 30.42 px, aspect 0.5168, inferred Menlo @ 26
+- reconstruction agreement, ink IoU: 0.605
+
+The remaining errors are reference-typeface errors, not structural ones: `=`
+read as `-`, `#` as `=`, a trailing `_` lost to a space. The lattice and the
+layout are right; the glyph shapes are approximated by the nearest installed
+face.
+
+That run also validates the self-check. Forcing Courier instead of the fitted
+Menlo gives a *lower* agreement (0.544 against 0.605) and a *lower* true
+accuracy (67.2% against 80.6%), so the reported IoU ranked the two fits in the
+same order as the ground truth. The receipt's agreement figure is a usable proxy
+for accuracy when no transcript exists.
+
+Add more pairs by dropping `<name>.source.png` and `<name>.expected.txt` into
+`sample/` and extending `PAIRS` in `tests/test_roundtrip.py`. The suite gates
+every pair at 75% exact.
+
+**The bundled sample, where the source font is not installed.** The other sample is
 Stone Story RPG art. Its typeface is a custom unnamed face that is not publicly
 downloadable, so the fit necessarily lands on the nearest installed
-approximation. There is no accepted transcript for this image, so no exact
+approximation. No transcript has been supplied for this image, so no exact
 accuracy can be quoted for it — only the self-consistency figures:
 
 - measured lattice 11.560 x 21.510 px, aspect 0.5374, 37 columns

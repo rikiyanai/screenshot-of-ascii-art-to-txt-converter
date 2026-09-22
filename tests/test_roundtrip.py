@@ -137,9 +137,13 @@ def score(expected: list[str], recovered: str) -> tuple[int, int, int]:
     version of this scorer reported.
     """
     got = recovered.splitlines()
+    width = max((len(line) for line in got), default=0)
     best = (-1, 0, 0)
-    for row_shift in range(-4, 5):
-        for column_shift in range(-6, 7):
+    # The window must span the whole canvas: art can sit anywhere on a
+    # screenshot, and a window of a few columns silently reports a near-perfect
+    # recovery as a near-total failure.
+    for row_shift in range(-len(got), len(got) + 1):
+        for column_shift in range(-width, width + 1):
             exact, ambiguous, comparable = _score_at(expected, got, row_shift, column_shift)
             if exact > best[0]:
                 best = (exact, ambiguous, comparable)
@@ -215,6 +219,57 @@ class RoundTrip(unittest.TestCase):
         self.assertIn("font", typeface)
         self.assertGreater(typeface["size"], 0)
         self.assertGreaterEqual(typeface["residual"], 0.0)
+
+
+
+class RealPairs(unittest.TestCase):
+    """Screenshots with an operator-supplied transcript.
+
+    Synthetic sheets prove the machinery; they cannot prove it reads a real
+    screen. These pairs can. Add more by dropping `<name>.source.png` and
+    `<name>.expected.txt` into sample/ and extending PAIRS.
+    """
+
+    PAIRS = ("bonsai",)
+
+    def test_each_pair_recovers_most_characters(self) -> None:
+        for name in self.PAIRS:
+            with self.subTest(pair=name):
+                source = ROOT / f"sample/{name}.source.png"
+                expected_path = ROOT / ("sample/" + name + ".expected.txt")
+                if not source.exists() or not expected_path.exists():
+                    self.skipTest(f"sample pair {name} is not present")
+                expected = expected_path.read_text().splitlines()
+                with tempfile.TemporaryDirectory() as parent:
+                    output = Path(parent) / "out"
+                    receipt = recover(source, output)
+                    text = (output / ("machine-ocr.txt")).read_text()
+                    exact, ambiguous, comparable = score(expected, text)
+                    ratio = exact / comparable
+                    self.assertGreater(
+                        ratio,
+                        0.75,
+                        msg=(
+                            f"{name}: only {exact}/{comparable} exact "
+                            f"({ratio:.1%}), {ambiguous} ambiguous\n{text}"
+                        ),
+                    )
+                    # The lattice must be measured, not guessed at a default.
+                    lattice = receipt["measured_lattice"]
+                    self.assertGreater(lattice["cell_advance_x_px"], 1.0)
+                    self.assertGreater(lattice["line_height_px"], 1.0)
+
+    def test_reconstruction_agreement_is_reported_for_each_pair(self) -> None:
+        for name in self.PAIRS:
+            with self.subTest(pair=name):
+                source = ROOT / f"sample/{name}.source.png"
+                if not source.exists():
+                    self.skipTest(f"sample pair {name} is not present")
+                with tempfile.TemporaryDirectory() as parent:
+                    receipt = recover(source, Path(parent) / "out")
+                agreement = receipt["reconstruction_agreement"]["ink_intersection_over_union"]
+                self.assertIsNotNone(agreement)
+                self.assertGreater(agreement, 0.0)
 
 
 if __name__ == "__main__":
