@@ -53,21 +53,24 @@ DEFAULT_ALPHABET = "".join(sorted(set(string.printable[:95]) - {"\x0b", "\x0c"})
 #
 # Calibrated by scripts/calibrate_regime_threshold.py over 30 canonical pieces
 # rendered through three monospaced and three proportional faces, 173 sheets in
-# all. Measured trade, false refusal / false acceptance:
+# all. These rates were measured against the code as it ships, harmonic gate
+# included; re-run the script after any change to lattice measurement, because
+# the trade moves when the measured periods move.
 #
-#     0.40 -> 29.1% / 2.3%      0.75 -> 5.8% / 14.9%
-#     0.50 ->  8.1% / 4.6%      1.00 -> 5.8% / 26.4%
-#     0.60 ->  7.0% / 8.0%      1.50 -> 1.2% / 35.6%
+#     0.40 -> 14.0% / 5.7%      0.75 -> 4.7% / 29.9%
+#     0.50 ->  4.7% / 14.9%     1.00 -> 2.3% / 33.3%
+#     0.60 ->  4.7% / 20.7%     1.25 -> 0.0% / 36.8%
 #
-# 0.75 is chosen because it strictly dominates 1.00: false refusal is already
-# at its floor there, so the extra quarter-cell buys nothing and costs eleven
-# points of false acceptance. Below 0.75 the refusal rate starts climbing and
-# the dual-period control loses its margin.
+# Refusal is flat across 0.50, 0.60 and 0.75, so 0.50 dominates both: the same
+# refusal rate for fifteen fewer points of false acceptance. Below 0.50 the
+# refusal rate triples, so this is the knee rather than a preference.
 #
 # Those rates are the LATIN proportional case, which is the hard one. The CJK
-# case this detector was built for is not close: the archived Shift_JIS art
-# measures about 24 cells of drift, some thirty times the threshold.
-REGIME_THRESHOLD_CELLS = 0.75
+# case this detector was built for is not close to the boundary: the archived
+# Shift_JIS art measures 16 cells, thirty times the threshold, while the SAME
+# art in a fixed-pitch face of the SAME FAMILY measures 0.375. The fixed-pitch
+# margin, 1.3x, is the thinnest of the four and is the known weak case.
+REGIME_THRESHOLD_CELLS = 0.50
 REGIME_METHOD = (
     "per-band cumulative unwrapped drift of ink-run boundaries against the "
     "measured advance; median over bands"
@@ -251,6 +254,91 @@ def band_pitch(profile: np.ndarray, threshold_fraction: float = 0.08) -> float |
     return float(slope)
 
 
+def gutter_contrast(profile: np.ndarray, period: float) -> float:
+    """How cleanly a period separates gutters from cell interiors.
+
+    Placed at its best phase, a correct period puts every cut line in a gutter
+    and every cell centre on a glyph, so the two sample sets are far apart.
+
+    Both ways of being wrong lose that separation. Half the period puts every
+    second cut line through the middle of a glyph, which raises the boundary
+    samples. Twice the period swallows a whole gutter inside each cell, which
+    lowers the centre samples.
+    """
+    _, phase, _ = _best_phase(profile, period, 0.05)
+    length = len(profile)
+    index = np.arange(length)
+    boundaries: list[float] = []
+    centres: list[float] = []
+    step = 0
+    while True:
+        cut = phase + step * period
+        if cut >= length:
+            break
+        if cut >= 0:
+            boundaries.append(float(np.interp(cut, index, profile)))
+        centre = cut + period / 2
+        if 0 <= centre < length:
+            centres.append(float(np.interp(centre, index, profile)))
+        step += 1
+    if len(boundaries) < 2 or len(centres) < 2:
+        return -1.0
+    boundary_mean = float(np.mean(boundaries))
+    centre_mean = float(np.mean(centres))
+    return (centre_mean - boundary_mean) / (centre_mean + boundary_mean + 1e-9)
+
+
+def resolve_harmonic(
+    profile: np.ndarray, period: float, low: float, upper: float, keep: float = 0.70
+) -> tuple[float, str]:
+    """Pull a period estimate back onto the fundamental.
+
+    Both the spectral projection and the autocorrelation peak are prone to
+    octave error, and they fail in opposite directions: on dense text the
+    spectral estimate locks onto half the true advance, while the
+    autocorrelation peak locks onto twice the true line pitch. Neither can be
+    fixed by biasing toward large or small periods, because each bias breaks
+    the other axis.
+
+    Score the whole harmonic family instead, and take the FINEST period that
+    still separates gutters from cell interiors about as well as the best one
+    does. The finest qualifying candidate is the right choice because an
+    integer multiple of the true period also lands every cut line in a gutter
+    and therefore scores just as well; only the fundamental does so without a
+    finer candidate beating it.
+
+    ``keep`` is a measured optimum, not a safety margin. Swept over 90
+    rendered sheets from the archived collection through three monospaced
+    faces, the share of sheets whose period lands within 15% of the font's
+    own advance runs 94.4% x / 90.0% y at 0.90, peaks at 96.7% / 92.2% at
+    0.70, then falls back to 92.2% / 86.7% at 0.60. Loosening further starts
+    admitting genuine subharmonics, so the peak is real and not a slide.
+
+    Spectral magnitude cannot be used as a second opinion here. The spectral
+    estimator selects the period that maximises it, so magnitude always
+    flatters whichever candidate that estimator already chose, including a
+    wrong one.
+    """
+    candidates = sorted(
+        {
+            round(period * multiple, 4)
+            for multiple in (1 / 3, 1 / 2, 1, 2, 3)
+            if low <= period * multiple <= upper
+        }
+    )
+    if len(candidates) < 2:
+        return period, "single candidate"
+    scored = [(value, gutter_contrast(profile, value)) for value in candidates]
+    best = max(score for _, score in scored)
+    if best <= 0:
+        return period, "no candidate separated gutters from cells"
+    qualifying = [value for value, score in scored if score >= keep * best]
+    chosen = min(qualifying) if qualifying else period
+    if chosen == period:
+        return period, "estimate already the finest qualifying harmonic"
+    return chosen, f"harmonic corrected from {period:.3f} by gutter contrast"
+
+
 def fit_axis_periodic(
     profile: np.ndarray, low: int, high: int, prefer_bands: bool
 ) -> AxisFit:
@@ -279,6 +367,11 @@ def fit_axis_periodic(
     )
     if abs(refined - period) > 0.6:
         refined = period
+
+    # Both estimators above are prone to octave error, in opposite directions.
+    # Settle the harmonic before the phase is placed.
+    refined, harmonic_note = resolve_harmonic(profile, refined, float(low), upper)
+    method += "; " + harmonic_note
 
     mean, phase, peak = _best_phase(profile, refined, 0.05)
     return AxisFit(
@@ -485,15 +578,14 @@ def detect_regime(
     * Real monospaced art (the bundled Stone Story frame, the bonsai pair) is
       never refused at the shipped defaults, and the bonsai pair is never
       refused at any setting.
-    * Fixed-pitch CJK is the known weak case. It is classified correctly at
-      the defaults, at 0.56 against a 0.75 threshold, but 14 of the 36
-      settings flip it. A fixed-pitch CJK face is genuinely DUAL period, one
-      advance for halfwidth and two for fullwidth, so a fullwidth glyph's
-      side bearing can exceed half of the measured advance and inject an
-      error this statistic cannot telescope away. Evaluating the doubled
-      period does not help; it was measured at 8.25 cells, far worse than
-      the 0.56 at the single period. A third regime, rather than a better
-      threshold, is what that case actually needs.
+    * Fixed-pitch CJK remains the weakest case, because such a face is
+      genuinely DUAL period, one advance for halfwidth and two for
+      fullwidth, so a fullwidth glyph's side bearing can exceed half of the
+      measured advance. Taking the better of the two boundary sequences
+      moved it from 0.56 to 0.375, which against the 0.50 threshold is a
+      1.3x margin: the thinnest of the four real inputs. Evaluating the DOUBLED period does not help and was
+      measured at 8.25 cells, far worse than the single period: the measured
+      period is already the right one.
     """
     period = lattice.advance_x
     row_profile = ink.sum(axis=1)
@@ -513,9 +605,17 @@ def detect_regime(
         if len(runs) < min_runs:
             continue
         # Starts and ends are two independent telescoping sequences over the
-        # same band. Take the worse of the two so a face whose left bearings
-        # happen to be uniform cannot hide behind them.
-        drift = max(
+        # same band, and either one settles the question on its own: if run
+        # starts telescope cleanly across a whole row then the advances that
+        # separate them ARE uniform, whatever the ends do. So take the better
+        # of the two. Taking the worse instead lets side-bearing noise on one
+        # sequence veto the evidence of the other, which is what pushed the
+        # fixed-pitch CJK control to the edge of the threshold.
+        #
+        # This costs nothing in refusals: under a proportional face neither
+        # sequence telescopes, and the archived Shift_JIS art measures the
+        # same 23.91 cells either way.
+        drift = min(
             sequence_drift([start for start, _ in runs], period),
             sequence_drift([end for _, end in runs], period),
         )

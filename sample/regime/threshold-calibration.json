@@ -7,61 +7,61 @@
     "margin_px": 12
   },
   "per_face_median_drift_cells": {
-    "monospaced/DejaVuSansMono": 0.3437,
-    "monospaced/Menlo": 0.3609,
-    "monospaced/Courier": 0.3044,
-    "proportional/DejaVuSans": 2.0786,
-    "proportional/Helvetica": 2.0869,
-    "proportional/Geneva": 2.25
+    "monospaced/DejaVuSansMono": 0.2461,
+    "monospaced/Menlo": 0.274,
+    "monospaced/Courier": 0.2273,
+    "proportional/DejaVuSans": 1.825,
+    "proportional/Helvetica": 1.7832,
+    "proportional/Geneva": 2.1966
   },
   "per_face_max_drift_cells": {
-    "monospaced/DejaVuSansMono": 1.2116,
-    "monospaced/Menlo": 1.2863,
-    "monospaced/Courier": 7.0665,
-    "proportional/DejaVuSans": 6.4246,
-    "proportional/Helvetica": 18.2875,
-    "proportional/Geneva": 7.875
+    "monospaced/DejaVuSansMono": 1.0207,
+    "monospaced/Menlo": 1.1203,
+    "monospaced/Courier": 0.9543,
+    "proportional/DejaVuSans": 8.347,
+    "proportional/Helvetica": 7.3999,
+    "proportional/Geneva": 5.9241
   },
   "threshold_sweep": [
     {
       "threshold_cells": 0.4,
-      "false_refusal_rate": 0.2907,
-      "false_acceptance_rate": 0.023
+      "false_refusal_rate": 0.1395,
+      "false_acceptance_rate": 0.0575
     },
     {
       "threshold_cells": 0.5,
-      "false_refusal_rate": 0.0814,
-      "false_acceptance_rate": 0.046
-    },
-    {
-      "threshold_cells": 0.6,
-      "false_refusal_rate": 0.0698,
-      "false_acceptance_rate": 0.0805
-    },
-    {
-      "threshold_cells": 0.75,
-      "false_refusal_rate": 0.0581,
+      "false_refusal_rate": 0.0465,
       "false_acceptance_rate": 0.1494
     },
     {
+      "threshold_cells": 0.6,
+      "false_refusal_rate": 0.0465,
+      "false_acceptance_rate": 0.2069
+    },
+    {
+      "threshold_cells": 0.75,
+      "false_refusal_rate": 0.0465,
+      "false_acceptance_rate": 0.2989
+    },
+    {
       "threshold_cells": 1.0,
-      "false_refusal_rate": 0.0581,
-      "false_acceptance_rate": 0.2644
+      "false_refusal_rate": 0.0233,
+      "false_acceptance_rate": 0.3333
     },
     {
       "threshold_cells": 1.25,
-      "false_refusal_rate": 0.0233,
-      "false_acceptance_rate": 0.3218
+      "false_refusal_rate": 0.0,
+      "false_acceptance_rate": 0.3678
     },
     {
       "threshold_cells": 1.5,
-      "false_refusal_rate": 0.0116,
-      "false_acceptance_rate": 0.3563
+      "false_refusal_rate": 0.0,
+      "false_acceptance_rate": 0.3678
     },
     {
       "threshold_cells": 2.0,
-      "false_refusal_rate": 0.0116,
-      "false_acceptance_rate": 0.4483
+      "false_refusal_rate": 0.0,
+      "false_acceptance_rate": 0.5632
     }
   ]
 }

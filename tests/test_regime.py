@@ -190,7 +190,27 @@ class RefusalBehaviour(unittest.TestCase):
 
     def test_the_refusal_can_be_overridden_on_purpose(self):
         output = Path(self.tmp.name) / "anyway"
-        result = run(self.proportional, output, ["--on-proportional", "warn"])
+        # Pin one face. The override runs the whole pipeline, and on a cell
+        # this wide an unrestricted font search takes minutes for no added
+        # coverage: what is under test is that the override proceeds and
+        # still records the verdict, not which typeface wins.
+        face = next(
+            (
+                path
+                for path in (
+                    "/System/Library/Fonts/Menlo.ttc",
+                    "/System/Library/Fonts/Monaco.ttf",
+                    "/Library/Fonts/DejaVuSansMono.ttf",
+                )
+                if Path(path).exists()
+            ),
+            None,
+        )
+        if face is None:
+            self.skipTest("no monospaced font available")
+        result = run(
+            self.proportional, output, ["--on-proportional", "warn", "--font", face]
+        )
         self.assertEqual(result.returncode, 0, result.stderr)
         receipt = json.loads((output / "quality.json").read_text())
         self.assertEqual(
