@@ -9,6 +9,10 @@ beats the runner-up by that margin; otherwise it is ``?``.
 
 Design notes, because the previous pipeline failed on each of these:
 
+* The regime is decided before a lattice is cut. Art set in a proportional
+  face cannot be described by one advance at all, so the tool measures whether
+  a single advance fits and refuses when it does not, instead of emitting a
+  confident, meaningless grid.
 * No cell aspect is hard-coded. 1:1, 1:2 and 16:29 are all just fits.
 * No reference font is declared. The font is a fitted parameter, reported in
   the receipt along with its residual, so a wrong fit is visible instead of
@@ -30,9 +34,11 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import statistics
 import string
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
@@ -41,6 +47,31 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 DEFAULT_ALPHABET = "".join(sorted(set(string.printable[:95]) - {"\x0b", "\x0c"}))
+
+# Above this median per-band drift, no single advance describes the image and
+# the tool refuses rather than cutting a lattice.
+#
+# Calibrated by scripts/calibrate_regime_threshold.py over 30 canonical pieces
+# rendered through three monospaced and three proportional faces, 173 sheets in
+# all. Measured trade, false refusal / false acceptance:
+#
+#     0.40 -> 29.1% / 2.3%      0.75 -> 5.8% / 14.9%
+#     0.50 ->  8.1% / 4.6%      1.00 -> 5.8% / 26.4%
+#     0.60 ->  7.0% / 8.0%      1.50 -> 1.2% / 35.6%
+#
+# 0.75 is chosen because it strictly dominates 1.00: false refusal is already
+# at its floor there, so the extra quarter-cell buys nothing and costs eleven
+# points of false acceptance. Below 0.75 the refusal rate starts climbing and
+# the dual-period control loses its margin.
+#
+# Those rates are the LATIN proportional case, which is the hard one. The CJK
+# case this detector was built for is not close: the archived Shift_JIS art
+# measures about 24 cells of drift, some thirty times the threshold.
+REGIME_THRESHOLD_CELLS = 0.75
+REGIME_METHOD = (
+    "per-band cumulative unwrapped drift of ink-run boundaries against the "
+    "measured advance; median over bands"
+)
 
 # Candidate faces, widest-net first. Any path that does not exist is skipped, so
 # this list is a preference order and not a requirement.
@@ -348,6 +379,200 @@ def measure_lattice(ink: np.ndarray) -> Lattice:
     columns = int(math.ceil((width - origin_x) / x_fit.period))
     rows = int(math.ceil((height - origin_y) / y_fit.period))
     return Lattice(origin_x, origin_y, x_fit.period, y_fit.period, columns, rows, x_fit, y_fit)
+
+
+# --------------------------------------------------------------------------
+# regime detection
+# --------------------------------------------------------------------------
+#
+# A single advance cannot describe art set in a proportional face. Deciding
+# that BEFORE any lattice is cut is what lets this tool refuse honestly
+# instead of emitting a confident, meaningless grid.
+#
+# The test is image-only by construction. At this point no typeface has been
+# inferred, so there is no advance table to consult; the only evidence is the
+# ink itself and the period already measured from it.
+
+
+@dataclass
+class BandDrift:
+    """One horizontal ink band and how far it departs from a uniform advance."""
+
+    top: int
+    bottom: int
+    runs: int
+    drift_px: float
+    drift_cells: float
+
+
+@dataclass
+class RegimeVerdict:
+    regime: str
+    threshold_cells: float
+    median_drift_cells: float | None
+    worst_drift_cells: float | None
+    worst_drift_px: float | None
+    qualifying_bands: int
+    evaluable_bands: int
+    total_bands: int
+    period_px: float
+    reason: str
+    method: str
+    per_band: list[BandDrift]
+
+
+def ink_runs(mask: np.ndarray) -> list[tuple[int, int]]:
+    """Every maximal [start, end) run of True."""
+    out: list[tuple[int, int]] = []
+    start: int | None = None
+    for index, value in enumerate(mask):
+        if value and start is None:
+            start = index
+        elif not value and start is not None:
+            out.append((start, index))
+            start = None
+    if start is not None:
+        out.append((start, len(mask)))
+    return out
+
+
+def sequence_drift(positions: Sequence[int], period: float) -> float:
+    """Worst unwrapped departure from a uniform advance, in pixels.
+
+    Each gap between consecutive positions is assigned the nearest whole
+    number of cells, and the SIGNED residual is accumulated left to right so
+    that a systematic error adds instead of cancelling.
+
+    Wrapping each position onto its nearest lattice line instead would cap
+    the statistic at half a cell and destroy the very cumulative signal that
+    separates the two regimes.
+
+    Run starts telescope under a correct period: a run starts at a cell
+    boundary plus that glyph's left side bearing, so the accumulated residual
+    collapses to the difference between the first and the last bearing, which
+    one advance bounds. Under a proportional face nothing telescopes and the
+    residual grows without limit along the row.
+    """
+    worst = 0.0
+    accumulated = 0.0
+    for left, right in zip(positions, positions[1:]):
+        gap = float(right - left)
+        cells = max(1, int(round(gap / period)))
+        accumulated += gap - cells * period
+        worst = max(worst, abs(accumulated))
+    return worst
+
+
+def detect_regime(
+    ink: np.ndarray,
+    lattice: Lattice,
+    threshold_cells: float = REGIME_THRESHOLD_CELLS,
+    min_runs: int = 4,
+    band_floor: float = 0.08,
+    run_floor: float = 0.12,
+) -> RegimeVerdict:
+    """Decide whether one advance can describe this image.
+
+    Bands come from the ink itself, not from the row lattice, because the
+    row lattice is exactly what this function exists to avoid trusting.
+
+    Measured behaviour, over 36 combinations of the three tuning parameters
+    below applied to four real images:
+
+    * Proportional CJK is refused in 36 of 36, never below 19 cells of drift,
+      and stays above 16 cells even when the period is halved or doubled.
+      This is the case the detector was built for and it is not marginal.
+    * Real monospaced art (the bundled Stone Story frame, the bonsai pair) is
+      never refused at the shipped defaults, and the bonsai pair is never
+      refused at any setting.
+    * Fixed-pitch CJK is the known weak case. It is classified correctly at
+      the defaults, at 0.56 against a 0.75 threshold, but 14 of the 36
+      settings flip it. A fixed-pitch CJK face is genuinely DUAL period, one
+      advance for halfwidth and two for fullwidth, so a fullwidth glyph's
+      side bearing can exceed half of the measured advance and inject an
+      error this statistic cannot telescope away. Evaluating the doubled
+      period does not help; it was measured at 8.25 cells, far worse than
+      the 0.56 at the single period. A third regime, rather than a better
+      threshold, is what that case actually needs.
+    """
+    period = lattice.advance_x
+    row_profile = ink.sum(axis=1)
+    bands = (
+        ink_runs(row_profile > band_floor * float(row_profile.max()))
+        if float(row_profile.max()) > 0
+        else []
+    )
+
+    per_band: list[BandDrift] = []
+    for top, bottom in bands:
+        column_profile = ink[top:bottom].sum(axis=0)
+        peak = float(column_profile.max())
+        if peak <= 0.5:
+            continue
+        runs = ink_runs(column_profile > max(run_floor * peak, 0.35))
+        if len(runs) < min_runs:
+            continue
+        # Starts and ends are two independent telescoping sequences over the
+        # same band. Take the worse of the two so a face whose left bearings
+        # happen to be uniform cannot hide behind them.
+        drift = max(
+            sequence_drift([start for start, _ in runs], period),
+            sequence_drift([end for _, end in runs], period),
+        )
+        per_band.append(
+            BandDrift(
+                top=int(top),
+                bottom=int(bottom),
+                runs=len(runs),
+                drift_px=round(drift, 3),
+                drift_cells=round(drift / period, 4),
+            )
+        )
+
+    if len(per_band) < 3:
+        return RegimeVerdict(
+            regime="undetermined",
+            threshold_cells=threshold_cells,
+            median_drift_cells=None,
+            worst_drift_cells=None,
+            worst_drift_px=None,
+            qualifying_bands=0,
+            evaluable_bands=len(per_band),
+            total_bands=len(bands),
+            period_px=round(period, 4),
+            reason=(
+                f"only {len(per_band)} ink bands carry {min_runs} or more runs, "
+                "which is too little evidence to judge the advance model"
+            ),
+            method=REGIME_METHOD,
+            per_band=per_band,
+        )
+
+    drifts = sorted(band.drift_cells for band in per_band)
+    median = float(statistics.median(drifts))
+    worst = float(max(drifts))
+    qualifying = sum(1 for value in drifts if value <= threshold_cells)
+    proportional = median > threshold_cells
+    return RegimeVerdict(
+        regime="proportional" if proportional else "monospaced",
+        threshold_cells=threshold_cells,
+        median_drift_cells=round(median, 4),
+        worst_drift_cells=round(worst, 4),
+        worst_drift_px=round(worst * period, 3),
+        qualifying_bands=qualifying,
+        evaluable_bands=len(per_band),
+        total_bands=len(bands),
+        period_px=round(period, 4),
+        reason=(
+            f"median band drift {median:.2f} cells exceeds the {threshold_cells:.2f} "
+            "cell threshold, so no single advance describes this image"
+            if proportional
+            else f"median band drift {median:.2f} cells is within the "
+            f"{threshold_cells:.2f} cell threshold"
+        ),
+        method=REGIME_METHOD,
+        per_band=per_band,
+    )
 
 
 def cut_cells(ink: np.ndarray, lattice: Lattice) -> tuple[np.ndarray, tuple[int, int]]:
@@ -817,6 +1042,18 @@ def main() -> None:
     )
     parser.add_argument("--min-exemplars", type=int, default=2)
     parser.add_argument("--margin-quantile", type=float, default=0.35)
+    parser.add_argument(
+        "--regime-threshold-cells",
+        type=float,
+        default=REGIME_THRESHOLD_CELLS,
+        help="median per-band drift above which no single advance is accepted",
+    )
+    parser.add_argument(
+        "--on-proportional",
+        choices=("refuse", "warn"),
+        default="refuse",
+        help="what to do when the image is not describable by one advance",
+    )
     args = parser.parse_args()
 
     alphabet = args.alphabet
@@ -830,9 +1067,43 @@ def main() -> None:
     background = dominant_background(image)
     ink = ink_intensity(image, background)
     lattice = measure_lattice(ink)
-    cells, cell = cut_cells(ink, lattice)
+    # Decide the regime before cutting anything. A lattice cut through
+    # proportional art is not a weak result, it is a meaningless one.
+    regime = detect_regime(ink, lattice, args.regime_threshold_cells)
 
     args.output.mkdir(parents=True, exist_ok=False)
+
+    if regime.regime == "proportional" and args.on_proportional == "refuse":
+        (args.output / "quality.json").write_text(
+            json.dumps(
+                {
+                    "schema": "fixed_grid_recovery.v4",
+                    "acceptance_status": "refused_not_a_fixed_grid",
+                    "source": str(args.source),
+                    "pixel_size": {
+                        "width": int(image.shape[1]),
+                        "height": int(image.shape[0]),
+                    },
+                    "measured_lattice": {
+                        "cell_advance_x_px": round(lattice.advance_x, 4),
+                        "line_height_px": round(lattice.advance_y, 4),
+                    },
+                    "regime": asdict(regime),
+                    "note": (
+                        "No text was emitted. One advance cannot describe this "
+                        "image, so any grid cut from it would be meaningless. "
+                        "Pass --on-proportional warn to see the attempt anyway."
+                    ),
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        print(f"refused: {regime.reason}", file=sys.stderr)
+        raise SystemExit(2)
+
+    cells, cell = cut_cells(ink, lattice)
 
     if args.engine == "tesseract":
         boxes = tesseract_boxes(args.source)
@@ -910,8 +1181,9 @@ def main() -> None:
 
     ink_cells = int(sum(1 for decision in decisions))
     receipt = {
-        "schema": "fixed_grid_recovery.v3",
+        "schema": "fixed_grid_recovery.v4",
         "acceptance_status": "experimental_unaccepted",
+        "regime": asdict(regime),
         "source": str(args.source),
         "pixel_size": {"width": int(image.shape[1]), "height": int(image.shape[0])},
         "background_rgb": list(background),
@@ -956,6 +1228,12 @@ def main() -> None:
     )
 
     iou = scores["ink_intersection_over_union"]
+    print(
+        f"regime: {regime.regime} "
+        f"(median band drift {regime.median_drift_cells} cells, "
+        f"threshold {regime.threshold_cells}, "
+        f"{regime.qualifying_bands}/{regime.evaluable_bands} bands within it)"
+    )
     print(
         f"recovery: {tally['resolved']}/{ink_cells} ink-bearing cells resolved, "
         f"{tally['ambiguous']} ambiguous; "

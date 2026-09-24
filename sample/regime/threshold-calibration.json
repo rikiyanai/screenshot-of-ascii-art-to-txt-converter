@@ -1,0 +1,67 @@
+{
+  "sampled_pieces": 30,
+  "seed": 11,
+  "render": {
+    "size_px": 16,
+    "line_height_px": 22,
+    "margin_px": 12
+  },
+  "per_face_median_drift_cells": {
+    "monospaced/DejaVuSansMono": 0.3437,
+    "monospaced/Menlo": 0.3609,
+    "monospaced/Courier": 0.3044,
+    "proportional/DejaVuSans": 2.0786,
+    "proportional/Helvetica": 2.0869,
+    "proportional/Geneva": 2.25
+  },
+  "per_face_max_drift_cells": {
+    "monospaced/DejaVuSansMono": 1.2116,
+    "monospaced/Menlo": 1.2863,
+    "monospaced/Courier": 7.0665,
+    "proportional/DejaVuSans": 6.4246,
+    "proportional/Helvetica": 18.2875,
+    "proportional/Geneva": 7.875
+  },
+  "threshold_sweep": [
+    {
+      "threshold_cells": 0.4,
+      "false_refusal_rate": 0.2907,
+      "false_acceptance_rate": 0.023
+    },
+    {
+      "threshold_cells": 0.5,
+      "false_refusal_rate": 0.0814,
+      "false_acceptance_rate": 0.046
+    },
+    {
+      "threshold_cells": 0.6,
+      "false_refusal_rate": 0.0698,
+      "false_acceptance_rate": 0.0805
+    },
+    {
+      "threshold_cells": 0.75,
+      "false_refusal_rate": 0.0581,
+      "false_acceptance_rate": 0.1494
+    },
+    {
+      "threshold_cells": 1.0,
+      "false_refusal_rate": 0.0581,
+      "false_acceptance_rate": 0.2644
+    },
+    {
+      "threshold_cells": 1.25,
+      "false_refusal_rate": 0.0233,
+      "false_acceptance_rate": 0.3218
+    },
+    {
+      "threshold_cells": 1.5,
+      "false_refusal_rate": 0.0116,
+      "false_acceptance_rate": 0.3563
+    },
+    {
+      "threshold_cells": 2.0,
+      "false_refusal_rate": 0.0116,
+      "false_acceptance_rate": 0.4483
+    }
+  ]
+}

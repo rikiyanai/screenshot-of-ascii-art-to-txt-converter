@@ -58,10 +58,21 @@ if not lines:
     raise RuntimeError("recovery produced no rows")
 
 coverage = receipt["coverage"]
+regime = receipt["regime"]
 lattice = receipt["measured_lattice"]
 typeface = receipt["inferred_typeface"]
 agreement = receipt["reconstruction_agreement"]["ink_intersection_over_union"]
 
+print(
+    "regime: {regime}, median band drift {drift} cells against a {threshold} "
+    "cell threshold, {ok}/{n} bands within it".format(
+        regime=regime["regime"],
+        drift=regime["median_drift_cells"],
+        threshold=regime["threshold_cells"],
+        ok=regime["qualifying_bands"],
+        n=regime["evaluable_bands"],
+    )
+)
 print(
     "coverage: {resolved}/{ink} ink-bearing source cells resolved, "
     "{ambiguous} ambiguous".format(

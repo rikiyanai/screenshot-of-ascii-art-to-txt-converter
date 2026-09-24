@@ -47,8 +47,20 @@ class BundledSampleContract(unittest.TestCase):
             machine_text = (output / 'machine-ocr.txt').read_text()
             quality = json.loads((output / "quality.json").read_text())
 
-            self.assertEqual(quality["schema"], "fixed_grid_recovery.v3")
+            self.assertEqual(quality["schema"], "fixed_grid_recovery.v4")
             self.assertEqual(quality["acceptance_status"], "experimental_unaccepted")
+
+            # v4 adds the regime verdict. Every reading carries the evidence
+            # that one advance was able to describe the image at all, so a
+            # reader never has to assume it.
+            regime = quality["regime"]
+            self.assertEqual(regime["regime"], "monospaced")
+            self.assertGreater(regime["evaluable_bands"], 0)
+            self.assertLessEqual(
+                regime["median_drift_cells"], regime["threshold_cells"]
+            )
+            self.assertIn("reason", regime)
+            self.assertIn("drift", regime["method"])
 
             # The lattice is measured, not taken from the calibration prior.
             lattice = quality["measured_lattice"]
