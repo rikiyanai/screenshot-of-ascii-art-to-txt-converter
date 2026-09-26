@@ -32,10 +32,13 @@ a new directory; use `--partition heldout` only after training decisions are
 frozen, apart from the one pre-tuning baseline already recorded. A synthetic
 render score is a model diagnostic, not screenshot acceptance.
 
-The first pinned baseline sampled one page per nonempty slug: 432/641 exact
-training rows and 271/357 exact held-out rows. These small, composition-sensitive
-samples are not full-corpus accuracy estimates. Their receipts and the remaining
-pitch and kanji findings are recorded in [P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
+The first pinned baseline sampled one page per nonempty slug. Baseline-phase
+refinement improved the matched training sample from 432/641 to 559/641 exact
+rows and its one post-fix held-out comparison from 271/357 to 278/357. All 41
+sampled page row counts now match; no sampled page lost exact rows. These small,
+composition-sensitive samples are not full-corpus accuracy estimates. Their
+receipts and the remaining kanji work are recorded in
+[P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
 
 Nothing about the source is assumed. The converter measures the character lattice
 from the image, infers the typeface and size by fitting a library of monospaced

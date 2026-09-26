@@ -458,6 +458,50 @@ def fit_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, first: int, last: i
     return pitch, baselines[inked[0] : inked[-1] + 1] if inked else []
 
 
+def refine_pitch_phase(ink: np.ndarray, bank: GlyphBank, pitch: float,
+                       baselines: list[int], x0: float,
+                       glyph_penalty: np.ndarray) -> tuple[float, list[int], list[tuple[int, float]]]:
+    """Choose the vertical phase by glyph reconstruction, not mean ink height.
+
+    The average glyph profile used by ``fit_rows`` can put a short page a few
+    pixels away from its actual baseline. At 16 px, a six-pixel shift makes
+    every character look wrong even when the pitch and row count are correct.
+    Keep the candidate's row count, test one period of integer first baselines,
+    and charge source ink that none of the row boxes can explain.
+    """
+    # P0C-09: Short-page pitch errors were primarily a baseline-phase error.
+    if not baselines:
+        return float("inf"), [], []
+    probe = sorted({0, len(baselines) // 2, len(baselines) - 1})
+    vertical_energy = (ink**2).sum(axis=1)
+    total_energy = float(vertical_energy.sum())
+    centre = baselines[0]
+    radius = max(1, int(math.ceil(pitch / 2)))
+    trace: list[tuple[int, float]] = []
+    best_score, best_baselines = float("inf"), baselines
+    for first_baseline in range(centre - radius, centre + radius + 1):
+        trial = [int(round(first_baseline + i * pitch)) for i in range(len(baselines))]
+        cost = energy = 0.0
+        for i in probe:
+            strip = row_strip(ink, trial[i], bank)
+            corr = correlations(strip, bank)
+            result = decode_row(strip, corr, bank, x0, glyph_penalty)
+            cost += result.cost
+            energy += result.ink_energy
+        covered = np.zeros(ink.shape[0], dtype=bool)
+        for baseline in trial:
+            top = baseline - bank.baseline
+            lo, hi = max(0, top), min(ink.shape[0], top + bank.height)
+            if hi > lo:
+                covered[lo:hi] = True
+        missed = float(vertical_energy[~covered].sum())
+        score = cost / max(energy, 1e-9) + missed / max(total_energy, 1e-9)
+        trace.append((first_baseline, score))
+        if score < best_score:
+            best_score, best_baselines = score, trial
+    return best_score, best_baselines, trace
+
+
 def decode_image(
     image: Image.Image,
     model: FontModel,
@@ -466,6 +510,7 @@ def decode_image(
     x0: float | None = None,
     prior: dict[str, int] | None = None,
     prior_weight: float = 0.0,
+    phase_refine: bool = True,
 ) -> dict:
     ink, grey = ink_of(image)
     height = int(math.ceil(size_px * 1.25)) + 2
@@ -515,7 +560,24 @@ def decode_image(
         pitch_trace.append((option, cost / max(energy, 1e-9) + missed / max(float((ink**2).sum()), 1e-9)))
     # ties go to the whole pixel: equal cost means the same baselines anyway
     pitch = min(pitch_trace, key=lambda t: (round(t[1], 6), abs(t[0] - round(t[0]))))[0]
-    pitch, baselines = fit_rows(ink, bank, pitch, first, last, search=0.0)
+    phase_trace = []
+    if phase_refine:
+        # The AAHub and Madonna examples have line boxes near 1.08 em.
+        # Include that whole-pixel candidate alongside the image-only winner,
+        # then let reconstruction cost decide. This does not force the corpus pitch.
+        nominal = float(round(size_px * 1.08))
+        candidates = sorted({pitch, nominal})
+        refined = []
+        for option in candidates:
+            _, option_baselines = fit_rows(ink, bank, option, first, last, search=0.0)
+            score, option_baselines, offsets = refine_pitch_phase(
+                ink, bank, option, option_baselines, probe_x, glyph_penalty
+            )
+            phase_trace.append((option, [(b, round(c, 5)) for b, c in offsets]))
+            refined.append((score, option, option_baselines))
+        _, pitch, baselines = min(refined, key=lambda t: (round(t[0], 6), abs(t[1] - round(t[1]))))
+    else:
+        pitch, baselines = fit_rows(ink, bank, pitch, first, last, search=0.0)
     strips = [row_strip(ink, b, bank) for b in baselines]
     corrs = [correlations(s, bank) for s in strips]
     if x0 is None:
@@ -547,6 +609,7 @@ def decode_image(
         "bank": bank,
         "pitch": pitch,
         "pitch_trace": pitch_trace,
+        "phase_trace": phase_trace,
         "baselines": baselines,
         "x0": x0,
         "x0_source": x0_source,
@@ -593,6 +656,8 @@ def main() -> None:
     # the look-alike tie order, not as a per-glyph cost.
     parser.add_argument("--prior-weight", type=float, default=0.0)
     parser.add_argument("--x0", type=float, default=None, help="text-box origin in px; fitted when omitted")
+    parser.add_argument("--no-phase-refine", action="store_true",
+                        help="ablation: use the old mean-profile baseline fit")
     args = parser.parse_args()
 
     image = Image.open(args.source)
@@ -604,7 +669,8 @@ def main() -> None:
     else:
         size_px, size_trace = args.size_px, []
 
-    result = decode_image(image, model, size_px, args.glyph_penalty, args.x0, prior, args.prior_weight)
+    result = decode_image(image, model, size_px, args.glyph_penalty, args.x0, prior,
+                          args.prior_weight, not args.no_phase_refine)
     lines = [row.text for row in result["rows"]]
     # drop blank leading/trailing lines
     while lines and not lines[-1]:
@@ -629,6 +695,7 @@ def main() -> None:
         "size_fit": size_trace,
         "line_pitch_px": round(result["pitch"], 4),
         "line_pitch_candidates": [[p, round(c, 5)] for p, c in result["pitch_trace"]],
+        "baseline_phase_candidates": result["phase_trace"],
         "baselines_px": result["baselines"],
         "text_origin_x_px": result["x0"],
         "text_origin_source": result["x0_source"],

@@ -19,6 +19,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import numpy as np
+from PIL import Image
+
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLE = ROOT / "sample/proportional"
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -36,6 +39,23 @@ class CanonicalSpacing(unittest.TestCase):
                 self.assertNotIn("  ", out)
                 self.assertEqual(out.count("　"), full)
                 self.assertEqual(out.count(" "), half)
+
+
+class ShortPagePhase(unittest.TestCase):
+    def test_image_fits_actual_baseline_not_average_glyph_profile(self) -> None:
+        rows = [
+            " /\\_/\\ ", "( o.o )", " > ^ < ", "  /|\\  ", " /_|_\\ ",
+            "  | |  ", " /   \\ ", "(_____) ", "  ~~~  ",
+        ]
+        prior = rp.load_prior(rp.DEFAULT_PRIOR)
+        model = rp.load_font_model(rp.DEFAULT_FONT, rp.prior_alphabet(prior))
+        expected_baselines = [22 + 17 * i for i in range(len(rows))]
+        ink = rp.render_text(rows, model, 16, 17, 8, expected_baselines, (180, 180))
+        image = Image.fromarray((255 - 255 * (ink > 0.35)).astype(np.uint8))
+        result = rp.decode_image(image, model, 16, 0.02, 8, prior, 0)
+        self.assertAlmostEqual(result["pitch"], 17, delta=0.05)
+        self.assertEqual(result["baselines"], expected_baselines)
+        self.assertEqual(len(result["rows"]), len(rows))
 
 
 class MadonnaAgainstKey(unittest.TestCase):

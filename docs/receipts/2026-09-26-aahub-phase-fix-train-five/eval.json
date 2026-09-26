@@ -1,0 +1,93 @@
+{
+ "schema": "proportional_eval.v2",
+ "archive_commit": "07a619838b066c691d1aaed5865c6bdf4de54336",
+ "manifest_sha256": "0f0d69885e76724fe664d851c0a193c850e1531e1e0b00a58210a322f5c897a3",
+ "split_sha256": "3dc65a19fd661289d485e9d3675f7ede0e8dbfde18d8f0f237bdfea08c602cb5",
+ "partition": "train",
+ "slugs": [
+  "kirby",
+  "shingu-butsugu-mingeihin-zou",
+  "tonfa",
+  "ushio-aotsuki",
+  "violet-02-alt"
+ ],
+ "every": 1000,
+ "phase_refine": true,
+ "size_px": 16.0,
+ "x0": 8.0,
+ "prior": "aa_char_prior.json",
+ "prior_weight": 0.0,
+ "summary": {
+  "pages": 5,
+  "errors": 0,
+  "rows": 77,
+  "exact_rows": 70,
+  "exact_rows_indentation_invariant": 70,
+  "exact_row_rate": 0.9091,
+  "row_count_match": 5,
+  "mean_canonical_cer": 0.0302,
+  "mean_strict_cer": 0.0255
+ },
+ "pages": [
+  {
+   "page": "kirby/res00.png",
+   "exact_rows_indentation_invariant": 11,
+   "rows_key": 11,
+   "rows_recovered": 11,
+   "strict_cer": 0.0,
+   "canonical_cer": 0.0,
+   "exact_rows": 11,
+   "pitch": 17.0,
+   "x0": 8.0,
+   "seconds": 27.3
+  },
+  {
+   "page": "shingu-butsugu-mingeihin-zou/res02.png",
+   "exact_rows_indentation_invariant": 8,
+   "rows_key": 9,
+   "rows_recovered": 9,
+   "strict_cer": 0.0442,
+   "canonical_cer": 0.061,
+   "exact_rows": 8,
+   "pitch": 17.0,
+   "x0": 8.0,
+   "seconds": 24.0
+  },
+  {
+   "page": "tonfa/res01.png",
+   "exact_rows_indentation_invariant": 17,
+   "rows_key": 20,
+   "rows_recovered": 20,
+   "strict_cer": 0.0156,
+   "canonical_cer": 0.0336,
+   "exact_rows": 17,
+   "pitch": 17.0,
+   "x0": 8.0,
+   "seconds": 27.5
+  },
+  {
+   "page": "ushio-aotsuki/resK-01.png",
+   "exact_rows_indentation_invariant": 9,
+   "rows_key": 12,
+   "rows_recovered": 12,
+   "strict_cer": 0.0661,
+   "canonical_cer": 0.0566,
+   "exact_rows": 9,
+   "pitch": 17.0,
+   "x0": 8.0,
+   "seconds": 21.9
+  },
+  {
+   "page": "violet-02-alt/res01.png",
+   "exact_rows_indentation_invariant": 25,
+   "rows_key": 25,
+   "rows_recovered": 25,
+   "strict_cer": 0.0015,
+   "canonical_cer": 0.0,
+   "exact_rows": 25,
+   "pitch": 17.0,
+   "x0": 8.0,
+   "seconds": 18.6
+  }
+ ]
+}

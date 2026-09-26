@@ -33,11 +33,11 @@ def _rel(path: str) -> str:
 
 
 def _init(prior_path: str, weight: float, font: str, x0: float | None,
-          archive: str, split: dict) -> None:
+          archive: str, split: dict, phase_refine: bool) -> None:
     prior = rp.load_prior(Path(prior_path)) if prior_path else {}
     _STATE.update(prior=prior, weight=weight, x0=x0,
                   model=rp.load_font_model(Path(font), rp.prior_alphabet(prior)),
-                  archive=Path(archive), split=split)
+                  archive=Path(archive), split=split, phase_refine=phase_refine)
 
 
 def _run(job: tuple[str, float]) -> dict:
@@ -47,7 +47,7 @@ def _run(job: tuple[str, float]) -> dict:
         png = stem + ".png"
         result = rp.decode_image(Image.open(io.BytesIO(read_blob(_STATE["archive"], _STATE["split"], png))),
                                  _STATE["model"], size, 0.02, _STATE["x0"],
-                                 _STATE["prior"], _STATE["weight"])
+                                 _STATE["prior"], _STATE["weight"], _STATE["phase_refine"])
         lines = [r.text for r in result["rows"]]
         while lines and not lines[-1]:
             lines.pop()
@@ -74,6 +74,7 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=10)
     parser.add_argument("--x0", type=float, default=None,
                         help="known text origin (AAHub renders: 8 px pad); fitted when omitted")
+    parser.add_argument("--no-phase-refine", action="store_true")
     args = parser.parse_args()
     if args.every < 1 or args.workers < 1:
         parser.error("--every and --workers must both be positive")
@@ -100,7 +101,7 @@ def main() -> None:
         raise SystemExit("no pages matched: check the root and slug names")
     with ProcessPoolExecutor(args.workers, initializer=_init,
                              initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.x0,
-                                       str(args.archive), split)) as pool:
+                                       str(args.archive), split, not args.no_phase_refine)) as pool:
         pages = list(pool.map(_run, jobs))
     ok = [p for p in pages if "error" not in p]
     rows = sum(p["rows_key"] for p in ok)
@@ -119,6 +120,7 @@ def main() -> None:
         "manifest_sha256": split["manifest_sha256"],
         "split_sha256": hashlib.sha256(args.split.read_bytes()).hexdigest(),
         "partition": args.partition, "slugs": slugs, "every": args.every,
+        "phase_refine": not args.no_phase_refine,
         "size_px": args.size_px, "x0": args.x0, "prior": args.prior and Path(args.prior).name,
         "prior_weight": args.prior_weight, "summary": summary, "pages": pages,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

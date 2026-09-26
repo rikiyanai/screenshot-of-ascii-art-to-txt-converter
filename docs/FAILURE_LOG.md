@@ -591,3 +591,46 @@
 - The archive has since advanced beyond `07a6198`; that does not change these
   pinned receipts. A later archive revision needs its own manifest pin and
   slug-disjoint split before any new prior or score is quoted.
+
+### Train-only baseline-phase intervention (in progress)
+
+- Falsifier of the preceding forced-pitch test: on `tonfa/res01`, rendering
+  the answer key with Saitamaar at 16 px, x=8, first baseline=22 px and 17 px
+  pitch reproduces the archived bitmap exactly (thresholded ink IoU 1.0).
+  The old fitted 17 px lattice started at 16 px. At the true geometry, the
+  decoder scores 17/20 rows exact rather than 0/20. Kirby and Violet's
+  row-count-failure pages score 11/11 and 25/25 at the same true geometry.
+- Hypothesis: the average-glyph vertical profile used by `fit_rows()` selects
+  the wrong baseline phase on short pages, which then also biases pitch
+  selection. The intervention evaluates integer first-baseline phases by
+  sampled glyph reconstruction cost, charges uncovered source ink, and
+  compares the image-selected pitch with a 1.08-em whole-pixel candidate.
+  The latter is a candidate, not a forced corpus pitch. Existing receipts
+  remain the ablation baseline; a five-page train-only re-score and the
+  Madonna/synthetic geometry regression tests must pass before acceptance.
+- The five-page train-only re-score cleared that gate: 70/77 canonical rows
+  exact, all 5 page row counts matched, versus 6/77 exact and 0/5 row counts
+  matched on the same pages before the intervention. Each selected pitch is
+  17 px; the baseline starts at 22 px. No held-out page informed the change.
+  `tests/test_proportional.py` passed 3/3, including Madonna and a synthetic
+  nine-row short page. A 27-page training re-score is still pending; the
+  intervention is not yet accepted across the sample.
+- The matched 27-page training re-score also cleared: 559/641 canonical rows
+  exact (87.21%) and 27/27 page row counts matched, versus 432/641 (67.39%)
+  and 22/27 before. Every page was unchanged or improved in exact rows; none
+  regressed on this sample. Mean canonical CER fell from 0.2515 to 0.0181.
+  Receipt: `docs/receipts/2026-09-26-aahub-phase-fix-train/eval.json`.
+  The full suite passed after the code change: 40 tests, 6 subtests in
+  825.73 s.
+- The one post-fix held-out comparison also cleared without tuning on its
+  results: 278/357 canonical rows exact (77.87%) versus 271/357 (75.91%),
+  with 14/14 page row counts matched both before and after. Mean canonical CER
+  fell from 0.1106 to 0.0386. Twelve pages were unchanged in exact-row count;
+  `magia-record-sonota/resK-01` gained 1 and `ushiotora-sonota/res00` gained 6;
+  none regressed. Receipt:
+  `docs/receipts/2026-09-26-aahub-phase-fix-heldout/eval.json`.
+- Accepted scope: the baseline-phase intervention is implemented, connected,
+  executed, and verified on the pinned synthetic sample plus the Madonna test.
+  It fixes the measured short-page line-spacing failure. It does not establish
+  general screenshot acceptance, and it does not implement the open whole-CJK
+  fallback. Highest product stage remains **Executed experimental candidate**.
