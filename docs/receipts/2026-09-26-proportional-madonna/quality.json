@@ -13,114 +13,136 @@
   "size_fit": [
     [
       12.0,
-      0.5536
+      0.5561
     ],
     [
       13.0,
-      0.5767
+      0.5733
     ],
     [
       14.0,
-      0.5755
+      0.5842
     ],
     [
       15.0,
-      0.5754
+      0.5898
     ],
     [
       16.0,
-      0.5694
+      0.6149
     ],
     [
       17.0,
-      0.5492
+      0.6199
     ],
     [
       18.0,
-      0.5354
+      0.6144
     ],
     [
       19.0,
-      0.5059
+      0.5991
     ],
     [
       20.0,
-      0.4729
+      0.5895
     ],
     [
       21.0,
-      0.3775
+      0.5198
     ],
     [
       21.25,
-      0.3547
+      0.5003
     ],
     [
       21.5,
-      0.2908
+      0.4508
     ],
     [
       21.75,
-      0.278
+      0.4337
     ],
     [
       22.0,
-      0.1553
+      0.3307
     ],
     [
       22.25,
-      0.2543
+      0.4227
     ],
     [
       22.5,
-      0.3175
+      0.4674
     ],
     [
       22.75,
-      0.3148
+      0.4566
     ],
     [
       23.0,
-      0.3831
+      0.5895
     ],
     [
       24.0,
-      0.5277
+      0.6446
     ],
     [
       25.0,
-      0.6946
+      0.688
     ],
     [
       26.0,
-      0.7285
+      0.7332
     ],
     [
       27.0,
-      0.8114
+      0.8264
     ],
     [
       28.0,
-      0.8181
+      0.8319
     ],
     [
       29.0,
-      0.877
+      0.844
     ],
     [
       30.0,
-      0.8889
+      0.876
     ],
     [
       31.0,
-      0.8957
+      0.8554
     ],
     [
       32.0,
-      0.8975
+      0.8981
     ]
   ],
-  "line_pitch_px": 24.0018,
+  "line_pitch_px": 24.0,
+  "line_pitch_candidates": [
+    [
+      23.0,
+      0.51454
+    ],
+    [
+      23.9518,
+      0.18767
+    ],
+    [
+      24.0,
+      0.13438
+    ],
+    [
+      24.0018,
+      0.13438
+    ],
+    [
+      25.0,
+      0.78014
+    ]
+  ],
   "baselines_px": [
     90,
     114,
@@ -150,127 +172,133 @@
   "text_origin_x_px": 6.0,
   "text_origin_source": "container_rule",
   "container_edge_px": 6,
-  "candidate_glyphs": 737,
+  "candidate_glyphs": 967,
   "glyph_penalty": 0.02,
+  "prior": {
+    "path": "data/aa_char_prior.json",
+    "sha256": "57d728ce35c055c0f4df67c0f04b7c67bdad530d6bac244eb429d81f515d600a",
+    "weight": 0.0,
+    "characters": 1164
+  },
   "rows": [
     {
       "text": "　　　　　　　　　　　　　　　　　　　　_ ＿",
-      "reconstruction_cost": 15.405,
+      "reconstruction_cost": 15.615,
       "ink_energy": 47.757
     },
     {
       "text": "　　　　　　　　　　　　　　　 　 , イ´　　　 ｀丶、",
-      "reconstruction_cost": 22.116,
+      "reconstruction_cost": 22.346,
       "ink_energy": 77.805
     },
     {
       "text": "　　　　　　 　 　 　 　 　 　 ／.:　 　 .＿ _　　　ヽ",
-      "reconstruction_cost": 18.001,
+      "reconstruction_cost": 18.271,
       "ink_energy": 88.531
     },
     {
       "text": "　　　　　　　　　　　　　　 / .::: .／　　 　 ｀ヽ i　 ﾊ",
-      "reconstruction_cost": 37.036,
+      "reconstruction_cost": 37.286,
       "ink_energy": 150.31
     },
     {
       "text": "　　　　　　　　　　　　　　,'.: :: .,' 　 　 人　　 ｀l 　 |",
-      "reconstruction_cost": 26.198,
+      "reconstruction_cost": 26.468,
       "ink_energy": 149.785
     },
     {
       "text": "　　　　　　 　 　 　 　 　 ,.: .::　l=-‐ ´ 　 ｀ ｰミl 　 !",
-      "reconstruction_cost": 18.545,
+      "reconstruction_cost": 18.815,
       "ink_energy": 188.116
     },
     {
       "text": "　　　　　　　　　　 　 　 .l:::: :. ;'　＿　　　 ＿｀ l　 ﾊ",
-      "reconstruction_cost": 25.858,
+      "reconstruction_cost": 26.108,
       "ink_energy": 177.736
     },
     {
       "text": "　　　　　　　　　　　　　 ｌ::::::::｜`＝'ヽ　'´＝'　! :: :..',",
-      "reconstruction_cost": 47.573,
+      "reconstruction_cost": 47.753,
       "ink_energy": 257.908
     },
     {
       "text": "　　　　　　　　　　 　 　 ! :: : ｜　　 .::}　 　 　 .! :: ::｜",
-      "reconstruction_cost": 18.165,
+      "reconstruction_cost": 18.455,
       "ink_energy": 154.029
     },
     {
       "text": "　　　　 　 　 　 　 　 　 l :: ::　ﾄ､.　　::し 　 　 /:! :: ::ﾊ",
-      "reconstruction_cost": 38.682,
+      "reconstruction_cost": 38.972,
       "ink_energy": 225.112
     },
     {
       "text": "　　　　　　　　 　 　 　 ,' :: ::　川:. 、 ｀-´　 .ｲ ::ｌ :: ::　',",
-      "reconstruction_cost": 21.095,
+      "reconstruction_cost": 21.355,
       "ink_energy": 215.315
     },
     {
       "text": "　　　　　　　 　 　 　 ./　:: :. ,' ｌ l ::::... - ::::　 | :::| :: ::　ﾍ",
-      "reconstruction_cost": 22.806,
+      "reconstruction_cost": 23.086,
       "ink_energy": 237.573
     },
     {
       "text": "　　　　　　　　 　 　 / 　 :: :.l　!ﾘ::::::::::'　　　 ｌ　::! :: :　　ゝ、",
-      "reconstruction_cost": 26.704,
+      "reconstruction_cost": 26.974,
       "ink_energy": 227.726
     },
     {
       "text": "　　　　　　　　 　 ／.　　 :　:!: ;'ヽ::　　　　 ｲ,!　 :! : :. 　 　 ＼",
-      "reconstruction_cost": 34.926,
+      "reconstruction_cost": 35.226,
       "ink_energy": 205.659
     },
     {
       "text": "　　 　 　 　 　 ／.:　:　　 :　:l il ::.、｀ - - ' / } .::.|　 ::.　 : :　　＼",
-      "reconstruction_cost": 34.163,
+      "reconstruction_cost": 34.473,
       "ink_energy": 281.068
     },
     {
       "text": "　　　　　　 .／ .:　.::　　　:　,'.: ゝ、｀ｰ - イ / .:　|　 :::　 :.:.　　　 ヽ",
-      "reconstruction_cost": 25.322,
+      "reconstruction_cost": 25.592,
       "ink_energy": 238.641
     },
     {
       "text": "　　　　　　/　.:　 .::　:. 　 :: l:i　::　ﾄ､: : : ... ｲ　::.　!　 :::.　::　　　 　 ﾍ",
-      "reconstruction_cost": 31.221,
+      "reconstruction_cost": 31.531,
       "ink_energy": 255.433
     },
     {
       "text": "　　 　 　 /　.:　 .::　 .:　　:: l:l . :: ﾉ:. ヽ イ.:人　:..｜　::::　:　　　　　　',",
-      "reconstruction_cost": 27.269,
+      "reconstruction_cost": 27.559,
       "ink_energy": 288.784
     },
     {
       "text": "　 　 　 ./　.:　 .::　　:: 　 ::: |:l　::（::::.　　.::　　ヽ :. l 　 ::: .:　 :　　 : .　 ｌ",
-      "reconstruction_cost": 42.339,
+      "reconstruction_cost": 42.679,
       "ink_energy": 253.697
     },
     {
       "text": "　　 　 .,': .::　 .:::　　.::　　::: ﾄ､ :. :）:::.　　　　 　 ）::|　　:: :　 :　 　 : :　 |",
-      "reconstruction_cost": 30.451,
+      "reconstruction_cost": 30.791,
       "ink_energy": 254.985
     },
     {
       "text": "　　　 .,':: .:　 .::::　　.:: 　 .:: .!　）ノ　 .:i'Y'l　　　（ :: !　: ::.:　 .:　　　: :　 |",
-      "reconstruction_cost": 45.546,
+      "reconstruction_cost": 45.856,
       "ink_energy": 319.404
     },
     {
       "text": "　　　..ｌ:: ::　 .::::: 　 :::.　 .:: ::l: .'´　　.::|'Y'|:.　　　 ｀ !　: :: 　 ::　　　 : :.　!",
-      "reconstruction_cost": 32.264,
+      "reconstruction_cost": 32.574,
       "ink_energy": 291.208
     },
     {
       "text": "　　　 ｌ:: ::　.::::::　　::::　 ::　::!: ..　　..::,'｜';:.　　　 .::|　:: ::.　 ::　　　 :: ::. |",
-      "reconstruction_cost": 35.839,
+      "reconstruction_cost": 36.119,
       "ink_energy": 277.358
     },
     {
       "text": "　　　 |::::　.::::::　　 :::　.::: .:::}: : .. 　 / ｜ ';::　　 .::::|　:　:::.　::.　　　:: .::. !",
-      "reconstruction_cost": 22.98,
+      "reconstruction_cost": 23.26,
       "ink_energy": 294.462
     }
   ],

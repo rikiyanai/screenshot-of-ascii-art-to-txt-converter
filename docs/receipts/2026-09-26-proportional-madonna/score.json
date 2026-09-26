@@ -1,4 +1,5 @@
 {
+  "exact_rows_indentation_invariant": 22,
   "rows_key": 24,
   "rows_recovered": 24,
   "strict_cer": 0.0161,

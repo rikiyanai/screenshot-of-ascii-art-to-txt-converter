@@ -40,6 +40,31 @@ from PIL import Image, ImageDraw, ImageFont
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_FONT = REPO / "fonts" / "Saitamaar-Regular.ttf"
+DEFAULT_PRIOR = REPO / "data" / "aa_char_prior.json"
+PRIOR_MIN_COUNT = 3
+
+
+def load_prior(path: Path | None) -> dict[str, int]:
+    """Character counts from a TRAINING split (see scripts/build_char_prior.py).
+    Empty when absent: the decoder then runs on ink evidence alone."""
+    if path is None or not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))["counts"]
+
+
+def prior_alphabet(prior: dict[str, int]) -> str:
+    return AA_ALPHABET + "".join(
+        c for c, n in prior.items() if n >= PRIOR_MIN_COUNT and c.isprintable() and c not in AA_ALPHABET
+    )
+
+
+def prior_penalty(characters: list[str], prior: dict[str, int], weight: float, floor: float) -> np.ndarray:
+    """weight * -ln p(c), add-one smoothed, plus a small per-glyph floor.
+    Only decides between readings the ink cannot separate: a vertical bar in
+    a 320-unit box between spaces and the same bar in a 1280-unit box render
+    identically, and the art form uses the first sixteen times as often."""
+    total = sum(prior.values()) + len(characters)
+    return np.array([floor + weight * -math.log((prior.get(c, 0) + 1) / total) for c in characters])
 
 FULL_SPACE = "　"
 HALF_SPACE = " "
@@ -110,7 +135,8 @@ class GlyphBank:
     step_px: float
 
 
-def render_bank(model: FontModel, size_px: float, height: int, baseline: int) -> GlyphBank:
+def render_bank(model: FontModel, size_px: float, height: int, baseline: int,
+                prior: dict[str, int] | None = None) -> GlyphBank:
     k = SUPERSAMPLE
     font = ImageFont.truetype(str(model.path), size=max(1, round(size_px * k)))
     blank = np.zeros((height, 1))
@@ -119,7 +145,8 @@ def render_bank(model: FontModel, size_px: float, height: int, baseline: int) ->
     widths: list[list[int]] = []
     seen: dict[tuple[int, bytes], str] = {}
     scale = size_px / model.units_per_em
-    for character, advance_units in model.advances.items():
+    order = sorted(model.advances.items(), key=lambda kv: -(prior or {}).get(kv[0], 0))
+    for character, advance_units in order:  # most frequent first: it wins a shape tie
         advance = advance_units * scale
         phases: list[np.ndarray] = []
         owned: list[int] = []
@@ -244,20 +271,24 @@ def decode_row(
     steps = bank.advance_steps
     states = int(math.ceil((width - x0) / bank.step_px)) + int(steps.max()) + 2
     half = bank.characters.index(HALF_SPACE)
-    penalty = np.full(n, glyph_penalty)
-    penalty[bank.characters.index(FULL_SPACE)] = glyph_penalty * 0.5
-    penalty[half] = glyph_penalty * 0.5
+    penalty = glyph_penalty if isinstance(glyph_penalty, np.ndarray) else np.full(n, glyph_penalty)
+
+    # Glyphs that share an advance land on the same target state, so only the
+    # cheapest of them can matter. Group once; per state, take a min per group.
+    # U+0020 is its own group because it moves the path to layer 1.
+    group_keys = sorted({(int(steps[g]), g == half) for g in range(n)})
+    members = [np.array([g for g in range(n) if (int(steps[g]), g == half) == key]) for key in group_keys]
+    group_step = [key[0] for key in group_keys]
+    group_is_half = [key[1] for key in group_keys]
 
     inf = np.inf
     # layer 0: previous glyph was not U+0020; layer 1: it was.
     best = np.full((2, states), inf)
-    back = np.full((2, states, 2), -1, dtype=np.int64)  # (prev_state, glyph)
+    back_state = np.full((2, states), -1, dtype=np.int64)
+    back_glyph = np.full((2, states), -1, dtype=np.int64)
     best[0, 0] = 0.0
-    idx = np.arange(n)
-    out_layer = np.where(idx == half, 1, 0)
     for s in range(states):
-        here = np.minimum(best[0, s], best[1, s])
-        if not np.isfinite(here):
+        if not (np.isfinite(best[0, s]) or np.isfinite(best[1, s])):
             continue
         pen = x0 + s * bank.step_px
         if pen > last_ink + 1:
@@ -268,30 +299,24 @@ def decode_row(
             col, phase = col + 1, 0
         if col >= width:
             continue
-        w = bank.widths[:, phase]
-        end = np.minimum(col + w, width)
-        window_energy = cum[end] - cum[col]
-        cost = window_energy - 2.0 * corr[col, :, phase] + bank.energy[:, phase] + penalty
-        targets = s + steps
-        for layer in (0, 1):
-            origin = best[layer, s]
-            if not np.isfinite(origin):
+        end = np.minimum(col + bank.widths[:, phase], width)
+        cost = (cum[end] - cum[col]) - 2.0 * corr[col, :, phase] + bank.energy[:, phase] + penalty
+        for grp, glyphs_in in enumerate(members):
+            t = s + group_step[grp]
+            if t >= states:
                 continue
-            allowed = np.ones(n, dtype=bool)
-            if layer == 1:
-                allowed[half] = False
-            total = origin + cost
-            ok = np.nonzero(allowed & (targets < states))[0]
-            if ok.size == 0:
-                continue
-            order = ok[np.argsort(-total[ok])]  # largest first: the smallest write wins
-            cand = np.full((2, states), inf)
-            pick = np.full((2, states), -1, dtype=np.int64)
-            cand[out_layer[order], targets[order]] = total[order]
-            pick[out_layer[order], targets[order]] = order
-            better = cand < best
-            best[better] = cand[better]
-            back[better] = np.stack([np.full(better.sum(), s * 2 + layer), pick[better]], axis=1)
+            local = cost[glyphs_in]
+            j = int(np.argmin(local))
+            value, glyph = float(local[j]), int(glyphs_in[j])
+            out = 1 if group_is_half[grp] else 0
+            for layer in (0, 1):
+                if layer == 1 and group_is_half[grp]:
+                    continue  # two U+0020 in a row would collapse in HTML
+                origin = best[layer, s]
+                if origin + value < best[out, t]:
+                    best[out, t] = origin + value
+                    back_state[out, t] = s * 2 + layer
+                    back_glyph[out, t] = glyph
 
     # Terminate after the last ink, charging any ink the path never covered.
     finish = inf
@@ -309,7 +334,7 @@ def decode_row(
     glyphs: list[str] = []
     layer, s = final
     while s > 0:
-        prev, g = back[layer, s]
+        prev, g = back_state[layer, s], back_glyph[layer, s]
         glyphs.append(bank.characters[g])
         s, layer = divmod(int(prev), 2)
     text = canonical_spacing("".join(reversed(glyphs))).rstrip(FULL_SPACE + HALF_SPACE)
@@ -368,14 +393,20 @@ def line_geometry(ink: np.ndarray, bank_height: int) -> tuple[float, list[int]]:
     return pitch, [first, last, count]
 
 
-def fit_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, first: int, last: int) -> list[int]:
+def fit_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, first: int, last: int,
+             search: float = 0.15) -> tuple[float, list[int]]:
     """Baselines on one global lattice, baseline_i = b0 + i * pitch.
 
     b0 is chosen by matching every line at once against the face's vertical
     ink profile, never by walking down from the first ink: a line holding only
     underscores puts its first ink at the baseline, not at the cap height, and
     a greedy walk anchored there merges lines.
-    pixel of rounding."""
+
+    The pitch is refitted jointly with b0. The autocorrelation estimate is
+    good to a few hundredths of a pixel, and over fifty lines that error
+    accumulates until a rounded baseline lands a whole pixel off (measured:
+    16.968 against a true 17, every line from 0 to 23 misread).
+    """
     profile = ink.sum(axis=1)
     face = bank.templates[:, 0].sum(axis=(0, 2))
     face = face / max(face.sum(), 1e-9)
@@ -388,7 +419,7 @@ def fit_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, first: int, last: i
             seg[lo - top : hi - top] = profile[lo:hi]
         return float(seg @ face)
 
-    def lattice(b0: float) -> list[float]:
+    def lattice(b0: float, pitch: float) -> list[float]:
         # first line: the earliest whose box reaches the first ink
         start = b0 - math.floor((b0 - first) / pitch) * pitch
         while start - pitch + (bank.height - bank.baseline) >= first:
@@ -401,18 +432,30 @@ def fit_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, first: int, last: i
             y += pitch
         return ys
 
-    best_b0, best_score = float(first), -1.0
-    for b0 in np.arange(first, first + pitch, 0.25):
-        score = sum(match(int(round(y))) for y in lattice(b0))
-        if score > best_score:
-            best_b0, best_score = float(b0), score
+    cache: dict[int, float] = {}
+
+    def cached(y: int) -> float:
+        if y not in cache:
+            cache[y] = match(y)
+        return cache[y]
+
+    best_b0, best_pitch, best_score = float(first), pitch, -1.0
+    for trial in (np.arange(pitch - search, pitch + search + 1e-9, 0.005) if search else [pitch]):
+        for b0 in np.arange(first, first + trial, 0.25):
+            score = sum(cached(int(round(y))) for y in lattice(b0, trial))
+            if score > best_score:
+                best_b0, best_pitch, best_score = float(b0), float(trial), score
+    pitch = best_pitch
     # No per-line refinement: a browser lays every line on the same pitch, and
     # letting each line chase its own ink profile measured worse (a line of
     # dots and a line of slashes have different profiles, not different
     # baselines).
-    baselines = [int(round(y)) for y in lattice(best_b0)]
-    # a lattice line with no ink in its box is not a row of the art
-    return [b for b in baselines if match(b) > 0]
+    baselines = [int(round(y)) for y in lattice(best_b0, pitch)]
+    # Lattice lines with no ink above the first inked line or below the last
+    # are not rows of the art. A blank line INSIDE the art is a row, and is
+    # kept, so later rows keep their index.
+    inked = [i for i, b in enumerate(baselines) if match(b) > 0]
+    return pitch, baselines[inked[0] : inked[-1] + 1] if inked else []
 
 
 def decode_image(
@@ -421,37 +464,81 @@ def decode_image(
     size_px: float,
     glyph_penalty: float,
     x0: float | None = None,
+    prior: dict[str, int] | None = None,
+    prior_weight: float = 0.0,
 ) -> dict:
     ink, grey = ink_of(image)
     height = int(math.ceil(size_px * 1.25)) + 2
     baseline = int(round(size_px * 1.0))
-    bank = render_bank(model, size_px, height, baseline)
+    bank = render_bank(model, size_px, height, baseline, prior)
+    glyph_penalty = prior_penalty(bank.characters, prior or {}, prior_weight, glyph_penalty)
     pitch, (first, last, _) = line_geometry(ink, height)
-    baselines = fit_rows(ink, bank, pitch, first, last)
-    strips = [row_strip(ink, b, bank) for b in baselines]
-    corrs = [correlations(s, bank) for s in strips]
-
     edge = container_left_edge(grey)
     ink_cols = np.nonzero((ink > 0.5).any(axis=0))[0]
     full_px = model.advances[FULL_SPACE] * size_px / model.units_per_em
+
+    # Pitch candidates: the autocorrelation estimate, its nearest integer (a
+    # browser line box is very often a whole device pixel), and the joint
+    # profile fit. The face's vertical profile is too flat to choose between
+    # them, so choose by what matters: decode cost of rows at the top and
+    # bottom of the page, where a pitch error has accumulated most.
+    # Sparse pages lock the autocorrelation onto a multiple of the pitch
+    # (measured 34, 53, 58 and 65 px for a true 17), so its sub-harmonics are
+    # candidates too. A line box is never shorter than ~0.95 em.
+    options: set[float] = set()
+    for divisor in (1, 2, 3, 4):
+        estimate = pitch / divisor
+        if estimate < 0.95 * size_px:
+            continue
+        joint, _ = fit_rows(ink, bank, estimate, first, last)
+        options |= {round(estimate, 4), round(joint, 4)}
+        # a few lines cannot pin the period to a pixel: offer the whole pixels
+        # either side too, and let decode cost choose
+        options |= {float(round(estimate)) + d for d in (-1, 0, 1) if round(estimate) + d >= 0.95 * size_px}
+    probe_x = float(edge) if edge is not None else max(0.0, float(ink_cols[0]) - full_px)
+    pitch_trace = []
+    for option in sorted(options):
+        _, lines = fit_rows(ink, bank, option, first, last, search=0.0)
+        probe = sorted({0, 1, len(lines) // 2, len(lines) - 2, len(lines) - 1} & set(range(len(lines))))
+        cost = energy = 0.0
+        for i in probe:
+            strip = row_strip(ink, lines[i], bank)
+            corr = correlations(strip, bank)
+            # the origin is not known yet: take the best sub-step phase, so an
+            # off-lattice probe origin cannot make a right pitch look wrong
+            cost += min(decode_row(strip, corr, bank, probe_x + phase, glyph_penalty).cost
+                        for phase in np.arange(0, bank.step_px, max(bank.step_px / 4, 1.0 / SUPERSAMPLE)))
+            energy += float((strip**2).sum())
+        # rows the lattice misses entirely are ink left unexplained
+        covered = sum(float((row_strip(ink, b, bank) ** 2).sum()) for b in lines)
+        missed = max(0.0, float((ink**2).sum()) - covered)
+        pitch_trace.append((option, cost / max(energy, 1e-9) + missed / max(float((ink**2).sum()), 1e-9)))
+    # ties go to the whole pixel: equal cost means the same baselines anyway
+    pitch = min(pitch_trace, key=lambda t: (round(t[1], 6), abs(t[0] - round(t[0]))))[0]
+    pitch, baselines = fit_rows(ink, bank, pitch, first, last, search=0.0)
+    strips = [row_strip(ink, b, bank) for b in baselines]
+    corrs = [correlations(s, bank) for s in strips]
     if x0 is None:
-        low = float(edge) if edge is not None else max(0.0, float(ink_cols[0]) - full_px)
-        candidates = np.arange(low, low + full_px, 1.0 / SUPERSAMPLE)
+        if edge is not None:
+            low, high = float(edge), float(edge) + full_px
+        else:
+            low, high = max(0.0, float(ink_cols[0]) - full_px), float(ink_cols[0]) + 0.5
+        candidates = np.arange(low, high, 1.0 / SUPERSAMPLE)
         sample = [i for i, s in enumerate(strips) if s.sum() > 0][:: max(1, len(strips) // 6)]
-        scores = []
-        for candidate in candidates:
-            scores.append(
-                sum(decode_row(strips[i], corrs[i], bank, candidate, glyph_penalty).cost for i in sample)
-            )
+        scores = np.array([
+            sum(decode_row(strips[i], corrs[i], bank, candidate, glyph_penalty).cost for i in sample)
+            for candidate in candidates
+        ])
         # Shifting the origin by any legal run of spaces explains the ink
-        # equally well, so the fit is a plateau, not a peak. Take the SMALLEST
-        # origin on the plateau: text starts at the box edge unless ink says
-        # otherwise.
-        scores = np.array(scores)
+        # equally well, so the fit is a plateau, not a peak. With a container
+        # rule, take the SMALLEST origin on the plateau: text starts at the box
+        # edge. Without one, the box edge is not in the image, so take the
+        # LARGEST: the least indentation the ink allows.
         floor = scores.min()
-        tolerance = max(1e-6, 1e-3 * floor)
-        x0 = float(candidates[int(np.nonzero(scores <= floor + tolerance)[0][0])])
-        x0_source = "container_rule" if edge is not None else "ink_minus_one_full_space"
+        on_plateau = np.nonzero(scores <= floor + max(1e-6, 1e-3 * floor))[0]
+        pick = on_plateau[0] if edge is not None else on_plateau[-1]
+        x0 = float(candidates[int(pick)])
+        x0_source = "container_rule" if edge is not None else "least_indentation"
     else:
         x0_source = "given"
 
@@ -459,6 +546,7 @@ def decode_image(
     return {
         "bank": bank,
         "pitch": pitch,
+        "pitch_trace": pitch_trace,
         "baselines": baselines,
         "x0": x0,
         "x0_source": x0_source,
@@ -498,18 +586,25 @@ def main() -> None:
     parser.add_argument("--size-px", type=float, default=None,
                         help="font size in source pixels; fitted when omitted")
     parser.add_argument("--glyph-penalty", type=float, default=0.02)
+    parser.add_argument("--prior", type=Path, default=DEFAULT_PRIOR,
+                        help="character counts from a training split; see scripts/build_char_prior.py")
+    # 0 measured best on the training split (exact rows 77.2% at 0, 75.0% at
+    # 0.03, 73.6% at 0.1): the prior earns its place through the alphabet and
+    # the look-alike tie order, not as a per-glyph cost.
+    parser.add_argument("--prior-weight", type=float, default=0.0)
     parser.add_argument("--x0", type=float, default=None, help="text-box origin in px; fitted when omitted")
     args = parser.parse_args()
 
     image = Image.open(args.source)
-    model = load_font_model(args.font, AA_ALPHABET)
+    prior = load_prior(args.prior)
+    model = load_font_model(args.font, prior_alphabet(prior))
 
     if args.size_px is None:
         size_px, size_trace = fit_size(image, model, args.glyph_penalty)
     else:
         size_px, size_trace = args.size_px, []
 
-    result = decode_image(image, model, size_px, args.glyph_penalty, args.x0)
+    result = decode_image(image, model, size_px, args.glyph_penalty, args.x0, prior, args.prior_weight)
     lines = [row.text for row in result["rows"]]
     # drop blank leading/trailing lines
     while lines and not lines[-1]:
@@ -533,12 +628,16 @@ def main() -> None:
         "size_px": size_px,
         "size_fit": size_trace,
         "line_pitch_px": round(result["pitch"], 4),
+        "line_pitch_candidates": [[p, round(c, 5)] for p, c in result["pitch_trace"]],
         "baselines_px": result["baselines"],
         "text_origin_x_px": result["x0"],
         "text_origin_source": result["x0_source"],
         "container_edge_px": result["container_edge"],
         "candidate_glyphs": len(result["bank"].characters),
         "glyph_penalty": args.glyph_penalty,
+        "prior": {"path": display_path(args.prior) if args.prior.exists() else None,
+                  "sha256": sha256(args.prior) if args.prior.exists() else None,
+                  "weight": args.prior_weight, "characters": len(prior)},
         "rows": [
             {"text": r.text, "reconstruction_cost": round(r.cost, 3), "ink_energy": round(r.ink_energy, 3)}
             for r in result["rows"]
@@ -566,7 +665,7 @@ def fit_size(image: Image.Image, model: FontModel, glyph_penalty: float) -> tupl
         height = int(math.ceil(size * 1.25)) + 2
         bank = render_bank(model, size, height, int(round(size)))
         pitch, (first, last, _) = line_geometry(ink, height)
-        baselines = fit_rows(ink, bank, pitch, first, last)
+        pitch, baselines = fit_rows(ink, bank, pitch, first, last)
         chosen = baselines[:: max(1, len(baselines) // 4)][:4]
         edge = container_left_edge(grey)
         ink_cols = np.nonzero((ink > 0.5).any(axis=0))[0]

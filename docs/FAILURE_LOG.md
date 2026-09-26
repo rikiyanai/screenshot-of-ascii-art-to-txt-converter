@@ -407,3 +407,53 @@
   17 px line step, 8 px pad), so they test scale, binarised input and throughput.
   They are not independent screenshot evidence, because the renderer's face is
   the decoder's model.
+
+## P0C-07 · 2026-09-26 — proportional decoder scored on the AAHub corpus; held-out gap measured
+
+- Corpus: `rikiyanai/ascii-art-archive` (private) `collections/aahub`, 1,153
+  synthetic txt+png pairs rendered in Saitamaar 16 px with an 8 px pad. Split by
+  slug. The 5 held-out slugs (hakumen-no-mono, joshua-bright, excel-saga,
+  wizards-climber, violet-evergarden-tahen) are never counted or tuned on.
+  `data/aa_char_prior.json` holds character counts only, from the 935 training
+  pages (`scripts/build_char_prior.py`).
+- Faults found on the corpus and fixed:
+  (1) DP scatter via argsort. Glyphs are now grouped by advance, taking 57 s
+  to 16 s per page with identical output.
+  (2) Pitch error accumulating over long pages (16.968 vs 17 misread lines
+  0-23). Pitch is now chosen by decode cost among candidates.
+  (3) Sparse pages locked the pitch onto harmonics (34, 53, 58, 65 for 17).
+  Candidates now include sub-harmonics and their neighbouring whole pixels.
+  (4) With no container rule, the origin now takes the least indentation, not
+  the smallest origin.
+  (5) Blank lines inside the art were dropped. Only leading and trailing blank
+  lattice lines are dropped now.
+  (6) The alphabet is extended with training characters seen at least 3
+  times. Pixel-identical glyphs keep the more frequent.
+- Prior weight measured on the training split, known origin: exact rows 77.2%
+  at 0, 75.0% at 0.03, 73.6% at 0.1, 25.8% at 0.3 (earlier code), 2.8% at 1.0.
+  The default is 0.
+- Receipts (`docs/receipts/2026-09-26-aahub-*/eval.json`, size 16 px given):
+  - train, every 25th page, origin given: 42 pages, 780/1010 rows exact
+    (77.2%);
+  - held-out, every 5th page, origin given: 46 pages, 606/1106 rows exact
+    (54.8%); 3 pages fully exact, 12 at 90% or better;
+  - held-out, origin fitted: 385/1106 exact, 486/1106
+    indentation-invariant. Without a text-box edge, absolute indentation is
+    the dominant loss.
+  - Madonna is unchanged at 22/24 (receipt regenerated).
+- Held-out gap, measured: 175/1106 held-out key rows (15.8%) contain
+  characters not in the candidate bank, against 57/1010 (5.6%) in training.
+  The held-out art fills texture with kanji the training split never uses
+  (怨 619 times, 絲 181 times). `─`, `│`, `ｊ` and `ｖ` are pixel-identical to
+  `―`, `｜`, `j` and `v` at the same advance, so those misses cannot be
+  resolved from pixels.
+- Next:
+  (a) a second pass that rescores poorly matched 1280-unit windows against
+  the whole CJK block, because every kanji shares that advance;
+  (b) the remaining sparse-page pitch errors (18 or 19 chosen for 17);
+  (c) the size fit takes about 4 minutes and has not been exercised on the
+  corpus;
+  (d) all corpus pages are synthetic Saitamaar renders, so this is
+  in-distribution for the face model. Real screenshots remain one (Madonna).
+- Highest stage: **Executed** (corpus-scored). Not Verified across real
+  screenshot sources; not Accepted.
