@@ -457,3 +457,21 @@
   in-distribution for the face model. Real screenshots remain one (Madonna).
 - Highest stage: **Executed** (corpus-scored). Not Verified across real
   screenshot sources; not Accepted.
+
+## P0C-08 · 2026-09-26 — archive corpus grew; P0C-07 figures are pinned to the older snapshot
+
+- `ascii-art-archive` AA-002 (commit `07a6198`, MANIFEST sha256
+  `0f0d6988…c897a3`) did two things.
+  - AAHub grew from 1,153 to 5,703 pairs in 43 slugs. 985 files were
+    re-extracted at source, including removal of a leaked "SAI" token.
+  - It added `ascii-art-de-rendered`: 12,816 pairs in Inconsolata 16 px, fixed
+    grid, 8 px advance, 19 px line step, 8 px pad, bilevel.
+- `data/aa_char_prior.json` and the P0C-07 receipts were built from archive
+  commit `eb5a7bf` and stay valid only for that snapshot. The HELD_OUT slug
+  list in `scripts/build_char_prior.py` names 5 of the original 16 slugs. A
+  rebuild against the new snapshot would put every NEW slug into training
+  unless the split is extended first. Re-split, re-count, and re-score before
+  quoting new figures.
+- New opportunity: `ascii-art-de-rendered` is the first large answer-key
+  corpus for the FIXED-GRID tool (`recover_monospace_ascii.py`). That tool
+  has so far been judged on one bundled sample and one screenshot pair.
