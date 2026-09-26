@@ -568,3 +568,26 @@
   implemented or scored. The corpus is synthetic Saitamaar rendering, so the
   highest supported stage remains **Executed experimental candidate**; neither
   real-screenshot generalization nor user acceptance has changed.
+
+### Fix gate after the baseline
+
+- Full regression suite passed on the split/prior/evaluator changes:
+  `python3 -m pytest -q` gave 39 passed, 6 subtests passed in 536.05 s.
+- A train-only pitch oracle forced the documented 17 px render pitch on all
+  five sampled pages whose row counts failed. It restored the correct row
+  count on all five, but did **not** restore text accuracy: their canonical
+  exact-row counts were 0/11, 1/9, 0/20, 0/12, and 0/25, respectively.
+  Canonical CER remained 0.7112-1.1828. Thus wrong
+  pitch is real, but is not the sole cause of these failures. A forced-pitch
+  shortcut is rejected as a decoder fix; row phase, segmentation, and glyph
+  scoring need separate train-only diagnosis before changing the algorithm.
+- In the 27 sampled training pages, only 8/641 key rows contain a character
+  absent from the rendered candidate bank (mostly pixel-identical `─`, plus
+  one `姉`). The new training prior has 743 characters with frequency below
+  the current inclusion threshold of 3, totaling 1,006 occurrences out of
+  5,260,288. This does not justify claiming a broad gain from simply adding
+  rare training characters. Whole-CJK fallback remains an unimplemented,
+  separately measurable experiment, not an accepted correction.
+- The archive has since advanced beyond `07a6198`; that does not change these
+  pinned receipts. A later archive revision needs its own manifest pin and
+  slug-disjoint split before any new prior or score is quoted.
