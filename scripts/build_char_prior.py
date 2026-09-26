@@ -17,7 +17,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from archive_snapshot import SPLIT, load_split, read_blob
+from archive_snapshot import SPLIT, load_split, read_blobs
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -34,11 +34,11 @@ def main() -> None:
     train = [s for s in jobs if s not in held_out]
     counts: Counter[str] = Counter()
     pages = 0
-    for slug in train:
-        for stem in jobs[slug]:
-            body = read_blob(args.archive, split, stem + ".txt").decode("utf-8")
-            counts.update(ch for ch in body if ch not in "\r\n")
-            pages += 1
+    paths = [stem + ".txt" for slug in train for stem in jobs[slug]]
+    for _, blob in read_blobs(args.archive, split, paths):
+        body = blob.decode("utf-8")
+        counts.update(ch for ch in body if ch not in "\r\n")
+        pages += 1
     if pages + sum(len(jobs[s]) for s in held_out) != split["expected_pairs"]:
         raise ValueError("training and held-out pages do not cover the pinned corpus")
     args.out.parent.mkdir(parents=True, exist_ok=True)

@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from archive_snapshot import load_split, read_blob  # noqa: E402
+from archive_snapshot import load_pair_corpus, load_split, read_blob, read_blobs  # noqa: E402
 
 
 class LockedArchive(unittest.TestCase):
@@ -59,8 +59,21 @@ class LockedArchive(unittest.TestCase):
             split, jobs = load_split(root, split_path)
             self.assertEqual(sum(map(len, jobs.values())), 2)
             self.assertEqual(read_blob(root, split, jobs["one"][0] + ".txt"), b"a\n")
+            paths = [jobs[slug][0] + ".txt" for slug in ("one", "two")]
+            self.assertEqual(list(read_blobs(root, split, paths)), [(p, b"a\n") for p in paths])
             with self.assertRaises(ValueError):
                 read_blob(root, split, "collections/aahub/new/res2.txt")
+            with self.assertRaises(ValueError):
+                list(read_blobs(root, split, ["collections/aahub/new/res2.txt"]))
+
+            corpus_path = Path(temporary) / "corpus.json"
+            corpus_path.write_text(json.dumps({
+                "archive_commit": commit, "manifest_sha256": digest,
+                "collection": "collections/aahub", "expected_pairs": 2,
+            }), encoding="utf-8")
+            corpus, stems = load_pair_corpus(root, corpus_path)
+            self.assertEqual(len(stems), 2)
+            self.assertEqual(read_blob(root, corpus, stems[0] + ".txt"), b"a\n")
 
 
 if __name__ == "__main__":

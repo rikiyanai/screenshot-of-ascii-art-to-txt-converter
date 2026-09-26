@@ -592,7 +592,7 @@
   pinned receipts. A later archive revision needs its own manifest pin and
   slug-disjoint split before any new prior or score is quoted.
 
-### Train-only baseline-phase intervention (in progress)
+### Train-only baseline-phase intervention
 
 - Falsifier of the preceding forced-pitch test: on `tonfa/res01`, rendering
   the answer key with Saitamaar at 16 px, x=8, first baseline=22 px and 17 px
@@ -634,3 +634,74 @@
   It fixes the measured short-page line-spacing failure. It does not establish
   general screenshot acceptance, and it does not implement the open whole-CJK
   fallback. Highest product stage remains **Executed experimental candidate**.
+
+## P0C-10 · 2026-09-26 — full AA-003 corpus training and scoring
+
+- Start checkpoint. User-visible target: train and score the converter against
+  the latest committed corpus, not another small smoke sample. Starting state:
+  converter `main` at `3fc2286`, clean and synchronized with `origin/main`;
+  archive `main` at clean commit `3687cc5` (AA-003), manifest SHA-256
+  `15bb0213…d0c1f7bd58`.
+- Direct Git-tree counts: AAHub has 32,950 matched `res*.txt`/`res*.png` pairs
+  across 173 slugs. The prior P0C-09 lock covers only AA-002 at 5,703 pairs and
+  is now a historical evaluation identity. It must not supply the current
+  prior, split, or headline score.
+- Phase plan: extend the immutable slug split before reading any new answer
+  keys; rebuild the training-only prior over every training pair; run matched
+  train and held-out evaluations at a declared deterministic sampling rate;
+  diagnose and implement kanji fallback only from training evidence; run one
+  post-change held-out comparison; then establish a separately pinned
+  fixed-grid ascii-art.de baseline. Each receipt must name the archive commit,
+  manifest hash, split hash, sampling rule, and decoder configuration.
+- Current stage: **Started**. No AA-003 answer key has yet entered a prior or
+  tuning decision at this checkpoint. The archive repository is read-only for
+  this task.
+
+### Split and full training prior checkpoint
+
+- The split lock now covers all 173 slugs and 32,950 pairs at archive commit
+  `3687cc5`. It preserves the 14 AA-002 held-out slugs, then assigns 43 of the
+  130 new AA-003 slugs to held-out by the lowest SHA-256 of each UTF-8 slug
+  name. Result: 116 training slugs / 23,363 pages and 57 held-out slugs /
+  9,587 pages. Split SHA-256:
+  `d61d856f26b0fd019797e6f5756bce0cc76249618c482962a14c364919a8d500`.
+- `data/aa_char_prior.json` was rebuilt from every one of the 23,363 training
+  TXT blobs at that immutable commit. It contains 23,746,955 characters and
+  4,469 distinct characters. The split, commit, and manifest identities in the
+  prior match the locks exactly. No held-out answer key entered the prior.
+- Training evidence materially changes the kanji question: the prior contains
+  3,596 distinct CJK Unified Ideographs (417,438 occurrences). Of those, 2,338
+  occur at least three times and enter the current candidate alphabet; 1,258
+  occur only once or twice and remain below `PRIOR_MIN_COUNT`. The successor
+  must measure training decode failures before deciding whether the fallback
+  should lower that threshold or lazily search the font's wider CJK coverage.
+
+### Bulk-reader deadlock and correction
+
+- The first full-prior build, corpus inventory, and fixed-grid run stalled in
+  `git cat-file --batch`. The reader wrote every request before reading any
+  response; with tens of thousands of blobs, Git filled stdout while the parent
+  was still filling stdin. That is a deterministic pipe deadlock, not slow
+  training. Those three agent-owned processes were terminated with exit 143;
+  none had written its final receipt.
+- `read_blobs` now writes, flushes, reads, and hash-verifies one requested blob
+  at a time while retaining the single Git process. The snapshot test and
+  compile checks pass. The corrected full prior completed in 7.8 seconds.
+
+### Fixed-grid corpus contract and screenshot margins
+
+- `data/ascii_art_de_corpus.json` locks all 12,816 matched pairs, the committed
+  Inconsolata font, and the declared 8×19 cell / baseline 14 / 8 px pad /
+  bilevel render contract. Direct validation found 12,715 UTF-8 and 101 CP-1252
+  answer keys. A direct pixel probe reproduced the first archived page with
+  zero differing pixels at the declared baseline.
+- The full evaluator replaces the archive's uniform pad with deterministic,
+  independently randomized top/right/bottom/left white margins from 0 through
+  31 px. It fits the grid phase from the resulting screenshot pixels and does
+  not use the generated margins to crop. Every page receipt records both the
+  random margins and fitted phase so origin recovery is auditable.
+- A three-page smoke run fit all three randomized origin phases exactly, kept
+  all row counts, and resolved every source cell to a known raster (zero
+  unmatched cells). Its 24/30 exact rows are not a corpus result; the remaining
+  six rows contain raster-identical character ties and are retained as `?`
+  rather than guessed. The complete 12,816-pair run is the next receipt.
