@@ -287,3 +287,50 @@
   unsnapped, 34px spread against a 10px gate).
 - Highest stage: Executed improved candidate, not Verified or Accepted. Issue
   #2 acceptance (multiple screenshot sources judged) remains open.
+
+## P0C-04 · 2026-09-24 — fixed-pitch assumption falsified by Shift_JIS art; regime detector and harmonic fix
+
+- Trigger: the user supplied archived Shift_JIS art. It falsifies the
+  one-advance-per-glyph assumption for proportional-font art, and the pipeline
+  had no way to notice. It cut a lattice anyway and reported a confident,
+  meaningless result. Fixture source: `sample/regime/cjk-render.json` (18 rows
+  from the Index-Librorum-Prohibitorum page).
+- Fix 1 (`b0bd44c`): `detect_regime()` runs between `measure_lattice()` and
+  `cut_cells()`. It uses only the image. Per ink band it gives each run-boundary
+  gap a whole number of cells and accumulates the SIGNED residual, so that a
+  systematic error accumulates and does not cancel. Bands come from ink, not
+  from the row lattice.
+- Paired fixtures: the same 18 rows rendered through Osaka (proportional, 30
+  advances) and OsakaMono (fixed pitch, 2 advances). Metrics are the only
+  variable, so a detector that fires on CJK codepoints cannot pass. Measured
+  23.91 vs 0.56 cells.
+- Refusal exits 2 and emits no text; `--on-proportional warn` overrides.
+  Receipt schema `fixed_grid_recovery.v4` records the verdict on every run.
+- Fix 2 (`49d4f39`): `measure_lattice` locked onto period harmonics. Spectral
+  projection gave half the true advance and autocorrelation gave twice the line
+  pitch (9.641 px / 22 px rendered, 4.82 / 44.6 measured). `resolve_harmonic()`
+  scores {p/3, p/2, p, 2p, 3p} and takes the finest period within 70% of the
+  best score. Period accuracy over 90 sheets: 94.4%/90.0% at 0.90, 96.7%/92.2%
+  at 0.70, 92.2%/86.7% at 0.60. `tests/test_lattice.py` renders dense, prose,
+  and sparse sheets because sparse real art hid the defect.
+- The detector took the WORSE of the two boundary sequences. It now takes the
+  better one: fixed-pitch CJK went from 0.56 to 0.375, and proportional did not
+  change.
+- Threshold moved 0.75 -> 0.50 after recalibration against the shipped code.
+  False refusal is flat across 0.50, 0.60, and 0.75, so 0.50 removes fifteen
+  points of false acceptance at no cost. Below 0.50, refusal triples. Margins:
+  Stone Story 2.63x, bonsai 1.88x, fixed-pitch CJK 1.33x, proportional CJK
+  refused at 0.03x.
+- Test evidence (2026-09-26): `python3 -m pytest -q` gave 36 passed, 6 subtests
+  passed, in 506 s. Only the test suite ran. No new screenshot run was done.
+- Open: fixed-pitch CJK is dual-period and sits near the threshold. It needs a
+  third regime, not a better threshold. Proportional art is refused, not
+  converted. Issue #2 remains open.
+- Highest stage: **Executed**, not Verified or Accepted.
+- Provenance: the originating Claude session transcript no longer exists on
+  disk. The only local copy is the current session
+  `b91a27b9-886b-4482-a0a0-f9c2be89f42b`. Commits `b0bd44c` and `49d4f39` are
+  the durable record.
+- Next: a new proportional Shift_JIS screenshot with an answer key (added
+  2026-09-26) is the target for proportional-aware recovery. It is logged as a
+  separate entry.
