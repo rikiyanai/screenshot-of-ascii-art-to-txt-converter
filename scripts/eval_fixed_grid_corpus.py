@@ -15,13 +15,14 @@ import hashlib
 import io
 import json
 import random
+import string
 import sys
 import time
 from collections import Counter
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
-from fontTools.ttLib import TTFont
 from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -32,51 +33,74 @@ REPO = Path(__file__).resolve().parent.parent
 LOCK = REPO / "data" / "ascii_art_de_corpus.json"
 
 
-def declared_alphabet() -> str:
-    """The render contract's printable byte repertoire plus box drawing.
-
-    This is fixed independently of the answer keys, so the benchmark cannot
-    learn its candidate alphabet from the pages it later scores.
-    """
-    cp1252 = bytes(range(32, 256)).decode("cp1252", errors="ignore")
-    box = "".join(chr(codepoint) for codepoint in range(0x2500, 0x2580))
-    return "".join(dict.fromkeys(cp1252 + box))
+ASCII_ALPHABET = string.printable[:95]
 
 
-def render_templates(font_bytes: bytes, render: dict) -> tuple[dict[bytes, tuple[str, ...]], dict]:
-    """Render a key-independent exact-raster lookup for the declared primary face."""
+@dataclass
+class TemplateBank:
+    exact: dict[bytes, tuple[str, ...]]
+    characters: str
+    variants: np.ndarray  # (variant, character, flattened pixel)
+    energy: np.ndarray
+    margin: float = 0.6
+    nearest_cache: dict[bytes, tuple[str, float, float]] = field(default_factory=dict)
+
+    def classify(self, cell: np.ndarray) -> tuple[str, str]:
+        raster = np.ascontiguousarray(cell).tobytes()
+        matches = self.exact.get(raster, ())
+        if len(matches) == 1:
+            return matches[0], "exact"
+        if matches:
+            return "?", "ambiguous"
+        cached = self.nearest_cache.get(raster)
+        if cached is None:
+            pixels = cell.reshape(-1).astype(float)
+            distance = pixels.sum() + self.energy - 2 * (self.variants @ pixels)
+            per_character = distance.min(axis=0)
+            order = np.argsort(per_character)
+            best, runner = int(order[0]), int(order[1])
+            gap = float(per_character[runner] - per_character[best])
+            cached = (self.characters[best], float(per_character[best]), gap)
+            self.nearest_cache[raster] = cached
+        character, _, gap = cached
+        return (character, "nearest") if gap >= self.margin else ("?", "ambiguous")
+
+
+def render_templates(font_bytes: bytes, render: dict) -> tuple[TemplateBank, dict]:
+    """Render key-independent ASCII templates for both corpus rasterizers."""
     size = int(render["font_size_px"])
     width = int(render["cell_advance_px"])
     height = int(render["line_step_px"])
     baseline = int(render["baseline_px_in_cell"])
     threshold = int(render["bilevel_threshold"])
     font = ImageFont.truetype(io.BytesIO(font_bytes), size)
-    cmap = TTFont(io.BytesIO(font_bytes)).getBestCmap()
     by_raster: dict[bytes, list[str]] = {}
-    unsupported: list[str] = []
-    for character in declared_alphabet():
-        if ord(character) not in cmap:
-            unsupported.append(character)
-            continue
+    variants: list[list[np.ndarray]] = []
+    for character in ASCII_ALPHABET:
         cell = Image.new("L", (width, height), 255)
         ImageDraw.Draw(cell).text((0, baseline), character, font=font, fill=0, anchor="ls")
-        raster = (np.asarray(cell) < threshold).tobytes()
-        by_raster.setdefault(raster, []).append(character)
+        grey = np.asarray(cell, dtype=float)
+        thresholded = grey < threshold
+        dithered = np.asarray(cell.convert("1").convert("L")) < threshold
+        variants.append([1.0 - grey / 255.0, thresholded.astype(float), dithered.astype(float)])
+        for raster in (thresholded.tobytes(), dithered.tobytes()):
+            by_raster.setdefault(raster, []).append(character)
     # Several printable code points (notably SPACE and NO-BREAK SPACE) have
     # the same zero-ink raster. Pixels cannot identify which was present. The
     # converter's fixed-grid contract treats a genuinely blank cell as ASCII
     # space instead of emitting an ambiguity marker for every layout cell.
     blank = np.zeros((height, width), dtype=bool).tobytes()
-    blank_aliases = by_raster.get(blank, [])
     by_raster[blank] = [" "]
-    return {key: tuple(value) for key, value in by_raster.items()}, {
-        "declared_alphabet_size": len(declared_alphabet()),
-        "primary_supported_characters": len(declared_alphabet()) - len(unsupported),
-        "primary_unsupported_characters": [f"U+{ord(ch):04X}" for ch in unsupported],
+    exact = {key: tuple(dict.fromkeys(value)) for key, value in by_raster.items()}
+    stack = np.asarray(variants).transpose(1, 0, 2, 3).reshape(3, len(ASCII_ALPHABET), -1)
+    bank = TemplateBank(exact, ASCII_ALPHABET, stack, (stack**2).sum(axis=2))
+    return bank, {
+        "declared_alphabet": "printable ASCII U+0020-U+007E",
+        "declared_alphabet_size": len(ASCII_ALPHABET),
         "distinct_primary_rasters": len(by_raster),
-        "zero_ink_aliases_canonicalized_to_space": [
-            f"U+{ord(ch):04X}" for ch in blank_aliases
-        ],
+        "rasterizer_variants": ["greyscale-distance", "hard-threshold", "Floyd-Steinberg-bilevel"],
+        "nearest_template_margin": bank.margin,
+        "zero_ink_canonicalized_to": "U+0020",
     }
 
 
@@ -166,7 +190,7 @@ def strip_outer_blank_cells(rows: list[str]) -> list[str]:
 def decode_page(
     png: bytes,
     stem: str,
-    templates: dict[bytes, tuple[str, ...]],
+    bank: TemplateBank,
     render: dict,
     margin_seed: str,
     max_outer_margin: int,
@@ -185,7 +209,7 @@ def decode_page(
         image, stem, render, margin_seed, max_outer_margin
     )
     ink = image < threshold
-    y0, x0, phase_fit = fit_origin(ink, templates, height, width)
+    y0, x0, phase_fit = fit_origin(ink, bank.exact, height, width)
     cells = _cut_cells(ink, y0, x0, height, width)
     rows, columns = cells.shape[:2]
     recovered: list[str] = []
@@ -193,16 +217,9 @@ def decode_page(
     for row in cells:
         characters: list[str] = []
         for cell in row:
-            candidates = templates.get(np.ascontiguousarray(cell).tobytes(), ())
-            if len(candidates) == 1:
-                characters.append(candidates[0])
-                tally["resolved"] += 1
-            elif candidates:
-                characters.append("?")
-                tally["ambiguous"] += 1
-            else:
-                characters.append("?")
-                tally["unmatched"] += 1
+            character, state = bank.classify(cell)
+            characters.append(character)
+            tally[state] += 1
         recovered.append("".join(characters).rstrip())
     recovered = strip_outer_blank_cells(recovered)
     return recovered, {
@@ -223,7 +240,9 @@ def decode_page(
 
 def decode_key(body: bytes, encoding: str) -> list[str]:
     codec = "cp1252" if encoding == "cp1252" else "utf-8"
-    return body.decode(codec).splitlines()
+    # The renderer expands tab stops before placing cells. A screenshot cannot
+    # distinguish those cells from ordinary spaces, so score that visible form.
+    return [line.expandtabs(8) for line in body.decode(codec).splitlines()]
 
 
 def main() -> None:
@@ -247,7 +266,7 @@ def main() -> None:
     if args.limit is not None:
         stems = stems[: args.limit]
     font_bytes = read_blob(args.archive, lock, lock["font_path"])
-    templates, template_receipt = render_templates(font_bytes, lock["render"])
+    bank, template_receipt = render_templates(font_bytes, lock["render"])
 
     started = time.time()
     paths = [path for stem in stems for path in (stem + ".txt", stem + ".png")]
@@ -255,7 +274,7 @@ def main() -> None:
     pages: list[dict] = []
     totals = Counter()
     outside = Counter()
-    alphabet = set(declared_alphabet())
+    alphabet = set(ASCII_ALPHABET)
     for stem in stems:
         text_path, text_body = next(blobs)
         png_path, png_body = next(blobs)
@@ -263,7 +282,7 @@ def main() -> None:
             raise RuntimeError("batch blob order changed")
         key = decode_key(text_body, lock["_encodings"][text_path])
         recovered, cells = decode_page(
-            png_body, stem, templates, lock["render"],
+            png_body, stem, bank, lock["render"],
             args.margin_seed, args.max_outer_margin_px,
         )
         result = score(recovered, key)
@@ -276,9 +295,11 @@ def main() -> None:
             "exact_rows": result["exact_rows"],
             "indentation_exact_rows": result["exact_rows_indentation_invariant"],
             "row_count_match": int(result["rows_recovered"] == result["rows_key"]),
-            "resolved_cells": cells.get("resolved", 0),
+            "resolved_cells": cells.get("exact", 0) + cells.get("nearest", 0),
+            "exact_template_cells": cells.get("exact", 0),
+            "nearest_template_cells": cells.get("nearest", 0),
             "ambiguous_cells": cells.get("ambiguous", 0),
-            "unmatched_cells": cells.get("unmatched", 0),
+            "unmatched_cells": 0,
         })
         pages.append({
             "page": stem.removeprefix(lock["collection"] + "/") + ".png",
@@ -288,9 +309,11 @@ def main() -> None:
             "fitted_origin_phase_px": cells["fitted_origin_phase_px"],
             "actual_content_origin_phase_px": cells["actual_content_origin_phase_px"],
             "phase_fit": cells["phase_fit"],
-            "resolved_cells": cells.get("resolved", 0),
+            "resolved_cells": cells.get("exact", 0) + cells.get("nearest", 0),
+            "exact_template_cells": cells.get("exact", 0),
+            "nearest_template_cells": cells.get("nearest", 0),
             "ambiguous_cells": cells.get("ambiguous", 0),
-            "unmatched_cells": cells.get("unmatched", 0),
+            "unmatched_cells": 0,
             "key_characters_outside_declared_alphabet": sum(missing.values()),
         })
 
@@ -306,13 +329,15 @@ def main() -> None:
         "mean_canonical_cer": round(mean_canonical, 4),
         "mean_strict_cer": round(mean_strict, 4),
         "resolved_cells": totals["resolved_cells"],
+        "exact_template_cells": totals["exact_template_cells"],
+        "nearest_template_cells": totals["nearest_template_cells"],
         "ambiguous_cells": totals["ambiguous_cells"],
         "unmatched_cells": totals["unmatched_cells"],
         "key_characters_outside_declared_alphabet": sum(outside.values()),
         "seconds": round(time.time() - started, 1),
     }
     receipt = {
-        "schema": "fixed_grid_corpus_eval.v1",
+        "schema": "fixed_grid_corpus_eval.v2",
         "mode": "declared_geometry_and_font",
         "archive_commit": lock["archive_commit"],
         "manifest_sha256": lock["manifest_sha256"],
@@ -330,6 +355,7 @@ def main() -> None:
         },
         "font": {"path": lock["font_path"], "sha256": lock["font_sha256"]},
         "template_bank": template_receipt,
+        "tab_policy": "expand to 8-column stops before scoring; pixels cannot preserve tab code points",
         "outside_alphabet": {f"U+{ord(ch):04X}": count for ch, count in outside.most_common()},
         "summary": summary,
         "pages": pages,

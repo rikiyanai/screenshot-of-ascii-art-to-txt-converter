@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import io
 import json
+import math
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
@@ -32,11 +33,18 @@ def _rel(path: str) -> str:
     return f"{p.parent.name}/{p.name}"
 
 
-def _init(prior_path: str, weight: float, font: str, x0: float | None,
-          archive: str, split: dict, phase_refine: bool) -> None:
+def _init(prior_path: str, weight: float, font: str, size_px: float, x0: float | None,
+          archive: str, split: dict, phase_refine: bool, kanji_fallback: bool) -> None:
     prior = rp.load_prior(Path(prior_path)) if prior_path else {}
+    model = rp.load_font_model(Path(font), rp.prior_alphabet(prior, kanji_fallback))
+    height = int(math.ceil(size_px * 1.25)) + 2
+    baseline = int(round(size_px))
+    # P0C-10: every job in this worker has the same face, size, and prior.
+    # Rendering the expanded AA-003 glyph bank per page made corpus scoring
+    # repeat identical work hundreds of times.
     _STATE.update(prior=prior, weight=weight, x0=x0,
-                  model=rp.load_font_model(Path(font), rp.prior_alphabet(prior)),
+                  model=model,
+                  bank=rp.render_bank(model, size_px, height, baseline, prior),
                   archive=Path(archive), split=split, phase_refine=phase_refine)
 
 
@@ -47,7 +55,8 @@ def _run(job: tuple[str, float]) -> dict:
         png = stem + ".png"
         result = rp.decode_image(Image.open(io.BytesIO(read_blob(_STATE["archive"], _STATE["split"], png))),
                                  _STATE["model"], size, 0.02, _STATE["x0"],
-                                 _STATE["prior"], _STATE["weight"], _STATE["phase_refine"])
+                                 _STATE["prior"], _STATE["weight"], _STATE["phase_refine"],
+                                 _STATE["bank"])
         lines = [r.text for r in result["rows"]]
         while lines and not lines[-1]:
             lines.pop()
@@ -55,6 +64,7 @@ def _run(job: tuple[str, float]) -> dict:
         s = score(lines, key)
         s.pop("per_row")
         return {"page": _rel(png), **s, "pitch": result["pitch"], "x0": result["x0"],
+                "candidate_glyphs": len(result["bank"].characters),
                 "seconds": round(time.time() - started, 1)}
     except Exception as error:  # a crash is a result, not a silent skip
         return {"page": _rel(png), "error": repr(error)}
@@ -75,6 +85,7 @@ def main() -> None:
     parser.add_argument("--x0", type=float, default=None,
                         help="known text origin (AAHub renders: 8 px pad); fitted when omitted")
     parser.add_argument("--no-phase-refine", action="store_true")
+    parser.add_argument("--kanji-fallback", action="store_true")
     args = parser.parse_args()
     if args.every < 1 or args.workers < 1:
         parser.error("--every and --workers must both be positive")
@@ -100,13 +111,15 @@ def main() -> None:
     if not jobs:
         raise SystemExit("no pages matched: check the root and slug names")
     with ProcessPoolExecutor(args.workers, initializer=_init,
-                             initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.x0,
-                                       str(args.archive), split, not args.no_phase_refine)) as pool:
+                             initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.size_px, args.x0,
+                                       str(args.archive), split, not args.no_phase_refine,
+                                       args.kanji_fallback)) as pool:
         pages = list(pool.map(_run, jobs))
     ok = [p for p in pages if "error" not in p]
     rows = sum(p["rows_key"] for p in ok)
     summary = {
         "pages": len(pages), "errors": len(pages) - len(ok),
+        "candidate_glyphs": ok[0]["candidate_glyphs"] if ok else None,
         "rows": rows, "exact_rows": sum(p["exact_rows"] for p in ok),
         "exact_rows_indentation_invariant": sum(p["exact_rows_indentation_invariant"] for p in ok),
         "exact_row_rate": round(sum(p["exact_rows"] for p in ok) / max(rows, 1), 4),
@@ -121,6 +134,7 @@ def main() -> None:
         "split_sha256": hashlib.sha256(args.split.read_bytes()).hexdigest(),
         "partition": args.partition, "slugs": slugs, "every": args.every,
         "phase_refine": not args.no_phase_refine,
+        "kanji_fallback": args.kanji_fallback,
         "size_px": args.size_px, "x0": args.x0, "prior": args.prior and Path(args.prior).name,
         "prior_weight": args.prior_weight, "summary": summary, "pages": pages,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

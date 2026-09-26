@@ -8,6 +8,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from eval_fixed_grid_corpus import (  # noqa: E402
+    TemplateBank,
+    decode_key,
     fit_origin,
     randomize_outer_margins,
     strip_outer_blank_cells,
@@ -15,6 +17,15 @@ from eval_fixed_grid_corpus import (  # noqa: E402
 
 
 class RandomMarginRecovery(unittest.TestCase):
+    def test_nearest_template_resolves_non_exact_bilevel_raster(self) -> None:
+        variants = np.array([[[0.0, 1.0, 0.0], [1.0, 0.0, 1.0]]])
+        bank = TemplateBank({}, "AB", variants, (variants**2).sum(axis=2), margin=0.6)
+        character, state = bank.classify(np.array([[False, True, True]]))
+        self.assertEqual((character, state), ("A", "nearest"))
+
+    def test_tabs_are_scored_as_their_visible_eight_column_expansion(self) -> None:
+        self.assertEqual(decode_key(b"a\tb\n", "utf-8"), ["a       b"])
+
     def test_random_margins_are_reproducible(self) -> None:
         source = np.full((10, 12), 255, dtype=np.uint8)
         source[3:7, 4:8] = 0

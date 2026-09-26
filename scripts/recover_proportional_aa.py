@@ -52,10 +52,15 @@ def load_prior(path: Path | None) -> dict[str, int]:
     return json.loads(path.read_text(encoding="utf-8"))["counts"]
 
 
-def prior_alphabet(prior: dict[str, int]) -> str:
-    return AA_ALPHABET + "".join(
+def prior_alphabet(prior: dict[str, int], kanji_fallback: bool = False) -> str:
+    alphabet = AA_ALPHABET + "".join(
         c for c, n in prior.items() if n >= PRIOR_MIN_COUNT and c.isprintable() and c not in AA_ALPHABET
     )
+    # P0C-10 fallback tier: the training prior covers frequent ideographs, but
+    # 1,258 training kanji occur only once or twice and a slug-disjoint page can
+    # contain a character absent from training altogether. The font cmap later
+    # filters this Unicode block to glyphs the declared face can actually draw.
+    return alphabet + (_ranges((0x4E00, 0x9FFF)) if kanji_fallback else "")
 
 
 def prior_penalty(characters: list[str], prior: dict[str, int], weight: float, floor: float) -> np.ndarray:
@@ -511,11 +516,15 @@ def decode_image(
     prior: dict[str, int] | None = None,
     prior_weight: float = 0.0,
     phase_refine: bool = True,
+    bank: GlyphBank | None = None,
 ) -> dict:
     ink, grey = ink_of(image)
     height = int(math.ceil(size_px * 1.25)) + 2
     baseline = int(round(size_px * 1.0))
-    bank = render_bank(model, size_px, height, baseline, prior)
+    if bank is None:
+        bank = render_bank(model, size_px, height, baseline, prior)
+    elif (bank.size_px, bank.height, bank.baseline) != (size_px, height, baseline):
+        raise ValueError("pre-rendered glyph bank geometry does not match the decode request")
     glyph_penalty = prior_penalty(bank.characters, prior or {}, prior_weight, glyph_penalty)
     pitch, (first, last, _) = line_geometry(ink, height)
     edge = container_left_edge(grey)
@@ -655,6 +664,8 @@ def main() -> None:
     # 0.03, 73.6% at 0.1): the prior earns its place through the alphabet and
     # the look-alike tie order, not as a per-glyph cost.
     parser.add_argument("--prior-weight", type=float, default=0.0)
+    parser.add_argument("--kanji-fallback", action="store_true",
+                        help="include every CJK Unified Ideograph supported by the declared font")
     parser.add_argument("--x0", type=float, default=None, help="text-box origin in px; fitted when omitted")
     parser.add_argument("--no-phase-refine", action="store_true",
                         help="ablation: use the old mean-profile baseline fit")
@@ -662,7 +673,7 @@ def main() -> None:
 
     image = Image.open(args.source)
     prior = load_prior(args.prior)
-    model = load_font_model(args.font, prior_alphabet(prior))
+    model = load_font_model(args.font, prior_alphabet(prior, args.kanji_fallback))
 
     if args.size_px is None:
         size_px, size_trace = fit_size(image, model, args.glyph_penalty)
@@ -705,6 +716,7 @@ def main() -> None:
         "prior": {"path": display_path(args.prior) if args.prior.exists() else None,
                   "sha256": sha256(args.prior) if args.prior.exists() else None,
                   "weight": args.prior_weight, "characters": len(prior)},
+        "kanji_fallback": args.kanji_fallback,
         "rows": [
             {"text": r.text, "reconstruction_cost": round(r.cost, 3), "ink_energy": round(r.ink_energy, 3)}
             for r in result["rows"]

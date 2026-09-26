@@ -40,8 +40,27 @@ class CanonicalSpacing(unittest.TestCase):
                 self.assertEqual(out.count("　"), full)
                 self.assertEqual(out.count(" "), half)
 
+    def test_kanji_fallback_covers_the_whole_unified_block(self) -> None:
+        ordinary = rp.prior_alphabet({})
+        fallback = rp.prior_alphabet({}, kanji_fallback=True)
+        self.assertNotIn("龿", ordinary)
+        self.assertIn("一", fallback)
+        self.assertIn("龿", fallback)
+
 
 class ShortPagePhase(unittest.TestCase):
+    def test_pre_rendered_bank_preserves_decode(self) -> None:
+        model = rp.load_font_model(rp.DEFAULT_FONT, "._")
+        rows = ["._._", "_.._", "..__"]
+        baselines = [22 + 17 * i for i in range(len(rows))]
+        ink = rp.render_text(rows, model, 16, 17, 8, baselines, (80, 80))
+        image = Image.fromarray((255 - 255 * (ink > 0.35)).astype(np.uint8))
+        bank = rp.render_bank(model, 16, 22, 16, {})
+        direct = rp.decode_image(image, model, 16, 0.02, 8, {}, 0)
+        cached = rp.decode_image(image, model, 16, 0.02, 8, {}, 0, True, bank)
+        self.assertEqual([row.text for row in cached["rows"]], [row.text for row in direct["rows"]])
+        self.assertEqual(cached["baselines"], direct["baselines"])
+
     def test_image_fits_actual_baseline_not_average_glyph_profile(self) -> None:
         rows = [
             " /\\_/\\ ", "( o.o )", " > ^ < ", "  /|\\  ", " /_|_\\ ",

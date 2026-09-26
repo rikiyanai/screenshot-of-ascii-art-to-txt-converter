@@ -705,3 +705,51 @@
   unmatched cells). Its 24/30 exact rows are not a corpus result; the remaining
   six rows contain raster-identical character ties and are retained as `?`
   rather than guessed. The complete 12,816-pair run is the next receipt.
+
+### AAHub long-tail fallback prepared from training evidence
+
+- At the existing `PRIOR_MIN_COUNT=3`, 1,315 printable training characters
+  remain outside the learned extension: 1,258 are CJK Unified Ideographs,
+  accounting for 1,678 actual training occurrences. This is direct training
+  evidence for a kanji fallback rather than a held-out-driven guess.
+- `--kanji-fallback` now expands the candidate request to the complete
+  U+4E00–U+9FFF block; the declared Saitamaar cmap filters it to supported
+  glyphs. On AA-003 this changes the pre-raster-dedup candidate bank from 3,152
+  characters (2,339 CJK) to 7,547 (6,734 CJK). The option is not yet the
+  default: it must beat the no-fallback decoder on a matched training receipt
+  before the one post-choice held-out run.
+- The larger bank exposed repeated evaluator work. `decode_image` now accepts a
+  geometry-checked pre-rendered bank, and each corpus worker renders that bank
+  once instead of once per page. This is an evaluation performance change; the
+  decoder path and glyph scores are unchanged. Compile and focused fallback
+  coverage checks pass; the complete proportional test module then passed 3/3
+  in 115.63 seconds.
+
+### First full fixed-grid receipt rejected; mixed bilevel rasterizers found
+
+- The first complete randomized-margin run is preserved at
+  `docs/receipts/2026-09-26-ascii-art-de-full-random-margins.json`, but rejected
+  as the fixed-grid baseline. It processed all 12,816 pairs and 217,049 key
+  rows, yet produced only 57,113 exact rows (26.31%), 731,243 unmatched cells,
+  and 1,021 row-count mismatches. This was a classifier failure, not a corpus
+  score worth optimizing against.
+- The archive manifests describe hard thresholding throughout, but the pixels
+  prove two render behaviors. Re-rendering `ab/007/res03` with `<128` hard
+  threshold gives zero differing pixels. The same operation on
+  `jkl/law/res01` differs by 13,566 pixels, while Pillow's default
+  Floyd–Steinberg bilevel conversion gives zero differences. It reduces the
+  `mno/meriday/res06` difference from 102,180 pixels to 18 and
+  `mno/michelangelo/res02` from 33,123 to 418. The archive contract is therefore
+  incomplete even though the font and geometry are correct.
+- The exact-raster evaluator has been replaced by an ASCII-first classifier:
+  exact hard-threshold and per-cell Floyd rasters resolve immediately; unseen
+  bilevel patterns fall back to a greyscale/threshold/Floyd nearest-template
+  distance and retain `?` when the best/runner-up margin is under 0.6. This
+  avoids the CP-1252 look-alike guesses that turned dithered ASCII `|` into
+  broken bars. Tabs are expanded to visible 8-column stops before scoring,
+  because their code point is not recoverable from screenshot pixels.
+- Focused verification passes (6 tests). The corrected first three pages score
+  30/30 exact rows. On three former high-loss pages, the corrected path scores
+  `mno/meriday/res06` 284/290, `jkl/law/res01` 208/208, and `ab/007/res03`
+  24/24, with exact randomized origin phases and zero crashes. A new full
+  receipt must replace, not overwrite, the rejected one.

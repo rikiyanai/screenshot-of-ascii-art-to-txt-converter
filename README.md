@@ -6,25 +6,30 @@ Current status: two separate experimental decoders, not a general screenshot
 converter. The fixed-grid path has one scored real screenshot (54/67 characters
 exact); the proportional Saitamaar path has one scored real screenshot (22/24
 rows exact under spacing-canonical comparison). Neither is accepted across
-sources, and no automatic selector connects them. The older AAHub corpus scores
-refer only to a 1,153-pair archive snapshot. Archive commit `07a6198`
-contains 5,703 committed AAHub pairs; the audit correction is recorded in
-[P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
+sources, and no automatic selector connects them. The older published AAHub
+scores refer only to earlier snapshots; the current training/evaluation lock is
+archive commit `3687cc5`, containing 32,950 matched AAHub pairs across 173
+slugs. The current work is recorded in
+[P0C-10](docs/FAILURE_LOG.md#p0c-10--2026-09-26--full-aa-003-corpus-training-and-scoring).
 
-The next evaluation sequence is: freeze a slug-disjoint train/held-out split,
-rebuild training-only character counts, measure baselines, improve kanji
-coverage and short-page line pitch using training data, then evaluate held-out
-pages. The 12,816-pair fixed-grid ascii-art.de corpus is a separate baseline;
-synthetic renders do not replace independent screenshots for acceptance.
+The current evaluation sequence uses the frozen split and full training prior,
+then measures a matched training baseline, tests whole-CJK fallback using only
+training evidence, and performs one held-out comparison after the choice is
+frozen. The 12,816-pair fixed-grid ascii-art.de corpus is scored separately
+with deterministic 0–31 px random margins on every screenshot edge; synthetic
+renders do not replace independent screenshots for acceptance.
 
-The AAHub split is pinned in `data/aahub_split.json`: 4,246 training pairs
-across 29 slugs and 1,457 held-out pairs across 14 slugs. The archive checkout
-may be dirty; the commands below read and hash Git blobs from the pinned commit,
-never the live worktree. The archive is private and must be available locally.
+The AAHub split is pinned in `data/aahub_split.json`: 23,363 training pairs
+across 116 slugs and 9,587 held-out pairs across 57 slugs. The training prior
+was rebuilt from every training TXT and contains 23,746,955 characters. The
+archive checkout may be dirty; the commands below read and hash Git blobs from
+the pinned commit, never the live worktree. The archive is private and must be
+available locally.
 
 ```sh
 python3 scripts/build_char_prior.py ../ascii-art-archive
-python3 scripts/eval_corpus.py ../ascii-art-archive OUT --partition train --every 100 --size-px 16 --x0 8 --workers 2
+python3 scripts/eval_corpus.py ../ascii-art-archive OUT --partition train --every 25 --size-px 16 --x0 8 --workers 4
+python3 scripts/eval_fixed_grid_corpus.py ../ascii-art-archive FIXED-RECEIPT.json
 ```
 
 The evaluation command writes a receipt to `OUT/eval.json`. Replace `OUT` with
@@ -32,13 +37,14 @@ a new directory; use `--partition heldout` only after training decisions are
 frozen, apart from the one pre-tuning baseline already recorded. A synthetic
 render score is a model diagnostic, not screenshot acceptance.
 
-The first pinned baseline sampled one page per nonempty slug. Baseline-phase
+The earlier AA-002 baseline sampled one page per nonempty slug. Baseline-phase
 refinement improved the matched training sample from 432/641 to 559/641 exact
 rows and its one post-fix held-out comparison from 271/357 to 278/357. All 41
 sampled page row counts now match; no sampled page lost exact rows. These small,
 composition-sensitive samples are not full-corpus accuracy estimates. Their
 receipts and the remaining kanji work are recorded in
 [P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
+Do not quote it as the AA-003 result.
 
 Nothing about the source is assumed. The converter measures the character lattice
 from the image, infers the typeface and size by fitting a library of monospaced
