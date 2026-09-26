@@ -1192,7 +1192,8 @@ def main() -> None:
                     "note": (
                         "No text was emitted. One advance cannot describe this "
                         "image, so any grid cut from it would be meaningless. "
-                        "Pass --on-proportional warn to see the attempt anyway."
+                        "Pass --on-proportional warn to see the attempt anyway, or "
+                        "decode it with scripts/recover_proportional_aa.py."
                     ),
                 },
                 indent=2,

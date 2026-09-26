@@ -334,3 +334,57 @@
 - Next: a new proportional Shift_JIS screenshot with an answer key (added
   2026-09-26) is the target for proportional-aware recovery. It is logged as a
   separate entry.
+
+## P0C-05 · 2026-09-26 — proportional Shift_JIS art decoded instead of refused
+
+- Input: a real 2x retina screenshot of proportional art plus its source text,
+  both supplied by the user:
+  `sample/proportional/madonna.source.png` (sha256 `b0a6c7f1…f8562cd`) and
+  `madonna.expected.txt` (24 rows).
+- Baseline: `recover_monospace_ascii.py` refused it (exit 2, median band drift
+  3.85 cells against a 0.50 threshold). 0 characters recovered.
+- Typeface identified, not assumed. The leading-whitespace fit gave a half/full
+  space ratio of 0.49, which rules out fixed pitch. The right-edge residuals of
+  a two-width model reached 33 px, which rules out dual pitch as well. No
+  installed CJK face correlated above 0.44. Saitamaar (MS PGothic metrics, OFL,
+  now vendored under `fonts/`) correlated 0.94 at 22 px; IPAGP-Mona reached
+  0.66. Rendering the key in Saitamaar at 22 px, origin x=6 and a 24 px pitch
+  reproduces the screenshot at cosine 0.976.
+- New `scripts/recover_proportional_aa.py`: per-row DP over pen positions on
+  the font's advance lattice (gcd of the advances, 80 units). Glyphs are
+  rendered at 1/8 px phases and each owns the columns inside its advance, so
+  the path cost is the whole-row reconstruction error. Two U+0020 in a row are
+  forbidden, and blank runs are written in one canonical order. Size, pitch,
+  origin and baselines are all fitted from the image. The origin comes from
+  the container rule.
+- Two geometry faults were found and fixed on the way:
+  (1) Walking baselines greedily from the first ink merged lines, because row 0
+  holds only `_ ＿` and its first ink is at the baseline. Now one global
+  lattice is fitted.
+  (2) The origin fit is a plateau: shifting by any legal space run explains
+  the ink equally well, and it picked +6.875 px (one half space). Now the
+  smallest origin on the plateau is taken.
+  Per-line ±1 px baseline refinement was measured worse (19 vs 22 exact rows)
+  and was removed.
+- Result (receipt `docs/receipts/2026-09-26-proportional-madonna/`): the size
+  was fitted automatically to 22.0 px (normalised cost 0.155 against 0.254 at
+  the next size). 24/24 rows; 22/24 rows exact under spacing-canonical
+  comparison; canonical CER 0.56%; strict CER 1.61%. Strict error is mostly
+  the order of spaces inside blank runs. The key itself is not consistent
+  about that order, and the order does not reach the pixels.
+- Remaining real errors:
+  row 20: `.::: !` read as `.:: .!` (same width; the colon's upper dot was
+  lost).
+  row 23: `/　|　'` read as `/ ｜ '`. Both come to 2080 units with the bar in
+  the same place, so the pixels cannot tell them apart and it needs a
+  corpus prior.
+- Tests: `tests/test_proportional.py` gates on ≥22 exact rows and canonical
+  CER ≤1% at the fitted size. It also checks that no canonical blank run ever
+  has two adjacent U+0020.
+- Limits: one screenshot, one face, one renderer (macOS). The full automatic
+  run takes about 4 minutes, mostly in the size sweep. The face is not fitted
+  from a library: Saitamaar is the only model. The monospace tool still
+  refuses and now points to the new decoder; nothing routes between the two
+  automatically.
+- Highest stage: **Executed** against one answer key. Not Verified across
+  sources, not Accepted. Issue #2 remains open.

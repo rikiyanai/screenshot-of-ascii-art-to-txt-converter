@@ -1,0 +1,129 @@
+{
+  "rows_key": 24,
+  "rows_recovered": 24,
+  "strict_cer": 0.0161,
+  "canonical_cer": 0.0056,
+  "exact_rows": 22,
+  "per_row": [
+    {
+      "row": 0,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 1,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 2,
+      "strict_edits": 2,
+      "canonical_edits": 0
+    },
+    {
+      "row": 3,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 4,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 5,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 6,
+      "strict_edits": 4,
+      "canonical_edits": 0
+    },
+    {
+      "row": 7,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 8,
+      "strict_edits": 2,
+      "canonical_edits": 0
+    },
+    {
+      "row": 9,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 10,
+      "strict_edits": 2,
+      "canonical_edits": 0
+    },
+    {
+      "row": 11,
+      "strict_edits": 2,
+      "canonical_edits": 0
+    },
+    {
+      "row": 12,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 13,
+      "strict_edits": 2,
+      "canonical_edits": 0
+    },
+    {
+      "row": 14,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 15,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 16,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 17,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 18,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 19,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 20,
+      "strict_edits": 2,
+      "canonical_edits": 2
+    },
+    {
+      "row": 21,
+      "strict_edits": 2,
+      "canonical_edits": 0
+    },
+    {
+      "row": 22,
+      "strict_edits": 0,
+      "canonical_edits": 0
+    },
+    {
+      "row": 23,
+      "strict_edits": 3,
+      "canonical_edits": 3
+    }
+  ]
+}

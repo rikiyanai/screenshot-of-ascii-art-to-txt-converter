@@ -131,6 +131,28 @@ Observed on 2026-09-21:
 
 This output is a machine candidate, not an accepted reconstruction.
 
+## Proportional (Shift_JIS) art
+
+`recover_monospace_ascii.py` refuses art set in a proportional face, because no
+single advance describes it. `scripts/recover_proportional_aa.py` decodes it
+instead, assuming the art was set in Saitamaar (the MS PGothic-metric face that
+2ch/5ch art viewers use, vendored under `fonts/`). Each row is decoded by
+dynamic programming over the pen positions that the font's advance table
+allows. The font size, line pitch, text-box origin and row baselines are all
+fitted from the image and recorded in `quality.json`. It also needs fontTools
+(pinned in `requirements.txt`).
+
+```sh
+python3 scripts/recover_proportional_aa.py sample/proportional/madonna.source.png OUT
+python3 scripts/score_against_key.py OUT/recovered.txt sample/proportional/madonna.expected.txt
+```
+
+On the one real screenshot with an answer key, 22 of 24 rows come out exact and
+the character error rate is 0.56%. That comparison ignores the order of spaces
+within a blank run, which the pixels do not determine. The strict character
+error rate is 1.61%. This is one sample in one face, so the result is
+experimental and unaccepted. See `docs/receipts/2026-09-26-proportional-madonna/`.
+
 ## Coverage accounting
 
 Coverage is measured against ink-bearing source cells, never against the tool's

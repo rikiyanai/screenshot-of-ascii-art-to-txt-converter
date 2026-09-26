@@ -28,7 +28,7 @@ class BundledSampleContract(unittest.TestCase):
 
     def test_python_dependencies_are_pinned(self) -> None:
         requirements = (ROOT / "requirements.txt").read_text().splitlines()
-        self.assertEqual(requirements, ["numpy==2.4.1", "Pillow==12.1.0"])
+        self.assertEqual(requirements, ["numpy==2.4.1", "Pillow==12.1.0", "fonttools==4.62.1"])
 
     def test_bundled_sample_produces_expected_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as parent:

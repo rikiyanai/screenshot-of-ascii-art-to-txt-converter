@@ -1,0 +1,283 @@
+{
+  "schema": "proportional_aa_recovery.v1",
+  "acceptance_status": "experimental_unaccepted",
+  "source": "sample/proportional/madonna.source.png",
+  "source_sha256": "b0a6c7f1439475b26267a348a5aafc255ff93e2635bfbbacea5d5cbfa8f562cd",
+  "font": {
+    "path": "fonts/Saitamaar-Regular.ttf",
+    "sha256": "8f8c9b6ebe65f12456c3fa42ccddc4ec4795aad8b7f0a12f00d9f09f31a35890",
+    "units_per_em": 1280,
+    "pen_lattice_units": 80
+  },
+  "size_px": 22.0,
+  "size_fit": [
+    [
+      12.0,
+      0.5536
+    ],
+    [
+      13.0,
+      0.5767
+    ],
+    [
+      14.0,
+      0.5755
+    ],
+    [
+      15.0,
+      0.5754
+    ],
+    [
+      16.0,
+      0.5694
+    ],
+    [
+      17.0,
+      0.5492
+    ],
+    [
+      18.0,
+      0.5354
+    ],
+    [
+      19.0,
+      0.5059
+    ],
+    [
+      20.0,
+      0.4729
+    ],
+    [
+      21.0,
+      0.3775
+    ],
+    [
+      21.25,
+      0.3547
+    ],
+    [
+      21.5,
+      0.2908
+    ],
+    [
+      21.75,
+      0.278
+    ],
+    [
+      22.0,
+      0.1553
+    ],
+    [
+      22.25,
+      0.2543
+    ],
+    [
+      22.5,
+      0.3175
+    ],
+    [
+      22.75,
+      0.3148
+    ],
+    [
+      23.0,
+      0.3831
+    ],
+    [
+      24.0,
+      0.5277
+    ],
+    [
+      25.0,
+      0.6946
+    ],
+    [
+      26.0,
+      0.7285
+    ],
+    [
+      27.0,
+      0.8114
+    ],
+    [
+      28.0,
+      0.8181
+    ],
+    [
+      29.0,
+      0.877
+    ],
+    [
+      30.0,
+      0.8889
+    ],
+    [
+      31.0,
+      0.8957
+    ],
+    [
+      32.0,
+      0.8975
+    ]
+  ],
+  "line_pitch_px": 24.0018,
+  "baselines_px": [
+    90,
+    114,
+    138,
+    162,
+    186,
+    210,
+    234,
+    258,
+    282,
+    306,
+    330,
+    354,
+    378,
+    402,
+    426,
+    450,
+    474,
+    498,
+    522,
+    546,
+    570,
+    594,
+    618,
+    642
+  ],
+  "text_origin_x_px": 6.0,
+  "text_origin_source": "container_rule",
+  "container_edge_px": 6,
+  "candidate_glyphs": 737,
+  "glyph_penalty": 0.02,
+  "rows": [
+    {
+      "text": "　　　　　　　　　　　　　　　　　　　　_ ＿",
+      "reconstruction_cost": 15.405,
+      "ink_energy": 47.757
+    },
+    {
+      "text": "　　　　　　　　　　　　　　　 　 , イ´　　　 ｀丶、",
+      "reconstruction_cost": 22.116,
+      "ink_energy": 77.805
+    },
+    {
+      "text": "　　　　　　 　 　 　 　 　 　 ／.:　 　 .＿ _　　　ヽ",
+      "reconstruction_cost": 18.001,
+      "ink_energy": 88.531
+    },
+    {
+      "text": "　　　　　　　　　　　　　　 / .::: .／　　 　 ｀ヽ i　 ﾊ",
+      "reconstruction_cost": 37.036,
+      "ink_energy": 150.31
+    },
+    {
+      "text": "　　　　　　　　　　　　　　,'.: :: .,' 　 　 人　　 ｀l 　 |",
+      "reconstruction_cost": 26.198,
+      "ink_energy": 149.785
+    },
+    {
+      "text": "　　　　　　 　 　 　 　 　 ,.: .::　l=-‐ ´ 　 ｀ ｰミl 　 !",
+      "reconstruction_cost": 18.545,
+      "ink_energy": 188.116
+    },
+    {
+      "text": "　　　　　　　　　　 　 　 .l:::: :. ;'　＿　　　 ＿｀ l　 ﾊ",
+      "reconstruction_cost": 25.858,
+      "ink_energy": 177.736
+    },
+    {
+      "text": "　　　　　　　　　　　　　 ｌ::::::::｜`＝'ヽ　'´＝'　! :: :..',",
+      "reconstruction_cost": 47.573,
+      "ink_energy": 257.908
+    },
+    {
+      "text": "　　　　　　　　　　 　 　 ! :: : ｜　　 .::}　 　 　 .! :: ::｜",
+      "reconstruction_cost": 18.165,
+      "ink_energy": 154.029
+    },
+    {
+      "text": "　　　　 　 　 　 　 　 　 l :: ::　ﾄ､.　　::し 　 　 /:! :: ::ﾊ",
+      "reconstruction_cost": 38.682,
+      "ink_energy": 225.112
+    },
+    {
+      "text": "　　　　　　　　 　 　 　 ,' :: ::　川:. 、 ｀-´　 .ｲ ::ｌ :: ::　',",
+      "reconstruction_cost": 21.095,
+      "ink_energy": 215.315
+    },
+    {
+      "text": "　　　　　　　 　 　 　 ./　:: :. ,' ｌ l ::::... - ::::　 | :::| :: ::　ﾍ",
+      "reconstruction_cost": 22.806,
+      "ink_energy": 237.573
+    },
+    {
+      "text": "　　　　　　　　 　 　 / 　 :: :.l　!ﾘ::::::::::'　　　 ｌ　::! :: :　　ゝ、",
+      "reconstruction_cost": 26.704,
+      "ink_energy": 227.726
+    },
+    {
+      "text": "　　　　　　　　 　 ／.　　 :　:!: ;'ヽ::　　　　 ｲ,!　 :! : :. 　 　 ＼",
+      "reconstruction_cost": 34.926,
+      "ink_energy": 205.659
+    },
+    {
+      "text": "　　 　 　 　 　 ／.:　:　　 :　:l il ::.、｀ - - ' / } .::.|　 ::.　 : :　　＼",
+      "reconstruction_cost": 34.163,
+      "ink_energy": 281.068
+    },
+    {
+      "text": "　　　　　　 .／ .:　.::　　　:　,'.: ゝ、｀ｰ - イ / .:　|　 :::　 :.:.　　　 ヽ",
+      "reconstruction_cost": 25.322,
+      "ink_energy": 238.641
+    },
+    {
+      "text": "　　　　　　/　.:　 .::　:. 　 :: l:i　::　ﾄ､: : : ... ｲ　::.　!　 :::.　::　　　 　 ﾍ",
+      "reconstruction_cost": 31.221,
+      "ink_energy": 255.433
+    },
+    {
+      "text": "　　 　 　 /　.:　 .::　 .:　　:: l:l . :: ﾉ:. ヽ イ.:人　:..｜　::::　:　　　　　　',",
+      "reconstruction_cost": 27.269,
+      "ink_energy": 288.784
+    },
+    {
+      "text": "　 　 　 ./　.:　 .::　　:: 　 ::: |:l　::（::::.　　.::　　ヽ :. l 　 ::: .:　 :　　 : .　 ｌ",
+      "reconstruction_cost": 42.339,
+      "ink_energy": 253.697
+    },
+    {
+      "text": "　　 　 .,': .::　 .:::　　.::　　::: ﾄ､ :. :）:::.　　　　 　 ）::|　　:: :　 :　 　 : :　 |",
+      "reconstruction_cost": 30.451,
+      "ink_energy": 254.985
+    },
+    {
+      "text": "　　　 .,':: .:　 .::::　　.:: 　 .:: .!　）ノ　 .:i'Y'l　　　（ :: !　: ::.:　 .:　　　: :　 |",
+      "reconstruction_cost": 45.546,
+      "ink_energy": 319.404
+    },
+    {
+      "text": "　　　..ｌ:: ::　 .::::: 　 :::.　 .:: ::l: .'´　　.::|'Y'|:.　　　 ｀ !　: :: 　 ::　　　 : :.　!",
+      "reconstruction_cost": 32.264,
+      "ink_energy": 291.208
+    },
+    {
+      "text": "　　　 ｌ:: ::　.::::::　　::::　 ::　::!: ..　　..::,'｜';:.　　　 .::|　:: ::.　 ::　　　 :: ::. |",
+      "reconstruction_cost": 35.839,
+      "ink_energy": 277.358
+    },
+    {
+      "text": "　　　 |::::　.::::::　　 :::　.::: .:::}: : .. 　 / ｜ ';::　　 .::::|　:　:::.　::.　　　:: .::. !",
+      "reconstruction_cost": 22.98,
+      "ink_energy": 294.462
+    }
+  ],
+  "reconstruction_ink_iou": 0.8201,
+  "conventions": [
+    "no two U+0020 adjacent (HTML collapse)",
+    "blank runs written in canonical order: surplus U+3000, then U+0020/U+3000 alternating",
+    "no trailing whitespace"
+  ]
+}
