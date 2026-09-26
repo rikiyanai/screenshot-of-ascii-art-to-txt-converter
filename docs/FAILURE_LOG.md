@@ -388,3 +388,22 @@
   automatically.
 - Highest stage: **Executed** against one answer key. Not Verified across
   sources, not Accepted. Issue #2 remains open.
+
+## P0C-06 · 2026-09-26 — shared ASCII-art archive approved; AAHub corpus available
+
+- Audit (subagent, 2026-09-26) recommended a standalone PRIVATE archive
+  repository instead of placing it in asciicker-Y9-2. Reasons: visibility
+  mismatch (Y9-2 private, consumers public); Y9-2 history is 23.5 GiB with LFS
+  banned; no licence/provenance owner; 442 of 525 indexed files live only in
+  ~/Downloads, ~/Pictures or ~/Desktop.
+- User decision (2026-09-26): approved. Create the private repository,
+  **no Git LFS**. Delegated to a subagent; migration is copy-only and
+  reversible.
+- The audit document and `reference-art-index.txt` (v3) are deliberately NOT
+  committed here. This repository is public and both files expose local paths
+  and private-repository details. They move to the private archive.
+- New corpus for this converter: the AAHub archive, 1,153 txt+png pairs in 16
+  slug directories. The PNGs are synthetic renders (Saitamaar 16 px, bilevel,
+  17 px line step, 8 px pad), so they test scale, binarised input and throughput.
+  They are not independent screenshot evidence, because the renderer's face is
+  the decoder's model.
