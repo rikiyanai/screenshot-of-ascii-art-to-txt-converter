@@ -542,3 +542,29 @@
 - Focused checks: `tests/test_archive_snapshot.py`, `test_lattice.py`, and
   `test_contract.py` passed (17 tests, 4 subtests). A larger training baseline
   remains pending at this checkpoint; held-out evaluation has not run.
+
+### First train/held-out baseline completed
+
+- Both evaluations read Git blobs from archive `07a6198`, use split hash
+  `3dc65a19…02cb5`, known render size 16 px, known text origin x=8 px, and
+  decoder prior weight 0. With `--every 1000`, they select the first page of
+  each nonempty slug. The 2 empty training slugs contribute no pages.
+- Training receipt `docs/receipts/2026-09-26-aahub-new-train/eval.json`:
+  27 pages, 641 key rows, 432 exact (67.39%), 22/27 page row counts matched,
+  0 crashes. Held-out receipt `docs/receipts/2026-09-26-aahub-new-heldout/eval.json`:
+  14 pages, 357 key rows, 271 exact (75.91%), 14/14 page row counts matched,
+  0 crashes. Combined 703/998 exact rows (70.44%) is descriptive only; the
+  sampling is one page per slug, not a population estimate, and the partitions
+  have different page compositions. These figures are not comparable to
+  P0C-07's every-25th/every-5th older-snapshot measurements.
+- Train-only pitch failures remain: `shingu-butsugu-mingeihin-zou/res02` was
+  given 10 rows for a 9-row key at 16.2237 px; `kirby/res00`, `tonfa/res01`,
+  and `violet-02-alt/res01` selected 18 px and lost a row. For the Shingu page,
+  the 16.2237 px lattice gives its extra edge row only 3 units of exclusive
+  source ink energy out of 760 total, versus 20 units for the first row of
+  the 17 px, 9-row lattice. This supports an edge-row overfit hypothesis, not
+  yet a general pitch fix. Do not tune to the held-out receipt.
+- Character-class errors remain separately open. A kanji fallback has not been
+  implemented or scored. The corpus is synthetic Saitamaar rendering, so the
+  highest supported stage remains **Executed experimental candidate**; neither
+  real-screenshot generalization nor user acceptance has changed.

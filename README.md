@@ -29,7 +29,13 @@ python3 scripts/eval_corpus.py ../ascii-art-archive OUT --partition train --ever
 
 The evaluation command writes a receipt to `OUT/eval.json`. Replace `OUT` with
 a new directory; use `--partition heldout` only after training decisions are
-frozen. A synthetic render score is a model diagnostic, not screenshot acceptance.
+frozen, apart from the one pre-tuning baseline already recorded. A synthetic
+render score is a model diagnostic, not screenshot acceptance.
+
+The first pinned baseline sampled one page per nonempty slug: 432/641 exact
+training rows and 271/357 exact held-out rows. These small, composition-sensitive
+samples are not full-corpus accuracy estimates. Their receipts and the remaining
+pitch and kanji findings are recorded in [P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
 
 Nothing about the source is assumed. The converter measures the character lattice
 from the image, infers the typeface and size by fitting a library of monospaced
