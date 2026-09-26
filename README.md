@@ -7,15 +7,29 @@ converter. The fixed-grid path has one scored real screenshot (54/67 characters
 exact); the proportional Saitamaar path has one scored real screenshot (22/24
 rows exact under spacing-canonical comparison). Neither is accepted across
 sources, and no automatic selector connects them. The older AAHub corpus scores
-refer only to a 1,153-pair archive snapshot. The current pinned archive commit
-`07a6198` contains 3,922 committed AAHub pairs, despite its README reporting
-5,703; see [P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
+refer only to a 1,153-pair archive snapshot. Archive commit `07a6198`
+contains 5,703 committed AAHub pairs; the audit correction is recorded in
+[P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
 
 The next evaluation sequence is: freeze a slug-disjoint train/held-out split,
 rebuild training-only character counts, measure baselines, improve kanji
 coverage and short-page line pitch using training data, then evaluate held-out
 pages. The 12,816-pair fixed-grid ascii-art.de corpus is a separate baseline;
 synthetic renders do not replace independent screenshots for acceptance.
+
+The AAHub split is pinned in `data/aahub_split.json`: 4,246 training pairs
+across 29 slugs and 1,457 held-out pairs across 14 slugs. The archive checkout
+may be dirty; the commands below read and hash Git blobs from the pinned commit,
+never the live worktree. The archive is private and must be available locally.
+
+```sh
+python3 scripts/build_char_prior.py ../ascii-art-archive
+python3 scripts/eval_corpus.py ../ascii-art-archive OUT --partition train --every 100 --size-px 16 --x0 8 --workers 2
+```
+
+The evaluation command writes a receipt to `OUT/eval.json`. Replace `OUT` with
+a new directory; use `--partition heldout` only after training decisions are
+frozen. A synthetic render score is a model diagnostic, not screenshot acceptance.
 
 Nothing about the source is assumed. The converter measures the character lattice
 from the image, infers the typeface and size by fitting a library of monospaced

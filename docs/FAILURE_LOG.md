@@ -508,3 +508,37 @@
   the acceptance gate. No synthetic-corpus score upgrades acceptance.
 - Current stage of this entry: audit finding and roadmap recorded. Training
   and code fixes are not yet claimed here; append their actual results below.
+
+### Count correction before training
+
+- The first audit count was **wrong**. It matched only numeric `res[0-9]+`
+  names and omitted 1,781 legitimate names such as `resK-01`. Both
+  `git ls-tree -r 07a6198` and `git show 07a6198:MANIFEST.tsv`, counted with
+  `res*.txt`/`res*.png`, show **5,703 matched pairs** across 43 slugs.
+  The 3,922 figure and the resulting README claim in `c35692b` are rejected.
+  The archive handoff and P0C-08 pair count were correct after all.
+- The worktree caution remains valid: untracked AAHub directories and a
+  modified live manifest appeared during inspection. The training reader uses
+  committed Git blobs from `07a6198`, not the moving worktree.
+- The frozen split retains the original five held-out slugs and assigns nine
+  of the 27 newly committed slugs to held-out by lowest SHA-256 slug name.
+  `data/aahub_split.json` records the exact choices: 4,246 training pairs in
+  29 slugs and 1,457 held-out pairs in 14 slugs. This prevents new-slug
+  training leakage but is not franchise-disjoint. The prior and evaluations
+  must carry the archive commit, manifest hash, and split hash together.
+
+### First training pass on the corrected snapshot
+
+- `build_char_prior.py` completed on 4,246 training Git blobs, producing
+  `data/aa_char_prior.json`: 5,260,288 non-newline characters and 2,090
+  distinct characters. Its archive commit, manifest hash, and split hash match
+  `data/aahub_split.json`; no held-out text was read. The new reader verifies
+  each Git blob against the committed manifest and ignores concurrent archive
+  worktree changes.
+- A one-page training smoke (`alisa-ransefort-01/res01.png`) decoded without an
+  error: 14/33 canonical rows exact, line pitch 17 px, canonical CER 0.0517.
+  This is only a smoke receipt, not a corpus estimate. Its score is not a
+  decoder improvement claim and did not determine a tuning choice.
+- Focused checks: `tests/test_archive_snapshot.py`, `test_lattice.py`, and
+  `test_contract.py` passed (17 tests, 4 subtests). A larger training baseline
+  remains pending at this checkpoint; held-out evaluation has not run.

@@ -1,0 +1,40 @@
+{
+ "schema": "proportional_eval.v2",
+ "archive_commit": "07a619838b066c691d1aaed5865c6bdf4de54336",
+ "manifest_sha256": "0f0d69885e76724fe664d851c0a193c850e1531e1e0b00a58210a322f5c897a3",
+ "split_sha256": "3dc65a19fd661289d485e9d3675f7ede0e8dbfde18d8f0f237bdfea08c602cb5",
+ "partition": "train",
+ "slugs": [
+  "alisa-ransefort-01"
+ ],
+ "every": 1000,
+ "size_px": 16.0,
+ "x0": 8.0,
+ "prior": "aa_char_prior.json",
+ "prior_weight": 0.0,
+ "summary": {
+  "pages": 1,
+  "errors": 0,
+  "rows": 33,
+  "exact_rows": 14,
+  "exact_rows_indentation_invariant": 14,
+  "exact_row_rate": 0.4242,
+  "row_count_match": 1,
+  "mean_canonical_cer": 0.0517,
+  "mean_strict_cer": 0.0361
+ },
+ "pages": [
+  {
+   "page": "alisa-ransefort-01/res01.png",
+   "exact_rows_indentation_invariant": 14,
+   "rows_key": 33,
+   "rows_recovered": 33,
+   "strict_cer": 0.0361,
+   "canonical_cer": 0.0517,
+   "exact_rows": 14,
+   "pitch": 17.0,
+   "x0": 8.0,
+   "seconds": 14.5
+  }
+ ]
+}

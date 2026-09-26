@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Score the proportional decoder over txt+png pairs of an art corpus.
+"""Score the proportional decoder over pinned txt+png Git blobs of an art corpus.
 
 Pages are chosen deterministically (every k-th page of each slug), decoded in
 parallel at a given size, and scored with score_against_key. The per-page and
@@ -9,6 +9,8 @@ aggregate results are written to OUT/eval.json; that file is the receipt.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import io
 import json
 import sys
 import time
@@ -19,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import recover_proportional_aa as rp  # noqa: E402
 from score_against_key import score  # noqa: E402
 from PIL import Image  # noqa: E402
+from archive_snapshot import SPLIT, load_split, read_blob  # noqa: E402
 
 _STATE: dict = {}
 
@@ -29,22 +32,26 @@ def _rel(path: str) -> str:
     return f"{p.parent.name}/{p.name}"
 
 
-def _init(prior_path: str, weight: float, font: str, x0: float | None) -> None:
+def _init(prior_path: str, weight: float, font: str, x0: float | None,
+          archive: str, split: dict) -> None:
     prior = rp.load_prior(Path(prior_path)) if prior_path else {}
     _STATE.update(prior=prior, weight=weight, x0=x0,
-                  model=rp.load_font_model(Path(font), rp.prior_alphabet(prior)))
+                  model=rp.load_font_model(Path(font), rp.prior_alphabet(prior)),
+                  archive=Path(archive), split=split)
 
 
-def _run(job: tuple[str, str, float]) -> dict:
-    png, txt, size = job
+def _run(job: tuple[str, float]) -> dict:
+    stem, size = job
     started = time.time()
     try:
-        result = rp.decode_image(Image.open(png), _STATE["model"], size, 0.02, _STATE["x0"],
+        png = stem + ".png"
+        result = rp.decode_image(Image.open(io.BytesIO(read_blob(_STATE["archive"], _STATE["split"], png))),
+                                 _STATE["model"], size, 0.02, _STATE["x0"],
                                  _STATE["prior"], _STATE["weight"])
         lines = [r.text for r in result["rows"]]
         while lines and not lines[-1]:
             lines.pop()
-        key = Path(txt).read_text(encoding="utf-8").splitlines()
+        key = read_blob(_STATE["archive"], _STATE["split"], stem + ".txt").decode("utf-8").splitlines()
         s = score(lines, key)
         s.pop("per_row")
         return {"page": _rel(png), **s, "pitch": result["pitch"], "x0": result["x0"],
@@ -55,9 +62,11 @@ def _run(job: tuple[str, str, float]) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("root", type=Path, help="collection root with <slug>/resNN.{png,txt}")
+    parser.add_argument("archive", type=Path, help="ascii-art-archive checkout; reads Git objects, not its worktree")
     parser.add_argument("out", type=Path)
-    parser.add_argument("--slugs", nargs="+", required=True)
+    parser.add_argument("--split", type=Path, default=SPLIT)
+    parser.add_argument("--partition", choices=("train", "heldout"), required=True)
+    parser.add_argument("--slugs", nargs="+", help="optional subset within the chosen partition")
     parser.add_argument("--every", type=int, default=10)
     parser.add_argument("--size-px", type=float, required=True)
     parser.add_argument("--prior", default=str(rp.DEFAULT_PRIOR))
@@ -66,16 +75,32 @@ def main() -> None:
     parser.add_argument("--x0", type=float, default=None,
                         help="known text origin (AAHub renders: 8 px pad); fitted when omitted")
     args = parser.parse_args()
+    if args.every < 1 or args.workers < 1:
+        parser.error("--every and --workers must both be positive")
+    if args.out.exists():
+        parser.error("output directory already exists; use a new receipt path")
 
+    split, by_slug = load_split(args.archive, args.split)
+    prior_metadata = json.loads(Path(args.prior).read_text(encoding="utf-8")) if args.prior else None
+    if prior_metadata and (prior_metadata.get("corpus_commit") != split["archive_commit"] or
+                           prior_metadata.get("manifest_sha256") != split["manifest_sha256"] or
+                           prior_metadata.get("split_sha256") != hashlib.sha256(args.split.read_bytes()).hexdigest()):
+        raise SystemExit("prior was not built from this locked archive and split")
+    held_out = set(split["held_out_slugs"])
+    allowed = sorted(s for s in by_slug if (s in held_out) == (args.partition == "heldout"))
+    slugs = args.slugs or allowed
+    if set(slugs) - set(allowed):
+        raise SystemExit("requested slug is outside the chosen split partition")
+    if len(slugs) != len(set(slugs)):
+        raise SystemExit("requested slugs contain duplicates")
     jobs = []
-    for slug in args.slugs:
-        pngs = sorted((args.root / slug).glob("res*.png"))
-        for png in pngs[:: args.every]:
-            jobs.append((str(png), str(png.with_suffix(".txt")), args.size_px))
+    for slug in slugs:
+        jobs.extend((stem, args.size_px) for stem in by_slug[slug][:: args.every])
     if not jobs:
         raise SystemExit("no pages matched: check the root and slug names")
     with ProcessPoolExecutor(args.workers, initializer=_init,
-                             initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.x0)) as pool:
+                             initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.x0,
+                                       str(args.archive), split)) as pool:
         pages = list(pool.map(_run, jobs))
     ok = [p for p in pages if "error" not in p]
     rows = sum(p["rows_key"] for p in ok)
@@ -88,13 +113,18 @@ def main() -> None:
         "mean_canonical_cer": round(sum(p["canonical_cer"] for p in ok) / max(len(ok), 1), 4),
         "mean_strict_cer": round(sum(p["strict_cer"] for p in ok) / max(len(ok), 1), 4),
     }
-    args.out.mkdir(parents=True, exist_ok=True)
+    args.out.mkdir(parents=True, exist_ok=False)
     (args.out / "eval.json").write_text(json.dumps({
-        "schema": "proportional_eval.v1", "slugs": args.slugs, "every": args.every,
+        "schema": "proportional_eval.v2", "archive_commit": split["archive_commit"],
+        "manifest_sha256": split["manifest_sha256"],
+        "split_sha256": hashlib.sha256(args.split.read_bytes()).hexdigest(),
+        "partition": args.partition, "slugs": slugs, "every": args.every,
         "size_px": args.size_px, "x0": args.x0, "prior": args.prior and Path(args.prior).name,
         "prior_weight": args.prior_weight, "summary": summary, "pages": pages,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(summary))
+    if summary["errors"]:
+        raise SystemExit(f"{summary['errors']} pages failed; inspect the receipt")
 
 
 if __name__ == "__main__":
