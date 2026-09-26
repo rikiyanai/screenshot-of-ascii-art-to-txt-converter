@@ -718,6 +718,13 @@
   characters (2,339 CJK) to 7,547 (6,734 CJK). The option is not yet the
   default: it must beat the no-fallback decoder on a matched training receipt
   before the one post-choice held-out run.
+- Direct coverage accounting over all 23,363 training keys found 1,920 of
+  457,065 rows on 675 pages contain at least one character outside the baseline
+  font bank. The 4,627 occurrences include 1,677 rare kanji; most of the
+  remainder are alternate Unicode-width spaces that render blank. In the
+  deterministic every-25 comparison sample, 85 of 18,990 rows on 31/986 pages
+  contain an out-of-bank character, including 56 rare-kanji occurrences. This
+  bounds the fallback's direct coverage opportunity before decode effects.
 - The larger bank exposed repeated evaluator work. `decode_image` now accepts a
   geometry-checked pre-rendered bank, and each corpus worker renders that bank
   once instead of once per page. This is an evaluation performance change; the
@@ -753,3 +760,32 @@
   `mno/meriday/res06` 284/290, `jkl/law/res01` 208/208, and `ab/007/res03`
   24/24, with exact randomized origin phases and zero crashes. A new full
   receipt must replace, not overwrite, the rejected one.
+
+### Corrected full fixed-grid baseline completed
+
+- Accepted diagnostic receipt:
+  `docs/receipts/2026-09-26-ascii-art-de-full-random-margins-v2.json`, SHA-256
+  `9a821605d7c0d03cb47350514a0b7b7907178a267d47b7e728cc863033f1755c`.
+  It processed all 12,816 pairs / 217,049 key rows with independently
+  randomized 0–31 px margins, zero crashes, and zero unmatched cells in
+  2,819.3 seconds.
+- Result: 112,909/217,049 strict exact rows (52.02%); 153,396/217,049
+  indentation-invariant exact rows (70.67%); mean per-page canonical CER
+  0.0767; row counts matched on 11,725/12,816 pages. It resolved 12,706,165
+  cells by exact threshold/Floyd raster and 406,888 by the conservative nearest
+  fallback; 3,108 remained ambiguous. The ASCII-only bank leaves 1,893
+  non-ASCII key characters outside scope.
+- Crop-origin separation: both randomized phases were fit exactly on
+  10,916/12,816 pages; x phase alone on 12,602 and y phase alone on 10,918.
+  Exact-phase pages scored 99,775/187,498 strict exact rows (53.21%) and
+  135,363/187,498 indentation-invariant rows (72.19%), with mean canonical CER
+  0.0386. Phase-wrong pages scored materially worse (mean canonical CER
+  0.2955). The realistic uneven margin test therefore exposes origin fitting
+  as a separate open problem rather than hiding it behind a perfect crop.
+- Scope boundary: font, size, cell pitch, and line step come from the pinned
+  corpus render contract; only outer crop phase is inferred. This is a full
+  corpus diagnostic for classification plus imperfect cropping, not evidence
+  that the blind fixed-grid CLI can infer every declared parameter.
+- The evaluator now batches new raster patterns per page for distance scoring.
+  Five focused tests pass, and the batched path reproduces the same exact-row
+  results on the four threshold/dither representative pages.

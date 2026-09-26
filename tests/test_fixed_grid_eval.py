@@ -20,7 +20,9 @@ class RandomMarginRecovery(unittest.TestCase):
     def test_nearest_template_resolves_non_exact_bilevel_raster(self) -> None:
         variants = np.array([[[0.0, 1.0, 0.0], [1.0, 0.0, 1.0]]])
         bank = TemplateBank({}, "AB", variants, (variants**2).sum(axis=2), margin=0.6)
-        character, state = bank.classify(np.array([[False, True, True]]))
+        cell = np.array([[False, True, True]])
+        bank.prepare(cell.reshape(1, 1, 1, 3))
+        character, state = bank.classify(cell)
         self.assertEqual((character, state), ("A", "nearest"))
 
     def test_tabs_are_scored_as_their_visible_eight_column_expansion(self) -> None:

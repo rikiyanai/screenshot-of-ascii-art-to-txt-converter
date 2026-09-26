@@ -19,6 +19,13 @@ frozen. The 12,816-pair fixed-grid ascii-art.de corpus is scored separately
 with deterministic 0–31 px random margins on every screenshot edge; synthetic
 renders do not replace independent screenshots for acceptance.
 
+The complete fixed-grid diagnostic now covers all 12,816 ascii-art.de pairs
+after replacing each uniform source pad with four independent 0–31 px margins.
+It recovered 112,909/217,049 strict exact rows (52.02%) and 153,396/217,049
+indentation-invariant exact rows (70.67%), with zero crashes. The result exposed
+both hard-thresholded and Floyd–Steinberg bilevel pages plus an open crop-origin
+problem; details and the rejected exact-only predecessor are in P0C-10.
+
 The AAHub split is pinned in `data/aahub_split.json`: 23,363 training pairs
 across 116 slugs and 9,587 held-out pairs across 57 slugs. The training prior
 was rebuilt from every training TXT and contains 23,746,955 characters. The

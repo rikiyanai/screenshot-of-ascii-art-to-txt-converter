@@ -45,6 +45,33 @@ class TemplateBank:
     margin: float = 0.6
     nearest_cache: dict[bytes, tuple[str, float, float]] = field(default_factory=dict)
 
+    def prepare(self, cells: np.ndarray) -> None:
+        """Batch every unseen raster on a page into one distance operation."""
+        unseen: dict[bytes, np.ndarray] = {}
+        for cell in cells.reshape(-1, cells.shape[-2], cells.shape[-1]):
+            raster = np.ascontiguousarray(cell).tobytes()
+            if raster not in self.exact and raster not in self.nearest_cache:
+                unseen.setdefault(raster, cell)
+        if not unseen:
+            return
+        keys = list(unseen)
+        pixels = np.asarray([unseen[key].reshape(-1) for key in keys], dtype=float)
+        templates = self.variants.reshape(-1, self.variants.shape[-1])
+        template_energy = self.energy.reshape(-1)
+        distance = (
+            pixels.sum(axis=1, keepdims=True)
+            + template_energy[None, :]
+            - 2 * (pixels @ templates.T)
+        ).reshape(len(keys), self.variants.shape[0], len(self.characters))
+        per_character = distance.min(axis=1)
+        order = np.argsort(per_character, axis=1)[:, :2]
+        for row, raster in enumerate(keys):
+            best, runner = int(order[row, 0]), int(order[row, 1])
+            gap = float(per_character[row, runner] - per_character[row, best])
+            self.nearest_cache[raster] = (
+                self.characters[best], float(per_character[row, best]), gap
+            )
+
     def classify(self, cell: np.ndarray) -> tuple[str, str]:
         raster = np.ascontiguousarray(cell).tobytes()
         matches = self.exact.get(raster, ())
@@ -212,6 +239,7 @@ def decode_page(
     y0, x0, phase_fit = fit_origin(ink, bank.exact, height, width)
     cells = _cut_cells(ink, y0, x0, height, width)
     rows, columns = cells.shape[:2]
+    bank.prepare(cells)
     recovered: list[str] = []
     tally = Counter()
     for row in cells:
