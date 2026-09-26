@@ -475,3 +475,36 @@
 - New opportunity: `ascii-art-de-rendered` is the first large answer-key
   corpus for the FIXED-GRID tool (`recover_monospace_ascii.py`). That tool
   has so far been judged on one bundled sample and one screenshot pair.
+
+## P0C-09 · 2026-09-26 — converter status and archive-snapshot audit
+
+- Status before this attempt: `main` at `3192192`, clean and synchronized with
+  `origin/main`. The fixed-grid tool is an executed experimental candidate:
+  its one real answer-key screenshot scored 54/67 exact, while the bundled
+  Stone Story sheet has no accepted transcript and has low reconstruction IoU.
+  The proportional tool is also experimental: Madonna scored 22/24 canonical
+  rows exact, and P0C-07's AAHub scores belong only to archive `eb5a7bf`.
+  Neither tool is accepted for general screenshots; there is no automatic
+  regime router.
+- Audit falsifier for P0C-08: immutable archive commit `07a6198` contains
+  **3,922** `res*.txt` and **3,922** matching `res*.png` AAHub files, not
+  5,703 pairs. The counts come independently from `git ls-tree -r 07a6198`
+  and `git show 07a6198:MANIFEST.tsv`. The 12,816 ascii-art.de pairs *do*
+  match the committed manifest. Thus `P0C-08`, the archive README, and the
+  handoff overstate the AAHub pair count for that commit. Do not score or
+  train against the claimed 5,703 until those files are committed and pinned.
+- During this audit the archive worktree acquired untracked AAHub directories
+  and a modified manifest. These are concurrent, non-owned changes. No archive
+  file was changed by this converter attempt, and worktree enumeration is not
+  an acceptable corpus definition. Training must use an explicit split over
+  only the committed slugs and verify each input against the pinned manifest.
+- Roadmap and gates: (1) freeze the committed archive identity and expand the
+  slug-held-out split; (2) rebuild character counts from training slugs only;
+  (3) measure a new training baseline and held-out baseline on the same pinned
+  pages before changing the decoder; (4) implement and ablate kanji fallback
+  and short-page pitch fixes on training pages, then run held-out evaluation
+  once; (5) independently establish a fixed-grid ascii-art.de baseline and
+  error taxonomy. Real, independent screenshots and operator judgment remain
+  the acceptance gate. No synthetic-corpus score upgrades acceptance.
+- Current stage of this entry: audit finding and roadmap recorded. Training
+  and code fixes are not yet claimed here; append their actual results below.

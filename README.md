@@ -2,6 +2,21 @@
 
 Experimental converter for turning screenshots of fixed-grid character art back into text.
 
+Current status: two separate experimental decoders, not a general screenshot
+converter. The fixed-grid path has one scored real screenshot (54/67 characters
+exact); the proportional Saitamaar path has one scored real screenshot (22/24
+rows exact under spacing-canonical comparison). Neither is accepted across
+sources, and no automatic selector connects them. The older AAHub corpus scores
+refer only to a 1,153-pair archive snapshot. The current pinned archive commit
+`07a6198` contains 3,922 committed AAHub pairs, despite its README reporting
+5,703; see [P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
+
+The next evaluation sequence is: freeze a slug-disjoint train/held-out split,
+rebuild training-only character counts, measure baselines, improve kanji
+coverage and short-page line pitch using training data, then evaluate held-out
+pages. The 12,816-pair fixed-grid ascii-art.de corpus is a separate baseline;
+synthetic renders do not replace independent screenshots for acceptance.
+
 Nothing about the source is assumed. The converter measures the character lattice
 from the image, infers the typeface and size by fitting a library of monospaced
 fonts to that measured cell, and decides every cell by a recorded score. A cell is
