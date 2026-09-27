@@ -77,6 +77,23 @@ class ShortPagePhase(unittest.TestCase):
         self.assertEqual(len(result["rows"]), len(rows))
 
 
+class SubFloorPitch(unittest.TestCase):
+    """P0C-10: 30/986 AA-003 train pages crashed with an empty pitch-candidate
+    set. The autocorrelation locked onto bars inside a line (8-15 px) instead
+    of the 17 px line box, and every candidate under 0.95 em was skipped."""
+
+    def test_in_line_structure_does_not_empty_the_pitch_candidates(self) -> None:
+        model = rp.load_font_model(rp.DEFAULT_FONT, "三二")
+        rows = ["三二三", "二三二"]
+        baselines = [22 + 17 * i for i in range(len(rows))]
+        ink = rp.render_text(rows, model, 16, 17, 8, baselines, (60, 50))
+        self.assertLess(rp.line_geometry(ink, 22)[0], 0.95 * 16)  # the fault
+        image = Image.fromarray((255 - 255 * (ink > 0.35)).astype(np.uint8))
+        result = rp.decode_image(image, model, 16, 0.02, 8, {}, 0)
+        self.assertAlmostEqual(result["pitch"], 17, delta=0.5)
+        self.assertEqual([r.text for r in result["rows"]][:2], rows)
+
+
 class MadonnaAgainstKey(unittest.TestCase):
     """Decode at the fitted size (22 px) so the test does not spend four
     minutes re-fitting it; the size fit itself is recorded in the receipt."""

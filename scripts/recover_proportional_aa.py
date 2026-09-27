@@ -377,21 +377,38 @@ def canonical_spacing(text: str) -> str:
     return "".join(out)
 
 
-def line_geometry(ink: np.ndarray, bank_height: int) -> tuple[float, list[int]]:
+def line_geometry(ink: np.ndarray, bank_height: int,
+                  min_lag: int | None = None) -> tuple[float, list[int]]:
     """Line pitch from the autocorrelation of the row ink profile, and one
-    bottom-of-ink anchor per line (refined later against the glyph bank)."""
+    bottom-of-ink anchor per line (refined later against the glyph bank).
+
+    ``min_lag`` raises the lag floor. decode_image passes it only when the
+    default window returned a pitch below the line-box floor (0.95 em), so
+    the default path is unchanged.
+    """
     profile = ink.sum(axis=1)
     centred = profile - profile.mean()
     ac = np.correlate(centred, centred, mode="full")[len(profile) - 1 :]
     low, high = max(8, bank_height // 2), min(len(ac) - 1, bank_height * 3)
-    lag = low + int(np.argmax(ac[low:high]))
-    # refine to sub-pixel by parabola
-    if 0 < lag < len(ac) - 1:
-        a, b, c = ac[lag - 1], ac[lag], ac[lag + 1]
-        denom = a - 2 * b + c
-        pitch = lag + (0.5 * (a - c) / denom if denom else 0.0)
+    if min_lag is not None:
+        low = max(low, min_lag)
+    if high <= low:
+        # page shorter than one line box: no period to measure
+        pitch = float(low)
     else:
-        pitch = float(lag)
+        lag = low + int(np.argmax(ac[low:high]))
+        # refine to sub-pixel by parabola
+        if 0 < lag < len(ac) - 1:
+            a, b, c = ac[lag - 1], ac[lag], ac[lag + 1]
+            denom = a - 2 * b + c
+            offset = 0.5 * (a - c) / denom if denom else 0.0
+            if min_lag is not None:
+                # a lag on the window edge is not a local maximum; the vertex
+                # can then land anywhere (measured: -7.37 px on buki-02/resK-114)
+                offset = max(-0.5, min(0.5, offset))
+            pitch = lag + offset
+        else:
+            pitch = float(lag)
     rows = np.nonzero(profile > 0)[0]
     first, last = int(rows[0]), int(rows[-1])
     count = int(math.floor((last - first) / pitch)) + 1
@@ -527,6 +544,13 @@ def decode_image(
         raise ValueError("pre-rendered glyph bank geometry does not match the decode request")
     glyph_penalty = prior_penalty(bank.characters, prior or {}, prior_weight, glyph_penalty)
     pitch, (first, last, _) = line_geometry(ink, height)
+    if pitch < 0.95 * size_px:
+        # 2026-09-27 (P0C-10): 30/986 AA-003 train pages crashed below. The
+        # default lag window starts at bank_height // 2, under the line-box
+        # floor, so the autocorrelation can lock onto structure inside a line
+        # (8-15 px measured) and every pitch candidate is then skipped.
+        # Re-measure with the floor as the smallest lag.
+        pitch, (first, last, _) = line_geometry(ink, height, math.ceil(0.95 * size_px))
     edge = container_left_edge(grey)
     ink_cols = np.nonzero((ink > 0.5).any(axis=0))[0]
     full_px = model.advances[FULL_SPACE] * size_px / model.units_per_em

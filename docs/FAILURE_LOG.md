@@ -861,3 +861,42 @@
      `recover_monospace_ascii.py`.
 - **Next step in order:** diagnose the 30 errors → matched `--kanji-fallback`
   training receipt → one AA-003 held-out run → then job 1.
+
+### 2026-09-27 — sub-floor pitch crash fixed; corrected every-25 train receipt
+
+- **Symptom:** 30/986 pages in `2026-09-26-aahub-aa003-train-every25` failed
+  with `ValueError('min() iterable argument is empty')` at
+  `decode_image` → `min(pitch_trace, …)`. Reproduced on buki-01/res01,
+  kanji/resK-308, buki-02/resK-114 and tabako/resK-26.
+- **Cause (measured):** `line_geometry` searches autocorrelation lags from
+  `bank_height // 2` (11 px at 16 px). All 30 pages returned a pitch below
+  the 0.95 em line-box floor (15.2 px). The values were 8.1–15.0 px, plus one
+  −7.37 px from a parabola vertex on a window-edge lag. A random control
+  sample of 80 pages that decoded had none below the floor (lowest 16.71).
+  Every pitch candidate is below the floor, so `options` and `pitch_trace`
+  are empty.
+- **Fix:** `decode_image` re-measures with `min_lag = ceil(0.95 em)` only
+  when the default estimate is below the floor. On that path the parabola
+  offset is clamped to ±0.5, and a page shorter than the window returns the
+  floor. The default path is unchanged. `fit_size` is not changed. Regression
+  test `SubFloorPitch` (synthetic 三二三 / 二三二 page, default pitch 11.20)
+  fails without the fix and passes with it.
+  `tests/test_proportional.py` 6/6 pass, and the rest of the suite 42/42.
+- **Corrected receipt:** `docs/receipts/2026-09-27-aahub-aa003-train-every25-pitchfloor/eval.json`
+  (sha256 `d116ad95…25968`). Identities are the same as the 2026-09-26
+  receipt. Run with 8 workers and one BLAS thread each.
+  - 986 pages, **0 errors**, 18,990 rows (matches the P0C-10 expectation).
+  - 13,163 exact (**69.32%**), 13,031 exact ignoring indentation.
+  - 843/986 row counts right, canonical CER 0.1631, strict CER 0.1316.
+- **Identity check:** all 956 previously decoded pages give identical rows,
+  exact counts, CERs, pitch and x0 (0 differ). The 30 recovered pages give
+  333/431 exact rows (77.26%) and 25/30 row counts right. Pitch is 17.0 on
+  28 pages; the other two are 19.63 and 24.0.
+- **Stage:** Verified on the every-25 train sample. This receipt is the
+  no-fallback half of the matched `--kanji-fallback` comparison. The
+  2026-09-26 receipt is superseded as that baseline.
+- **Side note:** the first rerun ran 10 workers × 11 numpy threads while
+  other sessions were running. The machine then crashed with swap full. A
+  30 GB-footprint `git grep` from another session in asciicker-Y9-2 was seen
+  during the second run. Run corpus evaluations with
+  `OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1`.
