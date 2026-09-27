@@ -817,3 +817,47 @@
      rows are not counted as reading errors.
 - **Owner:** this log. The work sits behind the current P0C-10 sequence
   and does not change its pinned identities.
+
+## 2026-09-27 — status review: AA-003 intake, orphan training receipt, skill-guided extraction gap
+
+- **Orphan receipt logged here:** `docs/receipts/2026-09-26-aahub-aa003-train-every25/eval.json`
+  (sha256 `b85c9953…a0ab7`). Archive `3687cc5`, split `d61d856f…`, train
+  partition, every 25th page, `phase_refine=true`, `kanji_fallback=false`,
+  prior weight 0. Summary: 986 pages, **30 errors**, 18,559 rows, 12,830
+  exact (69.13%), 12,698 exact ignoring indentation, 818/986 row counts
+  right, canonical CER 0.1626, strict CER 0.1311. The file was written after the
+  last P0C-10 commit and was not logged. It is probably the no-fallback half
+  of the pending matched comparison (P0C-10 "AAHub long-tail fallback").
+  The 30 failing pages must be diagnosed before the `--kanji-fallback`
+  receipt is run. The receipt records all 30 as
+  `ValueError('min() iterable argument is empty')`. The error has not been
+  reproduced yet. Stage: Executed. It is not a headline number.
+- **Corpus use at archive `3687cc5`:**
+  - AAHub has 32,950 pairs in 173 slugs, split into 23,363 train and 9,587
+    held-out pages. The prior is rebuilt from train. Held-out is not scored
+    on AA-003.
+  - ascii-art-de-rendered has 12,816 pairs. It is scored by the fixed-grid
+    evaluator (52.02% strict exact rows) and not used for training.
+  - ascii-art-de-raw has 2,304 pages and is not used.
+  - Real screenshots: Madonna only.
+- **Viewer (unicode-glyph-morphology-explorer, HEAD `deee318`):** It shows
+  Unicode seam, run and Stone Story plate combinations only. No
+  AAHub/AA-003/Shift_JIS pattern is extracted into it. The only Shift_JIS
+  measurement is the one-page
+  `docs/research/ascii/sjis_aa_skill_audit/bakuhatsu_kemuri_stats.json`,
+  which the viewer does not load. Skill section 15 (proportional addendum,
+  skills commit `ec93ca1`) is not yet recorded in the viewer FL.
+- **Skill-guided extraction jobs (proposals, priority order):**
+  1. Glyph bigram/trigram prior from training slugs only, pooled across
+     mirror pairs. `decode_row` must carry the last glyph or its class in
+     its state. Falsifier as in the 2026-09-27 note item 2.
+  2. Pixel-identical look-alike class table plus raster re-render scoring
+     (note item 4). This also targets the 3,108 fixed-grid `?` cells.
+  3. Run `aa_slug_stats.py` over all 116 training slugs, not one page, and
+     make the output viewable in the explorer's combo browser. Needs the
+     proposed v2 combo schema with `x_px` (audit P5).
+  4. Tone-region band model (`.:::`-type errors, Madonna row 20).
+  5. Fixed-grid n-grams from ascii-art-de-rendered for
+     `recover_monospace_ascii.py`.
+- **Next step in order:** diagnose the 30 errors → matched `--kanji-fallback`
+  training receipt → one AA-003 held-out run → then job 1.
