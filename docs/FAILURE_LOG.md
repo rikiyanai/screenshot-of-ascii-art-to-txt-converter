@@ -789,3 +789,31 @@
 - The evaluator now batches new raster patterns per page for distance scoring.
   Five focused tests pass, and the batched path reproduces the same exact-row
   results on the four threshold/dither representative pages.
+
+## 2026-09-27 — authoring-principle implications for the proportional decoder (operator note)
+
+- **Source:** a parallel audit of the ascii-art-authoring skill, logged in the
+  unicode-glyph-morphology-explorer failure log, with an operator correction
+  on 2026-09-27. Proportional Shift_JIS art follows the same core authoring
+  principles as fixed-grid art: anisotropic stroke glyphs, form carried by
+  negative space, and mirrored glyph pairs. Only the placement lattice
+  differs.
+- **Implications for this repository (open, not yet implemented):**
+  1. The space-collapse law and the advance lattice are already hard
+     constraints in `recover_proportional_aa.py` (no adjacent U+0020; pen
+     positions on the font's unit gcd). A 3,214-line AAHub page measured zero
+     adjacent and zero leading half-width spaces, which confirms both.
+  2. The single-character prior hurt exact rows at every weight tested
+     (P0C-07). The authoring idioms are multi-glyph strokes: `⌒ヽ` occurs 128
+     times on one page, alongside `_ノ`, `ゝ__ノ`, `／￣`/`￣＼` and `-―-`.
+     A bigram or stroke-idiom prior, counted on training slugs only, is the
+     next prior hypothesis. Falsifier: no gain in held-out exact rows over the
+     weight-0 baseline at the pinned split.
+  3. `i`, `l`, `|`, `:` and `.` are used as stroke and tone shapes, not
+     letters. Any letter-plausibility heuristic must not penalise them.
+  4. Rows that are pixel-identical under alternative spellings, such as
+     Madonna row 23 (`/　|　'` vs `/ ｜ '`), cannot be told apart from pixels.
+     Pair text-level scoring with a raster re-render score so that these
+     rows are not counted as reading errors.
+- **Owner:** this log. The work sits behind the current P0C-10 sequence
+  and does not change its pinned identities.
