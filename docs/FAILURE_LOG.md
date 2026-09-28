@@ -973,3 +973,33 @@
     uninterrupted run.
 - **Next:** restart runs one at a time only, never concurrently: the sweep
   with 4 workers, then the kanji run with 2.
+
+### 2026-09-27 — PMI stroke-idiom prior falsified on the tuning sample; cond score under test
+
+- **Tuning sample:** every 200th train page starting at index 12, 170 pages,
+  3,478 rows. Receipts are `…-bigram-tune-every200-off12-w{0,0.03,0.1}`.
+
+  | PMI weight | exact rows | rate | canonical CER |
+  |---|---|---|---|
+  | 0 | 2,553 | 73.40% | 0.1219 |
+  | 0.03 | 2,529 | 72.71% | 0.1229 |
+  | 0.1 | 2,525 | 72.60% | 0.1231 |
+
+- **Verdict:** under PMI scoring the prior loses rows at both weights tested.
+  The falsifier from the 2026-09-27 note item 2 (no gain over weight 0) is
+  met on the tuning sample. PMI 0.3 and 1.0 were cancelled, because
+  a larger weight increases the same bias.
+- **Cause (measured on kyoko-05/res14, −6 rows at 0.03):**
+  - Every lost row changed only its row-final glyph, `i` → full-width `ｉ`
+    after `|`.
+  - At a row end the two render identically, so the prior is the only
+    deciding term there.
+  - PMI divides by p(b) and so favours rare b: `|ｉ` scores 0.97 against
+    `|i` 0.48, although `|i` occurs 11,646× and `|ｉ` 1,395×.
+- **Change (`4478eea`, test `d0976c2`):** `--bigram-score cond` uses
+  ln(count(ab)/min_count), which ranks successors by frequency (`|i` 8.26,
+  `|ｉ` 6.14). It is still positive-only and 0 for unseen pairs. PMI stays
+  the default, so existing receipts reproduce.
+- **Running:** cond at weights 0.003, 0.01 and 0.03 on the same tuning
+  sample, then the targeted kanji-fallback run. The runs are sequential and
+  checkpointed.
