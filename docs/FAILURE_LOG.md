@@ -1033,3 +1033,33 @@
   +1 and none worse, canonical CER 0.1222). cond w0.01 gave 2,555 (73.46%,
   CER 0.1225). The weight-0 reference is 2,553 (73.40%, CER 0.1219). Both
   receipts are committed with this entry.
+
+### 2026-09-28 — cond w0.03 resumed and finished; cond stroke-idiom prior gives no material gain
+
+- **Run:** after the reboot, cond w0.03 was resumed from its checkpoint
+  (125/170 pages reused, configuration matched). It used 4 workers, one BLAS
+  thread each, with no other large process running. Receipt:
+  `docs/receipts/2026-09-27-aahub-aa003-bigram-tune-every200-off12-cond-w0.03/eval.json`
+  (sha256 `4337b45b…9068`).
+- **Tuning sample (170 pages, 3,478 rows), cond score:**
+
+  | cond weight | exact rows | rate | canonical CER | pages better / worse (exact) |
+  |---|---|---|---|---|
+  | 0 | 2,553 | 73.40% | 0.1219 | — |
+  | 0.003 | 2,555 | 73.46% | 0.1222 | 2 / 0 |
+  | 0.01 | 2,555 | 73.46% | 0.1225 | 2 / 0 |
+  | 0.03 | 2,552 | 73.38% | 0.1227 | 2 / 2 |
+
+- **Verdict:** the best cond weight (0.003) gains 2 exact rows (0.06
+  points), and mean canonical CER is worse than weight 0 at every weight.
+  The CER losses are on 13 pages whose exact-row count did not change, such
+  as mintetsu-kinki/resK-113 (+0.032 at 0.003). The gain is inside the noise
+  of a 170-page sample. The prior as implemented (one survivor per state,
+  positive-only association) does not earn the matched every-25 receipt by
+  itself. PMI was already falsified. Stage: Executed on the tuning sample.
+  No held-out run was made.
+- **Next:** the targeted kanji-fallback run (2 workers, run alone). A
+  matched every-25 bigram receipt at cond 0.003 is deferred until a change
+  to the prior would plausibly move more than a few rows. Candidates are a
+  real bigram beam in `decode_row`, and the look-alike class table (job 2),
+  which removes the row-end tie that drives both score variants.
