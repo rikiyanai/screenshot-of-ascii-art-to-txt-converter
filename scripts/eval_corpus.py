@@ -15,7 +15,7 @@ import json
 import math
 import sys
 import time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -96,13 +96,18 @@ def main() -> None:
     parser.add_argument("--pages-file", type=Path, default=None,
                         help="JSON list of slug/resN page names (as receipts print them, .png optional); "
                              "replaces the every-k sample, and every page must lie in the chosen partition")
+    parser.add_argument("--resume", action="store_true",
+                        help="continue an interrupted run in OUT from its partial.jsonl checkpoint; "
+                             "refused unless the checkpoint's configuration matches this command")
     parser.add_argument("--every-offset", type=int, default=0,
                         help="start index within each slug for the every-k sample (0 keeps the historical sample)")
     args = parser.parse_args()
     if args.every < 1 or args.workers < 1:
         parser.error("--every and --workers must both be positive")
-    if args.out.exists():
-        parser.error("output directory already exists; use a new receipt path")
+    if args.out.exists() and not args.resume:
+        parser.error("output directory already exists; use a new receipt path or --resume")
+    if (args.out / "eval.json").exists():
+        parser.error("output already holds a finished receipt")
 
     split, by_slug = load_split(args.archive, args.split)
     prior_metadata = json.loads(Path(args.prior).read_text(encoding="utf-8")) if args.prior else None
@@ -136,11 +141,53 @@ def main() -> None:
         jobs.extend((stem, args.size_px) for stem in by_slug[slug][args.every_offset:: args.every])
     if not jobs:
         raise SystemExit("no pages matched: check the root and slug names")
+    # 2026-09-27: a run killed for memory lost every finished page, because
+    # results were only written at the end. Each finished page is now appended
+    # to OUT/partial.jsonl as it arrives; --resume reuses those pages when the
+    # configuration line matches exactly. The partial file is removed once
+    # eval.json is written.
+    config = {
+        "archive_commit": split["archive_commit"],
+        "split_sha256": hashlib.sha256(args.split.read_bytes()).hexdigest(),
+        "partition": args.partition, "slugs": slugs, "every": args.every, "every_offset": args.every_offset,
+        "pages_file_sha256": hashlib.sha256(args.pages_file.read_bytes()).hexdigest() if args.pages_file else None,
+        "size_px": args.size_px, "x0": args.x0,
+        "prior_sha256": hashlib.sha256(Path(args.prior).read_bytes()).hexdigest() if args.prior else None,
+        "prior_weight": args.prior_weight, "phase_refine": not args.no_phase_refine,
+        "kanji_fallback": args.kanji_fallback,
+        "bigram_prior_sha256": (hashlib.sha256(Path(args.bigram_prior).read_bytes()).hexdigest()
+                                if args.bigram_prior else None),
+        "bigram_weight": args.bigram_weight,
+        "decoder_sha256": hashlib.sha256(Path(rp.__file__).read_bytes()).hexdigest(),
+    }
+    partial = args.out / "partial.jsonl"
+    done: dict[str, dict] = {}
+    if args.resume and partial.exists():
+        lines = partial.read_text(encoding="utf-8").splitlines()
+        if not lines or json.loads(lines[0]).get("config") != config:
+            raise SystemExit("checkpoint configuration differs from this command; refusing to resume")
+        for line in lines[1:]:
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                break  # a line cut off by the kill
+            done[row["page"]] = row
+        print(f"resuming: {len(done)} of {len(jobs)} pages already scored", file=sys.stderr)
+    args.out.mkdir(parents=True, exist_ok=True)
+    if not partial.exists() or not done:
+        partial.write_text(json.dumps({"config": config}, ensure_ascii=False) + "\n", encoding="utf-8")
+    todo = [j for j in jobs if _rel(j[0] + ".png") not in done]
     with ProcessPoolExecutor(args.workers, initializer=_init,
                              initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.size_px, args.x0,
                                        str(args.archive), split, not args.no_phase_refine,
-                                       args.kanji_fallback, args.bigram_prior, args.bigram_weight)) as pool:
-        pages = list(pool.map(_run, jobs))
+                                       args.kanji_fallback, args.bigram_prior, args.bigram_weight)) as pool, \
+            partial.open("a", encoding="utf-8") as sink:
+        for future in as_completed([pool.submit(_run, job) for job in todo]):
+            row = future.result()
+            sink.write(json.dumps(row, ensure_ascii=False) + "\n")
+            sink.flush()
+            done[row["page"]] = row
+    pages = [done[_rel(j[0] + ".png")] for j in jobs]
     ok = [p for p in pages if "error" not in p]
     rows = sum(p["rows_key"] for p in ok)
     summary = {
@@ -153,7 +200,6 @@ def main() -> None:
         "mean_canonical_cer": round(sum(p["canonical_cer"] for p in ok) / max(len(ok), 1), 4),
         "mean_strict_cer": round(sum(p["strict_cer"] for p in ok) / max(len(ok), 1), 4),
     }
-    args.out.mkdir(parents=True, exist_ok=False)
     (args.out / "eval.json").write_text(json.dumps({
         "schema": "proportional_eval.v2", "archive_commit": split["archive_commit"],
         "manifest_sha256": split["manifest_sha256"],
@@ -172,6 +218,7 @@ def main() -> None:
                               if args.pages_file else None),
         "summary": summary, "pages": pages,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    partial.unlink()
     print(json.dumps(summary))
     if summary["errors"]:
         raise SystemExit(f"{summary['errors']} pages failed; inspect the receipt")

@@ -949,3 +949,27 @@
 - `eval_corpus.py` gains `--bigram-prior`, `--bigram-weight`,
   `--every-offset` and `--pages-file`. Their hashes and values are recorded
   in each receipt.
+
+### 2026-09-27 — both runs stopped by the harness for low memory; evaluator now checkpoints
+
+- **Event:** about 21:40, Claude Code stopped the targeted kanji-fallback run
+  (3 workers) and the bigram sweep (4 workers) because the system was
+  critically low on memory. Swap had grown to 19 GB. Seven decode workers ran
+  at once alongside other sessions.
+- **Kept:** `docs/receipts/2026-09-27-aahub-aa003-bigram-tune-every200-off12-w0/eval.json`.
+  170 tuning pages, 0 errors, 3,478 rows, 2,553 exact (73.40%), 2,520
+  exact ignoring indentation, 150 row counts right, canonical CER 0.1219.
+  This is the weight-0 reference for the sweep.
+- **Lost:** the weight-0.03 sweep run and the whole kanji run (about an hour).
+  `eval_corpus.py` wrote nothing before the end, which breaks the
+  durable-output rule (write the working receipt during the run).
+- **Fix:** each finished page is appended to `OUT/partial.jsonl` as it
+  completes (`as_completed`). The first line records the full configuration,
+  including prior, bigram and decoder sha256. `--resume` reuses those pages
+  only when the configuration matches exactly. The partial file is removed
+  after `eval.json` is written.
+  - Check: a 20-page run (kanji + tabako slugs, every 40) was killed after
+    5 checkpointed pages and resumed. Summary and per-page results equal the
+    uninterrupted run.
+- **Next:** restart runs one at a time only, never concurrently: the sweep
+  with 4 workers, then the kanji run with 2.
