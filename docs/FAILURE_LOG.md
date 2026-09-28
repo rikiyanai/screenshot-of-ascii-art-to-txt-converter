@@ -911,3 +911,41 @@
 - Its training-only bigram, trigram and stack counts are the input for job 1
   (the stroke-idiom prior). This repository still owns building and scoring
   that prior.
+
+### 2026-09-27 — stroke-idiom prior implemented; kanji-fallback targeted run and weight sweep started
+
+- **Bigram prior (note item 2):**
+  - `build_char_prior.py` now also writes `data/aa_bigram_prior.json`:
+    touching non-space pairs from the 23,363 training pages, 9,735,411
+    pairs, 51,950 kept at n ≥ 3. `aa_char_prior.json` is rebuilt
+    byte-identical (sha256 `c18e3167…3c6`).
+  - `bigram_bonus` keeps only positive associations ln(p(b|a)/p(b)). An
+    unseen pair gets 0, never a penalty.
+  - `decode_row` subtracts `weight × association` on layer 0, keyed on the
+    best path's previous glyph. This approximates a bigram search with one
+    survivor per state.
+  - The prior acts only in the final reading. Pitch, phase and origin are
+    unchanged, so a receipt differs only in which glyphs were read.
+- **Checks:** weight 0 matches the pitch-floor receipt exactly on 12 pages,
+  with no slowdown. New tests `StrokeIdiomPrior` pass: positive-only table,
+  weight 0 identical, and an extreme weight reaches the path while baselines
+  stay identical. The 12-page probe at weight 0.1 read 104/211 rows exactly
+  against 105/211, which is too small to judge.
+- **Weight selection (running):** receipts are
+  `docs/receipts/2026-09-27-aahub-aa003-bigram-tune-every200-off12-w{0,0.03,0.1,0.3,1.0}`.
+  The sample is every 200th train page starting at index 12, disjoint from
+  the every-25 comparison sample. The best weight on it then gets one matched
+  every-25 train receipt against `…-train-every25-pitchfloor`, and then the
+  single held-out run.
+- **Kanji fallback, targeted (operator choice 2026-09-27):**
+  - Measured cost: bank 7,530 glyphs, 4.4 GB peak RSS and 127 s on the
+    434×1138 page buki-02/resK-114.
+  - Maximum possible gain on the every-25 sample: 85 rows on 31 pages.
+  - The run covers those 31 pages plus 120 seeded control pages
+    (`data/kanji_fallback_targeted_pages.json`, groups in
+    `data/kanji_fallback_targeted_groups.json`). The no-fallback side is the
+    same pages in the pitch-floor receipt.
+  - Receipt: `docs/receipts/2026-09-27-aahub-aa003-train-kanji-fallback-targeted`.
+- `eval_corpus.py` gains `--bigram-prior`, `--bigram-weight`,
+  `--every-offset` and `--pages-file`. Their hashes and values are recorded
+  in each receipt.

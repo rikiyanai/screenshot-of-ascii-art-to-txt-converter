@@ -34,7 +34,8 @@ def _rel(path: str) -> str:
 
 
 def _init(prior_path: str, weight: float, font: str, size_px: float, x0: float | None,
-          archive: str, split: dict, phase_refine: bool, kanji_fallback: bool) -> None:
+          archive: str, split: dict, phase_refine: bool, kanji_fallback: bool,
+          bigram_path: str | None = None, bigram_weight: float = 0.0) -> None:
     prior = rp.load_prior(Path(prior_path)) if prior_path else {}
     model = rp.load_font_model(Path(font), rp.prior_alphabet(prior, kanji_fallback))
     height = int(math.ceil(size_px * 1.25)) + 2
@@ -42,9 +43,12 @@ def _init(prior_path: str, weight: float, font: str, size_px: float, x0: float |
     # P0C-10: every job in this worker has the same face, size, and prior.
     # Rendering the expanded AA-003 glyph bank per page made corpus scoring
     # repeat identical work hundreds of times.
+    bank = rp.render_bank(model, size_px, height, baseline, prior)
     _STATE.update(prior=prior, weight=weight, x0=x0,
                   model=model,
-                  bank=rp.render_bank(model, size_px, height, baseline, prior),
+                  bank=bank,
+                  bigram=rp.bigram_bonus(Path(bigram_path), bank.characters) if bigram_path else {},
+                  bigram_weight=bigram_weight,
                   archive=Path(archive), split=split, phase_refine=phase_refine)
 
 
@@ -56,7 +60,7 @@ def _run(job: tuple[str, float]) -> dict:
         result = rp.decode_image(Image.open(io.BytesIO(read_blob(_STATE["archive"], _STATE["split"], png))),
                                  _STATE["model"], size, 0.02, _STATE["x0"],
                                  _STATE["prior"], _STATE["weight"], _STATE["phase_refine"],
-                                 _STATE["bank"])
+                                 _STATE["bank"], _STATE["bigram"], _STATE["bigram_weight"])
         lines = [r.text for r in result["rows"]]
         while lines and not lines[-1]:
             lines.pop()
@@ -86,6 +90,14 @@ def main() -> None:
                         help="known text origin (AAHub renders: 8 px pad); fitted when omitted")
     parser.add_argument("--no-phase-refine", action="store_true")
     parser.add_argument("--kanji-fallback", action="store_true")
+    parser.add_argument("--bigram-prior", default=None,
+                        help="touching-pair counts from build_char_prior.py (e.g. data/aa_bigram_prior.json)")
+    parser.add_argument("--bigram-weight", type=float, default=0.0)
+    parser.add_argument("--pages-file", type=Path, default=None,
+                        help="JSON list of slug/resN page names (as receipts print them, .png optional); "
+                             "replaces the every-k sample, and every page must lie in the chosen partition")
+    parser.add_argument("--every-offset", type=int, default=0,
+                        help="start index within each slug for the every-k sample (0 keeps the historical sample)")
     args = parser.parse_args()
     if args.every < 1 or args.workers < 1:
         parser.error("--every and --workers must both be positive")
@@ -94,6 +106,11 @@ def main() -> None:
 
     split, by_slug = load_split(args.archive, args.split)
     prior_metadata = json.loads(Path(args.prior).read_text(encoding="utf-8")) if args.prior else None
+    if args.bigram_prior:
+        bigram_metadata = json.loads(Path(args.bigram_prior).read_text(encoding="utf-8"))
+        if (bigram_metadata.get("corpus_commit") != split["archive_commit"] or
+                bigram_metadata.get("split_sha256") != hashlib.sha256(args.split.read_bytes()).hexdigest()):
+            raise SystemExit("bigram prior was not built from this locked archive and split")
     if prior_metadata and (prior_metadata.get("corpus_commit") != split["archive_commit"] or
                            prior_metadata.get("manifest_sha256") != split["manifest_sha256"] or
                            prior_metadata.get("split_sha256") != hashlib.sha256(args.split.read_bytes()).hexdigest()):
@@ -106,14 +123,23 @@ def main() -> None:
     if len(slugs) != len(set(slugs)):
         raise SystemExit("requested slugs contain duplicates")
     jobs = []
-    for slug in slugs:
-        jobs.extend((stem, args.size_px) for stem in by_slug[slug][:: args.every])
+    if args.pages_file:
+        wanted = [p.removesuffix(".png") for p in json.loads(args.pages_file.read_text(encoding="utf-8"))]
+        index = {f"{Path(stem).parent.name}/{Path(stem).name}": stem for slug in slugs for stem in by_slug[slug]}
+        missing = [p for p in wanted if p not in index]
+        if missing:
+            raise SystemExit(f"{len(missing)} listed pages are not in the chosen partition, e.g. {missing[:3]}")
+        if len(wanted) != len(set(wanted)):
+            raise SystemExit("pages file contains duplicates")
+        jobs = [(index[p], args.size_px) for p in wanted]
+    for slug in ([] if args.pages_file else slugs):
+        jobs.extend((stem, args.size_px) for stem in by_slug[slug][args.every_offset:: args.every])
     if not jobs:
         raise SystemExit("no pages matched: check the root and slug names")
     with ProcessPoolExecutor(args.workers, initializer=_init,
                              initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.size_px, args.x0,
                                        str(args.archive), split, not args.no_phase_refine,
-                                       args.kanji_fallback)) as pool:
+                                       args.kanji_fallback, args.bigram_prior, args.bigram_weight)) as pool:
         pages = list(pool.map(_run, jobs))
     ok = [p for p in pages if "error" not in p]
     rows = sum(p["rows_key"] for p in ok)
@@ -136,7 +162,15 @@ def main() -> None:
         "phase_refine": not args.no_phase_refine,
         "kanji_fallback": args.kanji_fallback,
         "size_px": args.size_px, "x0": args.x0, "prior": args.prior and Path(args.prior).name,
-        "prior_weight": args.prior_weight, "summary": summary, "pages": pages,
+        "prior_weight": args.prior_weight,
+        "bigram_prior": args.bigram_prior and Path(args.bigram_prior).name,
+        "bigram_prior_sha256": (hashlib.sha256(Path(args.bigram_prior).read_bytes()).hexdigest()
+                                if args.bigram_prior else None),
+        "bigram_weight": args.bigram_weight,
+        "every_offset": args.every_offset,
+        "pages_file_sha256": (hashlib.sha256(args.pages_file.read_bytes()).hexdigest()
+                              if args.pages_file else None),
+        "summary": summary, "pages": pages,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(summary))
     if summary["errors"]:

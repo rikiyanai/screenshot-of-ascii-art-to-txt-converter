@@ -13,6 +13,7 @@ is not scored. Strict CER is reported, not gated.
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import tempfile
@@ -75,6 +76,44 @@ class ShortPagePhase(unittest.TestCase):
         self.assertAlmostEqual(result["pitch"], 17, delta=0.05)
         self.assertEqual(result["baselines"], expected_baselines)
         self.assertEqual(len(result["rows"]), len(rows))
+
+
+class StrokeIdiomPrior(unittest.TestCase):
+    """Converter FL 2026-09-27 note item 2: touching-pair prior from training pages."""
+
+    def _counts(self, counts: dict[str, int]) -> Path:
+        tmp = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
+        json.dump({"counts": counts}, tmp, ensure_ascii=False)
+        tmp.close()
+        return Path(tmp.name)
+
+    def test_only_positive_associations_are_kept(self) -> None:
+        chars = [" ", "　", "⌒", "ヽ", "_", "ノ"]
+        path = self._counts({"⌒ヽ": 90, "⌒_": 10, "_ノ": 50, "__": 50, "ヽ_": 5})
+        table = rp.bigram_bonus(path, chars)
+        a, b = chars.index("⌒"), chars.index("ヽ")
+        self.assertIn(a, table)
+        succ, pmi = table[a]
+        self.assertIn(b, succ.tolist())
+        self.assertTrue((pmi > 0).all())
+        self.assertNotIn(chars.index(" "), table)
+        self.assertEqual(rp.bigram_bonus(None, chars), {})
+
+    def test_weight_zero_is_the_unprimed_decode_and_bonus_reaches_the_path(self) -> None:
+        model = rp.load_font_model(rp.DEFAULT_FONT, ".:_")
+        rows = ["._._"]
+        ink = rp.render_text(rows, model, 16, 17, 8, [22], (40, 80))
+        image = Image.fromarray((255 - 255 * (ink > 0.35)).astype(np.uint8))
+        bank = rp.render_bank(model, 16, 22, 16, {})
+        table = rp.bigram_bonus(self._counts({".:": 1000, ":.": 1000, "_.": 1, "._": 1}), bank.characters)
+        plain = rp.decode_image(image, model, 16, 0.02, 8, {}, 0, True, bank)
+        zero = rp.decode_image(image, model, 16, 0.02, 8, {}, 0, True, bank, table, 0.0)
+        self.assertEqual([r.text for r in zero["rows"]], [r.text for r in plain["rows"]])
+        self.assertEqual(plain["rows"][0].text, "._._")
+        # an absurd weight must override the ink: this checks the wiring, not a setting
+        forced = rp.decode_image(image, model, 16, 0.02, 8, {}, 0, True, bank, table, 1e4)
+        self.assertIn(":", forced["rows"][0].text)
+        self.assertEqual(forced["baselines"], plain["baselines"])
 
 
 class SubFloorPitch(unittest.TestCase):

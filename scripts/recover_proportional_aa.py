@@ -41,6 +41,7 @@ from PIL import Image, ImageDraw, ImageFont
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_FONT = REPO / "fonts" / "Saitamaar-Regular.ttf"
 DEFAULT_PRIOR = REPO / "data" / "aa_char_prior.json"
+DEFAULT_BIGRAM = REPO / "data" / "aa_bigram_prior.json"
 PRIOR_MIN_COUNT = 3
 
 
@@ -73,6 +74,38 @@ def prior_penalty(characters: list[str], prior: dict[str, int], weight: float, f
 
 FULL_SPACE = "　"
 HALF_SPACE = " "
+
+
+def bigram_bonus(path: Path | None, characters: list[str]) -> dict[int, tuple[np.ndarray, np.ndarray]]:
+    """Stroke-idiom prior (converter FL 2026-09-27 note, item 2).
+
+    For each candidate a, the touching successors b with a positive pointwise
+    association ln(p(b | a) / p(b)), counted on TRAINING pages only
+    (scripts/build_char_prior.py). decode_row subtracts weight * association
+    from b's cost when the path's previous glyph is a. An unseen or negatively
+    associated pair gets 0, never a penalty, so an idiom missing from training
+    is not pushed out. Returns {index of a: (indices of b, associations)}."""
+    if path is None or not path.exists():
+        return {}
+    counts = json.loads(path.read_text(encoding="utf-8"))["counts"]
+    index = {c: i for i, c in enumerate(characters)}
+    left: dict[str, int] = {}
+    right: dict[str, int] = {}
+    total = 0
+    for g, n in counts.items():
+        left[g[0]] = left.get(g[0], 0) + n
+        right[g[1]] = right.get(g[1], 0) + n
+        total += n
+    table: dict[int, tuple[list[int], list[float]]] = {}
+    for g, n in counts.items():
+        a, b = index.get(g[0]), index.get(g[1])
+        if a is None or b is None:
+            continue
+        pmi = math.log(n / left[g[0]]) - math.log(right[g[1]] / total)
+        if pmi > 0:
+            table.setdefault(a, ([], []))[0].append(b)
+            table[a][1].append(pmi)
+    return {a: (np.array(bs, dtype=np.int64), np.array(vs)) for a, (bs, vs) in table.items()}
 
 SUPERSAMPLE = 8  # sub-pixel phases per pixel
 
@@ -262,6 +295,8 @@ def decode_row(
     bank: GlyphBank,
     x0: float,
     glyph_penalty: float,
+    bigram: dict[int, tuple[np.ndarray, np.ndarray]] | None = None,
+    bigram_weight: float = 0.0,
 ) -> RowDecode:
     width = strip.shape[1]
     column_energy = (strip**2).sum(axis=0)
@@ -306,17 +341,34 @@ def decode_row(
             continue
         end = np.minimum(col + bank.widths[:, phase], width)
         cost = (cum[end] - cum[col]) - 2.0 * corr[col, :, phase] + bank.energy[:, phase] + penalty
+        # Layer 1 follows U+0020, so no touching pair applies. Layer 0 follows the
+        # glyph stored on its best path; a stroke idiom starting there lowers the
+        # cost of its successor. With one survivor per state this is approximate:
+        # only the best path's previous glyph is seen.
+        cost0 = cost
+        if bigram and bigram_weight and np.isfinite(best[0, s]) and back_glyph[0, s] >= 0:
+            entry = bigram.get(int(back_glyph[0, s]))
+            if entry is not None:
+                cost0 = cost.copy()
+                cost0[entry[0]] -= bigram_weight * entry[1]
         for grp, glyphs_in in enumerate(members):
             t = s + group_step[grp]
             if t >= states:
                 continue
             local = cost[glyphs_in]
             j = int(np.argmin(local))
-            value, glyph = float(local[j]), int(glyphs_in[j])
+            plain = (float(local[j]), int(glyphs_in[j]))
+            if cost0 is cost:
+                boosted = plain
+            else:
+                local0 = cost0[glyphs_in]
+                j0 = int(np.argmin(local0))
+                boosted = (float(local0[j0]), int(glyphs_in[j0]))
             out = 1 if group_is_half[grp] else 0
             for layer in (0, 1):
                 if layer == 1 and group_is_half[grp]:
                     continue  # two U+0020 in a row would collapse in HTML
+                value, glyph = boosted if layer == 0 else plain
                 origin = best[layer, s]
                 if origin + value < best[out, t]:
                     best[out, t] = origin + value
@@ -534,6 +586,8 @@ def decode_image(
     prior_weight: float = 0.0,
     phase_refine: bool = True,
     bank: GlyphBank | None = None,
+    bigram: dict[int, tuple[np.ndarray, np.ndarray]] | None = None,
+    bigram_weight: float = 0.0,
 ) -> dict:
     ink, grey = ink_of(image)
     height = int(math.ceil(size_px * 1.25)) + 2
@@ -637,7 +691,10 @@ def decode_image(
     else:
         x0_source = "given"
 
-    rows = [decode_row(s, c, bank, x0, glyph_penalty) for s, c in zip(strips, corrs)]
+    # The stroke-idiom prior acts only here, on the final reading. Pitch, phase and
+    # origin are chosen without it, so a receipt with the prior differs from one
+    # without only in which glyphs were read, never in the page geometry.
+    rows = [decode_row(s, c, bank, x0, glyph_penalty, bigram, bigram_weight) for s, c in zip(strips, corrs)]
     return {
         "bank": bank,
         "pitch": pitch,
