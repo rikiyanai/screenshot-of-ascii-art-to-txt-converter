@@ -691,7 +691,10 @@ def decode_image(
     else:
         pitch, baselines = fit_rows(ink, geometry, pitch, first, last, search=0.0)
     strips = [row_strip(ink, b, bank) for b in baselines]
-    corrs = [correlations(s, geometry) for s in strips]
+    # 2026-09-28 (P0C-10): a correlation array is width x glyphs x phases
+    # float64, ~550 MB per 1,138 px row with the 7,530-glyph fallback bank.
+    # Holding every row's array at once grew one worker to 24 GB, so arrays
+    # are built only for the rows that need them and dropped after use.
     if x0 is None:
         if edge is not None:
             low, high = float(edge), float(edge) + full_px
@@ -699,6 +702,7 @@ def decode_image(
             low, high = max(0.0, float(ink_cols[0]) - full_px), float(ink_cols[0]) + 0.5
         candidates = np.arange(low, high, 1.0 / SUPERSAMPLE)
         sample = [i for i, s in enumerate(strips) if s.sum() > 0][:: max(1, len(strips) // 6)]
+        corrs = {i: correlations(strips[i], geometry) for i in sample}
         scores = np.array([
             sum(decode_row(strips[i], corrs[i], geometry, candidate, geometry_penalty).cost for i in sample)
             for candidate in candidates
@@ -719,9 +723,8 @@ def decode_image(
     # The stroke-idiom prior acts only here, on the final reading. Pitch, phase and
     # origin are chosen without it, so a receipt with the prior differs from one
     # without only in which glyphs were read, never in the page geometry.
-    if geometry is not bank:
-        corrs = [correlations(s, bank) for s in strips]
-    rows = [decode_row(s, c, bank, x0, glyph_penalty, bigram, bigram_weight) for s, c in zip(strips, corrs)]
+    corrs = None  # release the origin-fit sample before the reading pass
+    rows = [decode_row(s, correlations(s, bank), bank, x0, glyph_penalty, bigram, bigram_weight) for s in strips]
     return {
         "bank": bank,
         "pitch": pitch,
