@@ -1132,3 +1132,36 @@
   restart needs a new receipt directory. It is not restarted: after a
   harness memory reap, the harness asks that the restart be left to the
   operator.
+
+### 2026-09-28 — targeted kanji fallback with ordinary-bank geometry: +25 rows, no page worse
+
+- **Run:** `docs/receipts/2026-09-28-aahub-aa003-train-kanji-fallback-targeted-basegeom-rowcorr/eval.json`
+  (sha256 `b54153f5…8e38`). Decoder at `0d0e2b3`,
+  `--kanji-fallback --fallback-geometry base`. The 151 targeted pages,
+  3 workers, alone, 0 errors, no memory event.
+
+  | group | pages | rows | no fallback | fallback, full geometry | fallback, base geometry | pages better / worse vs no fallback | mean canonical CER (no fb → base geom) |
+  |---|---|---|---|---|---|---|---|
+  | out-of-bank | 31 | 833 | 486 | 466 | **511** | 19 / 0 | 0.2232 → 0.2200 |
+  | control | 120 | 2,355 | 1,694 | 1,710 | **1,694** | 0 / 0 | 0.1560 → 0.1561 |
+  | all | 151 | 3,188 | 2,180 | 2,176 | **2,205** | 19 / 0 | 0.1698 → 0.1692 |
+
+- **Geometry:** pitch, x0 and rows recovered equal the no-fallback receipt on
+  all 151 pages. The fix does what it claims.
+- **Falsifier (from the entry above) not met:** net gain is +25 exact rows.
+  No control page loses a row. One control page has a slightly worse CER
+  (tetsudou-haikei/resK-01, +0.0016).
+  - Of the 85-row maximum on the out-of-bank pages, 25 are recovered. The gains are mostly one
+    kanji row per page. The largest is iyaku-fukushi/resK-260 (12 → 16).
+- **Side finding:** the two controls that gained under full-bank geometry
+  (ningen-mobu-02-sekai/res01 0 → 19, yasai-kudamono/resK-530 0 → 13) do not
+  gain here. Their gain came from a different row count, so the ordinary-bank
+  geometry is wrong on those pages without fallback too. This is a separate
+  geometry defect, not a fallback benefit. It is not addressed here.
+- **Timing:** not compared. The baseline ran with 8 workers under different
+  load.
+- **Stage:** Verified on the targeted train sample (every page with
+  out-of-bank key rows in the every-25 sample, plus 120 seeded controls).
+  **Next:** a matched every-25 train receipt with the same flags, against
+  `…-train-every25-pitchfloor`. Then freeze the choice and make one AA-003
+  held-out run.
