@@ -99,6 +99,17 @@ class StrokeIdiomPrior(unittest.TestCase):
         self.assertNotIn(chars.index(" "), table)
         self.assertEqual(rp.bigram_bonus(None, chars), {})
 
+    def test_cond_score_prefers_the_frequent_variant(self) -> None:
+        chars = [" ", "　", "|", "i", "ｉ"]
+        path = self._counts({"|i": 11646, "|ｉ": 1395, "ii": 5000, "ｉｉ": 900})
+        pmi = dict(zip(*[x.tolist() for x in rp.bigram_bonus(path, chars, "pmi")[2]]))
+        cond = dict(zip(*[x.tolist() for x in rp.bigram_bonus(path, chars, "cond")[2]]))
+        i, wide = chars.index("i"), chars.index("ｉ")
+        self.assertGreater(cond[i], cond[wide])  # frequent pair wins the tie
+        self.assertGreater(pmi.get(wide, 0.0), pmi.get(i, 0.0))  # the measured PMI failure
+        with self.assertRaises(ValueError):
+            rp.bigram_bonus(path, chars, "bogus")
+
     def test_weight_zero_is_the_unprimed_decode_and_bonus_reaches_the_path(self) -> None:
         model = rp.load_font_model(rp.DEFAULT_FONT, ".:_")
         rows = ["._._"]

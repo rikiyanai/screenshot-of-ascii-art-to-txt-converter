@@ -76,7 +76,8 @@ FULL_SPACE = "　"
 HALF_SPACE = " "
 
 
-def bigram_bonus(path: Path | None, characters: list[str]) -> dict[int, tuple[np.ndarray, np.ndarray]]:
+def bigram_bonus(path: Path | None, characters: list[str],
+                 score: str = "pmi") -> dict[int, tuple[np.ndarray, np.ndarray]]:
     """Stroke-idiom prior (converter FL 2026-09-27 note, item 2).
 
     For each candidate a, the touching successors b with a positive pointwise
@@ -84,10 +85,21 @@ def bigram_bonus(path: Path | None, characters: list[str]) -> dict[int, tuple[np
     (scripts/build_char_prior.py). decode_row subtracts weight * association
     from b's cost when the path's previous glyph is a. An unseen or negatively
     associated pair gets 0, never a penalty, so an idiom missing from training
-    is not pushed out. Returns {index of a: (indices of b, associations)}."""
+    is not pushed out. Returns {index of a: (indices of b, associations)}.
+
+    score="cond" uses ln(count(ab) / min_count) instead, which ranks the
+    successors of a by how often they follow it. PMI divides by p(b) and so
+    favours a rare b: at a row end, where `i` and full-width `ｉ` render
+    identically, PMI picked `ｉ` after `|` (0.97 against 0.48) although `|i`
+    is 8x more frequent (11,646 against 1,395). Measured 2026-09-27 on
+    kyoko-05/res14, where six rows were lost at weight 0.03."""
     if path is None or not path.exists():
         return {}
-    counts = json.loads(path.read_text(encoding="utf-8"))["counts"]
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    counts = doc["counts"]
+    floor = int(doc.get("min_count", 1))
+    if score not in ("pmi", "cond"):
+        raise ValueError(f"unknown bigram score {score!r}")
     index = {c: i for i, c in enumerate(characters)}
     left: dict[str, int] = {}
     right: dict[str, int] = {}
@@ -101,7 +113,10 @@ def bigram_bonus(path: Path | None, characters: list[str]) -> dict[int, tuple[np
         a, b = index.get(g[0]), index.get(g[1])
         if a is None or b is None:
             continue
-        pmi = math.log(n / left[g[0]]) - math.log(right[g[1]] / total)
+        if score == "cond":
+            pmi = math.log(n / floor)
+        else:
+            pmi = math.log(n / left[g[0]]) - math.log(right[g[1]] / total)
         if pmi > 0:
             table.setdefault(a, ([], []))[0].append(b)
             table[a][1].append(pmi)
