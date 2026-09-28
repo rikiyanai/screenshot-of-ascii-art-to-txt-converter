@@ -1003,3 +1003,33 @@
 - **Running:** cond at weights 0.003, 0.01 and 0.03 on the same tuning
   sample, then the targeted kanji-fallback run. The runs are sequential and
   checkpointed.
+
+### 2026-09-28 — kernel panic at 00:53 during the cond w0.03 tuning run
+
+- **Event:** the machine rebooted after a kernel panic at 00:53:48:
+  `watchdog timeout: no checkins from watchdogd in 92 seconds`. Compressor:
+  "100% of compressed pages limit (BAD) and 99% of segments limit (BAD)",
+  with 47 swapfiles. Report:
+  `/Library/Logs/DiagnosticReports/panic-full-2026-09-28-005348.0002.panic`.
+- **Resident memory at panic, from the report's process table:**
+  - Godot pid 56177: 49.95 GB.
+  - Python pid 84959: 29.71 GB (1 thread, 3 s CPU).
+  - git pid 14628: 19.21 GB.
+  - This repository's evaluation, the cond w0.03 tuning run: parent 40867
+    plus 4 workers 40868/40869/40901/40923, 0.36–0.51 GB each, about 1.6 GB
+    in total. The workers' ~1,490 s of CPU each matches the run's 00:24
+    start. This attribution is inferred from timing and worker count.
+  - A second 4-worker Python group (52448–52452, 0.17–0.19 GB, started about
+    2 min before the panic) did not come from this repository's sequence,
+    which ran one job at a time. Its owner is unknown.
+  - Owners of the Godot, 29.7 GB Python and git processes are not
+    identified. Earlier in this session a 30 GB-footprint `git grep` came
+    from a Claude session in asciicker-Y9-2 (inferred link, same pattern).
+- **Run state:** cond w0.03 stopped at 125/170 pages. Its checkpoint
+  `docs/receipts/2026-09-27-aahub-aa003-bigram-tune-every200-off12-cond-w0.03/partial.jsonl`
+  was last written at 00:51. The kanji targeted run never started. Nothing
+  was restarted after the reboot.
+- **Done before the panic:** cond w0.003 gave 2,555/3,478 (73.46%, 2 pages
+  +1 and none worse, canonical CER 0.1222). cond w0.01 gave 2,555 (73.46%,
+  CER 0.1225). The weight-0 reference is 2,553 (73.40%, CER 0.1219). Both
+  receipts are committed with this entry.
