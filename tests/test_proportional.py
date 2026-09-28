@@ -100,8 +100,9 @@ class StrokeIdiomPrior(unittest.TestCase):
         self.assertEqual(rp.bigram_bonus(None, chars), {})
 
     def test_cond_score_prefers_the_frequent_variant(self) -> None:
-        chars = [" ", "　", "|", "i", "ｉ"]
-        path = self._counts({"|i": 11646, "|ｉ": 1395, "ii": 5000, "ｉｉ": 900})
+        chars = [" ", "　", "|", "i", "ｉ", ":"]
+        # shaped like the training table: ｉ is rare overall but concentrated after |
+        path = self._counts({"|i": 11646, "|ｉ": 1395, ":i": 103251, "::": 2000000})
         pmi = dict(zip(*[x.tolist() for x in rp.bigram_bonus(path, chars, "pmi")[2]]))
         cond = dict(zip(*[x.tolist() for x in rp.bigram_bonus(path, chars, "cond")[2]]))
         i, wide = chars.index("i"), chars.index("ｉ")
