@@ -1104,3 +1104,31 @@
   `docs/receipts/2026-09-28-aahub-aa003-train-kanji-fallback-targeted-basegeom`.
   Falsifier: no net exact-row gain over no-fallback on the 151 pages, or any
   control page worse.
+
+### 2026-09-28 — base-geometry run stopped at 19/151: one worker at 24 GB; correlations now per row
+
+- **Event:** about 13 minutes into the `--fallback-geometry base` targeted run
+  (3 workers), Claude Code reaped this session's idle wait shell for critical
+  memory pressure. The run itself was still alive. Swap was 22.4 GB used.
+  `top` showed worker 91214 of this run at 24 GB footprint, 22 GB of it
+  compressed. The run was stopped by hand at 19/151 checkpointed pages.
+  Checkpoint: `docs/receipts/2026-09-28-aahub-aa003-train-kanji-fallback-targeted-basegeom/partial.jsonl`
+  (kept as the record of the stopped run, not a result).
+- **Cause (from code, confirmed by measurement):** `decode_image` built
+  `correlations()` for every row and kept them all until the reading pass.
+  One array is width × glyphs × 8 phases × float64. At 1,138 px and 7,530
+  glyphs that is about 550 MB per row, so a 40-row page needs about 22 GB.
+  The 4.4 GB "peak" measured earlier came from one 25-row page and understated
+  the worst case. This also applied to the full-geometry run of 2026-09-27,
+  which survived on swap. It is not caused by `geometry_bank`.
+- **Fix:** the arrays are built per row in the reading pass and dropped after
+  use. The origin fit builds them only for its sampled rows. The output is
+  unchanged by construction (`RowDecode` keeps no array).
+  - effect/resK-319 (86 rows) with the full-geometry configuration: receipt
+    row identical to the 2026-09-27 targeted receipt, peak RSS 1.63 GB
+    (`/usr/bin/time -l`), 293 s.
+  - Suite 53/53.
+- **Resume:** refused by design, because `decoder_sha256` changed. The
+  restart needs a new receipt directory. It is not restarted: after a
+  harness memory reap, the harness asks that the restart be left to the
+  operator.
