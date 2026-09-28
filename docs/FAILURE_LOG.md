@@ -1063,3 +1063,44 @@
   to the prior would plausibly move more than a few rows. Candidates are a
   real bigram beam in `decode_row`, and the look-alike class table (job 2),
   which removes the row-end tie that drives both score variants.
+
+### 2026-09-28 — targeted kanji fallback: net loss caused by geometry drift; geometry now separable
+
+- **Run:** `docs/receipts/2026-09-27-aahub-aa003-train-kanji-fallback-targeted/eval.json`
+  (sha256 `0239c199…de1d`). 151 pages (31 out-of-bank + 120 seeded
+  controls), 2 workers, alone on the machine, 0 errors. Bank 7,530 glyphs.
+  The no-fallback side is the same pages in `…-train-every25-pitchfloor`.
+
+  | group | pages | rows | exact, no fallback | exact, fallback | pages better / worse | mean canonical CER | decode seconds |
+  |---|---|---|---|---|---|---|---|
+  | out-of-bank | 31 | 833 | 486 | 466 | 18 / 2 | 0.2232 → 0.2717 | 2,754 → 4,190 |
+  | control | 120 | 2,355 | 1,694 | 1,710 | 2 / 2 | 0.1560 → 0.1613 | 8,154 → 12,027 |
+  | all | 151 | 3,188 | 2,180 | 2,176 | 20 / 4 | 0.1698 → 0.1839 | 10,908 → 16,218 |
+
+- **The 20 gains are the expected kind:** single kanji rows read, mostly +1 per
+  page (e.g. titles). Two controls gain whole pages (ningen-mobu-02-sekai/res01
+  0 → 19, yasai-kudamono/resK-530 0 → 13) because the row count became right.
+- **The 4 losses are geometry, not reading:**
+  - Geometry (pitch, x0 or rows recovered) changed on 6 pages:
+    effect/resK-319 (pitch 17.0 → 17.058, 61 → 34 exact),
+    jitensha/resK-19 (17 → 16, 13 → 1), jr-kokutetsu/resK-242,
+    kanji/resK-346, and the two gaining controls.
+  - senpaku/resK-183 (18 → 1) keeps pitch and row count. A row diff (scratch
+    decode, both banks) shows row 0 (`幽霊船内部　船尾`) now exact but every
+    later row misread (`三` → `庄`, `二` → `.Ｚ.`). The phase/origin search
+    found a kanji explanation of an offset lattice.
+  - Cause: `decode_image` used the reading bank for pitch candidates, phase
+    refinement and the origin fit. With 7,530 glyphs, dense kanji can explain
+    shifted ink cheaply, so geometry drifts.
+- **Fix (`bc7f548`):** `decode_image(..., geometry_bank=)` chooses pitch, phase
+  and origin with that bank and reads the final rows with `bank`.
+  `eval_corpus.py --fallback-geometry base` passes the ordinary bank. The
+  default `full` keeps the historical behaviour, so existing receipts
+  reproduce. Test `FallbackGeometry` pins pitch, baselines and x0 equal to the
+  ordinary-bank decode. Suite 53/53.
+- **Verdict so far:** fallback with full-bank geometry is rejected (net −4
+  rows, CER worse, +49% time). Running now: the same 151 pages with
+  `--fallback-geometry base`, 3 workers, receipt
+  `docs/receipts/2026-09-28-aahub-aa003-train-kanji-fallback-targeted-basegeom`.
+  Falsifier: no net exact-row gain over no-fallback on the 151 pages, or any
+  control page worse.
