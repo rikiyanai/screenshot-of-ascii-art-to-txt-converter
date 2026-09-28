@@ -900,3 +900,14 @@
   30 GB-footprint `git grep` from another session in asciicker-Y9-2 was seen
   during the second run. Run corpus evaluations with
   `OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1`.
+
+### 2026-09-27 — pointer: corpus combo extraction done in the glyph viewer (job 3)
+
+- Job 3 from the status review is executed in unicode-glyph-morphology-explorer
+  commit `661b220`. Output:
+  `assets/glyphs/corpus/aahub_aa003_train.sjis_combos.v1.json`, built from
+  training slugs of this repo's split `d61d856f…` only. It is viewable with
+  `./run-families.sh --mode sjis`.
+- Its training-only bigram, trigram and stack counts are the input for job 1
+  (the stroke-idiom prior). This repository still owns building and scoring
+  that prior.
