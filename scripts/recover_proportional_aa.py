@@ -603,6 +603,7 @@ def decode_image(
     bank: GlyphBank | None = None,
     bigram: dict[int, tuple[np.ndarray, np.ndarray]] | None = None,
     bigram_weight: float = 0.0,
+    geometry_bank: GlyphBank | None = None,
 ) -> dict:
     ink, grey = ink_of(image)
     height = int(math.ceil(size_px * 1.25)) + 2
@@ -611,6 +612,15 @@ def decode_image(
         bank = render_bank(model, size_px, height, baseline, prior)
     elif (bank.size_px, bank.height, bank.baseline) != (size_px, height, baseline):
         raise ValueError("pre-rendered glyph bank geometry does not match the decode request")
+    # 2026-09-28 (P0C-10): with the whole-CJK fallback bank, pitch, phase and
+    # origin selection could lock onto a kanji explanation of the ink and shift
+    # every row (senpaku/resK-183: 18 -> 1 exact rows, 三 read as 庄). A caller
+    # may pass the ordinary bank as geometry_bank: geometry is then chosen with
+    # it, and the larger bank only reads the final rows.
+    geometry = bank if geometry_bank is None else geometry_bank
+    if (geometry.size_px, geometry.height, geometry.baseline) != (bank.size_px, bank.height, bank.baseline):
+        raise ValueError("geometry bank does not match the reading bank's size and line box")
+    geometry_penalty = prior_penalty(geometry.characters, prior or {}, prior_weight, glyph_penalty)
     glyph_penalty = prior_penalty(bank.characters, prior or {}, prior_weight, glyph_penalty)
     pitch, (first, last, _) = line_geometry(ink, height)
     if pitch < 0.95 * size_px:
@@ -637,7 +647,7 @@ def decode_image(
         estimate = pitch / divisor
         if estimate < 0.95 * size_px:
             continue
-        joint, _ = fit_rows(ink, bank, estimate, first, last)
+        joint, _ = fit_rows(ink, geometry, estimate, first, last)
         options |= {round(estimate, 4), round(joint, 4)}
         # a few lines cannot pin the period to a pixel: offer the whole pixels
         # either side too, and let decode cost choose
@@ -645,19 +655,19 @@ def decode_image(
     probe_x = float(edge) if edge is not None else max(0.0, float(ink_cols[0]) - full_px)
     pitch_trace = []
     for option in sorted(options):
-        _, lines = fit_rows(ink, bank, option, first, last, search=0.0)
+        _, lines = fit_rows(ink, geometry, option, first, last, search=0.0)
         probe = sorted({0, 1, len(lines) // 2, len(lines) - 2, len(lines) - 1} & set(range(len(lines))))
         cost = energy = 0.0
         for i in probe:
-            strip = row_strip(ink, lines[i], bank)
-            corr = correlations(strip, bank)
+            strip = row_strip(ink, lines[i], geometry)
+            corr = correlations(strip, geometry)
             # the origin is not known yet: take the best sub-step phase, so an
             # off-lattice probe origin cannot make a right pitch look wrong
-            cost += min(decode_row(strip, corr, bank, probe_x + phase, glyph_penalty).cost
-                        for phase in np.arange(0, bank.step_px, max(bank.step_px / 4, 1.0 / SUPERSAMPLE)))
+            cost += min(decode_row(strip, corr, geometry, probe_x + phase, geometry_penalty).cost
+                        for phase in np.arange(0, geometry.step_px, max(geometry.step_px / 4, 1.0 / SUPERSAMPLE)))
             energy += float((strip**2).sum())
         # rows the lattice misses entirely are ink left unexplained
-        covered = sum(float((row_strip(ink, b, bank) ** 2).sum()) for b in lines)
+        covered = sum(float((row_strip(ink, b, geometry) ** 2).sum()) for b in lines)
         missed = max(0.0, float((ink**2).sum()) - covered)
         pitch_trace.append((option, cost / max(energy, 1e-9) + missed / max(float((ink**2).sum()), 1e-9)))
     # ties go to the whole pixel: equal cost means the same baselines anyway
@@ -671,17 +681,17 @@ def decode_image(
         candidates = sorted({pitch, nominal})
         refined = []
         for option in candidates:
-            _, option_baselines = fit_rows(ink, bank, option, first, last, search=0.0)
+            _, option_baselines = fit_rows(ink, geometry, option, first, last, search=0.0)
             score, option_baselines, offsets = refine_pitch_phase(
-                ink, bank, option, option_baselines, probe_x, glyph_penalty
+                ink, geometry, option, option_baselines, probe_x, geometry_penalty
             )
             phase_trace.append((option, [(b, round(c, 5)) for b, c in offsets]))
             refined.append((score, option, option_baselines))
         _, pitch, baselines = min(refined, key=lambda t: (round(t[0], 6), abs(t[1] - round(t[1]))))
     else:
-        pitch, baselines = fit_rows(ink, bank, pitch, first, last, search=0.0)
+        pitch, baselines = fit_rows(ink, geometry, pitch, first, last, search=0.0)
     strips = [row_strip(ink, b, bank) for b in baselines]
-    corrs = [correlations(s, bank) for s in strips]
+    corrs = [correlations(s, geometry) for s in strips]
     if x0 is None:
         if edge is not None:
             low, high = float(edge), float(edge) + full_px
@@ -690,7 +700,7 @@ def decode_image(
         candidates = np.arange(low, high, 1.0 / SUPERSAMPLE)
         sample = [i for i, s in enumerate(strips) if s.sum() > 0][:: max(1, len(strips) // 6)]
         scores = np.array([
-            sum(decode_row(strips[i], corrs[i], bank, candidate, glyph_penalty).cost for i in sample)
+            sum(decode_row(strips[i], corrs[i], geometry, candidate, geometry_penalty).cost for i in sample)
             for candidate in candidates
         ])
         # Shifting the origin by any legal run of spaces explains the ink
@@ -709,6 +719,8 @@ def decode_image(
     # The stroke-idiom prior acts only here, on the final reading. Pitch, phase and
     # origin are chosen without it, so a receipt with the prior differs from one
     # without only in which glyphs were read, never in the page geometry.
+    if geometry is not bank:
+        corrs = [correlations(s, bank) for s in strips]
     rows = [decode_row(s, c, bank, x0, glyph_penalty, bigram, bigram_weight) for s, c in zip(strips, corrs)]
     return {
         "bank": bank,

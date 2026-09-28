@@ -35,7 +35,8 @@ def _rel(path: str) -> str:
 
 def _init(prior_path: str, weight: float, font: str, size_px: float, x0: float | None,
           archive: str, split: dict, phase_refine: bool, kanji_fallback: bool,
-          bigram_path: str | None = None, bigram_weight: float = 0.0, bigram_score: str = "pmi") -> None:
+          bigram_path: str | None = None, bigram_weight: float = 0.0, bigram_score: str = "pmi",
+          fallback_geometry: str = "full") -> None:
     prior = rp.load_prior(Path(prior_path)) if prior_path else {}
     model = rp.load_font_model(Path(font), rp.prior_alphabet(prior, kanji_fallback))
     height = int(math.ceil(size_px * 1.25)) + 2
@@ -44,9 +45,15 @@ def _init(prior_path: str, weight: float, font: str, size_px: float, x0: float |
     # Rendering the expanded AA-003 glyph bank per page made corpus scoring
     # repeat identical work hundreds of times.
     bank = rp.render_bank(model, size_px, height, baseline, prior)
+    # P0C-10 2026-09-28: "base" chooses pitch, phase and origin with the
+    # ordinary bank and lets the whole-CJK bank read the final rows only.
+    geometry_bank = None
+    if kanji_fallback and fallback_geometry == "base":
+        base_model = rp.load_font_model(Path(font), rp.prior_alphabet(prior, False))
+        geometry_bank = rp.render_bank(base_model, size_px, height, baseline, prior)
     _STATE.update(prior=prior, weight=weight, x0=x0,
                   model=model,
-                  bank=bank,
+                  bank=bank, geometry_bank=geometry_bank,
                   bigram=rp.bigram_bonus(Path(bigram_path), bank.characters, bigram_score) if bigram_path else {},
                   bigram_weight=bigram_weight,
                   archive=Path(archive), split=split, phase_refine=phase_refine)
@@ -60,7 +67,8 @@ def _run(job: tuple[str, float]) -> dict:
         result = rp.decode_image(Image.open(io.BytesIO(read_blob(_STATE["archive"], _STATE["split"], png))),
                                  _STATE["model"], size, 0.02, _STATE["x0"],
                                  _STATE["prior"], _STATE["weight"], _STATE["phase_refine"],
-                                 _STATE["bank"], _STATE["bigram"], _STATE["bigram_weight"])
+                                 _STATE["bank"], _STATE["bigram"], _STATE["bigram_weight"],
+                                 _STATE["geometry_bank"])
         lines = [r.text for r in result["rows"]]
         while lines and not lines[-1]:
             lines.pop()
@@ -90,6 +98,9 @@ def main() -> None:
                         help="known text origin (AAHub renders: 8 px pad); fitted when omitted")
     parser.add_argument("--no-phase-refine", action="store_true")
     parser.add_argument("--kanji-fallback", action="store_true")
+    parser.add_argument("--fallback-geometry", choices=("full", "base"), default="full",
+                        help="with --kanji-fallback: choose pitch/phase/origin with the full bank (historical) "
+                             "or with the ordinary bank, reading only the final rows with the full bank")
     parser.add_argument("--bigram-prior", default=None,
                         help="touching-pair counts from build_char_prior.py (e.g. data/aa_bigram_prior.json)")
     parser.add_argument("--bigram-weight", type=float, default=0.0)
@@ -157,6 +168,7 @@ def main() -> None:
         "prior_sha256": hashlib.sha256(Path(args.prior).read_bytes()).hexdigest() if args.prior else None,
         "prior_weight": args.prior_weight, "phase_refine": not args.no_phase_refine,
         "kanji_fallback": args.kanji_fallback,
+        "fallback_geometry": args.fallback_geometry,
         "bigram_prior_sha256": (hashlib.sha256(Path(args.bigram_prior).read_bytes()).hexdigest()
                                 if args.bigram_prior else None),
         "bigram_weight": args.bigram_weight,
@@ -184,7 +196,7 @@ def main() -> None:
                              initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.size_px, args.x0,
                                        str(args.archive), split, not args.no_phase_refine,
                                        args.kanji_fallback, args.bigram_prior, args.bigram_weight,
-                                       args.bigram_score)) as pool, \
+                                       args.bigram_score, args.fallback_geometry)) as pool, \
             partial.open("a", encoding="utf-8") as sink:
         for future in as_completed([pool.submit(_run, job) for job in todo]):
             row = future.result()
@@ -211,6 +223,7 @@ def main() -> None:
         "partition": args.partition, "slugs": slugs, "every": args.every,
         "phase_refine": not args.no_phase_refine,
         "kanji_fallback": args.kanji_fallback,
+        "fallback_geometry": args.fallback_geometry,
         "size_px": args.size_px, "x0": args.x0, "prior": args.prior and Path(args.prior).name,
         "prior_weight": args.prior_weight,
         "bigram_prior": args.bigram_prior and Path(args.bigram_prior).name,

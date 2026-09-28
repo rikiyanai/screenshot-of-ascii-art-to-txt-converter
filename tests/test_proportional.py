@@ -128,6 +128,36 @@ class StrokeIdiomPrior(unittest.TestCase):
         self.assertEqual(forced["baselines"], plain["baselines"])
 
 
+class FallbackGeometry(unittest.TestCase):
+    """P0C-10 2026-09-28: the whole-CJK bank moved the page geometry on 6/151
+    targeted pages. With geometry_bank, pitch, baselines and origin must be
+    exactly those of the ordinary bank, whatever the reading bank holds."""
+
+    def test_geometry_comes_from_the_geometry_bank(self) -> None:
+        base_model = rp.load_font_model(rp.DEFAULT_FONT, "三二._")
+        wide_model = rp.load_font_model(rp.DEFAULT_FONT, "三二._庄圭")
+        rows = ["三二三._", "二三二_.", "三三二.."]
+        baselines = [22 + 17 * i for i in range(len(rows))]
+        ink = rp.render_text(rows, base_model, 16, 17, 8, baselines, (80, 110))
+        image = Image.fromarray((255 - 255 * (ink > 0.35)).astype(np.uint8))
+        base = rp.render_bank(base_model, 16, 22, 16, {})
+        wide = rp.render_bank(wide_model, 16, 22, 16, {})
+        plain = rp.decode_image(image, base_model, 16, 0.02, None, {}, 0, True, base)
+        split = rp.decode_image(image, wide_model, 16, 0.02, None, {}, 0, True, wide, geometry_bank=base)
+        for field in ("pitch", "baselines", "x0"):
+            self.assertEqual(split[field], plain[field])
+        self.assertIs(split["bank"], wide)
+        self.assertEqual([r.text for r in split["rows"]][:3], rows)
+
+    def test_mismatched_line_box_is_refused(self) -> None:
+        model = rp.load_font_model(rp.DEFAULT_FONT, "._")
+        ink = rp.render_text(["._"], model, 16, 17, 8, [22], (40, 40))
+        image = Image.fromarray((255 - 255 * (ink > 0.35)).astype(np.uint8))
+        with self.assertRaises(ValueError):
+            rp.decode_image(image, model, 16, 0.02, 8, {}, 0, True, rp.render_bank(model, 16, 22, 16, {}),
+                            geometry_bank=rp.render_bank(model, 16, 24, 16, {}))
+
+
 class SubFloorPitch(unittest.TestCase):
     """P0C-10: 30/986 AA-003 train pages crashed with an empty pitch-candidate
     set. The autocorrelation locked onto bars inside a line (8-15 px) instead
