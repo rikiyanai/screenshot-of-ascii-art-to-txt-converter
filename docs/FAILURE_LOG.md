@@ -1165,3 +1165,33 @@
   **Next:** a matched every-25 train receipt with the same flags, against
   `…-train-every25-pitchfloor`. Then freeze the choice and make one AA-003
   held-out run.
+
+### 2026-09-28 — matched every-25 train receipt: kanji fallback (base geometry) +25 rows, 0 pages worse; choice frozen
+
+- **Run:** `docs/receipts/2026-09-28-aahub-aa003-train-every25-kanji-fallback-basegeom/eval.json`
+  (sha256 `118294db…fc0d`). Decoder `0d0e2b3`,
+  `--kanji-fallback --fallback-geometry base`, every 25, x0 8, 16 px, prior
+  weight 0, 4 workers, 0 errors.
+
+  | receipt | exact rows | rate | exact ignoring indentation | row counts right | canonical CER | strict CER |
+  |---|---|---|---|---|---|---|
+  | no fallback (`…-every25-pitchfloor`) | 13,163 | 69.32% | 13,031 | 843 | 0.1631 | 0.1316 |
+  | fallback, base geometry | **13,188** | **69.45%** | 13,055 | 843 | 0.1630 | 0.1315 |
+
+- The page set is the same 986 pages. Geometry is identical on all 986. 19 pages are
+  better, 0 worse. All 19 are among the 31 targeted out-of-bank pages, so the
+  targeted receipt predicted the whole-sample result exactly.
+- **Wall time:** about 4 h 10 min with 4 workers, mean 60 s/page. Most
+  of this is geometry search, which decodes probe rows again per pitch, phase
+  and first-baseline candidate. Speed-ups are listed but not applied (operator:
+  continue as is): float32 correlations, and reuse of the no-fallback geometry.
+- **Frozen choice for the held-out run:** `--kanji-fallback
+  --fallback-geometry base`, decoder `0d0e2b3`, all other flags as in the
+  pitch-floor baseline. No held-out answer key informed any choice so far.
+- **Held-out comparison (now running):** AA-003 held-out partition, every
+  25th page, no-fallback first, then the frozen fallback configuration.
+  Receipts:
+  `docs/receipts/2026-09-28-aahub-aa003-heldout-every25-nofallback` and
+  `docs/receipts/2026-09-28-aahub-aa003-heldout-every25-kanji-fallback-basegeom`.
+  This is the one post-choice held-out comparison. Its result is reported
+  as measured and is not tuned against.
