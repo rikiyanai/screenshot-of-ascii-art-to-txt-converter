@@ -1195,3 +1195,41 @@
   `docs/receipts/2026-09-28-aahub-aa003-heldout-every25-kanji-fallback-basegeom`.
   This is the one post-choice held-out comparison. Its result is reported
   as measured and is not tuned against.
+
+### 2026-09-29 — AA-003 held-out comparison: kanji fallback +25 rows, 0 pages worse
+
+- **Receipts:** AA-003 held-out partition (57 slugs), every 25th page, 412
+  pages, 8,417 key rows, x0 8, 16 px, prior weight 0, 4 workers, 0 errors on
+  both sides. Decoder `0d0e2b3`. Split `d61d856f…`.
+  - `docs/receipts/2026-09-28-aahub-aa003-heldout-every25-nofallback/eval.json`
+    (sha256 `5722be23…bb84`)
+  - `docs/receipts/2026-09-28-aahub-aa003-heldout-every25-kanji-fallback-basegeom/eval.json`
+    (sha256 `2ec3a940…20fc`), frozen configuration from the entry above
+
+  | held-out | exact rows | rate | exact ignoring indentation | row counts right | canonical CER | strict CER |
+  |---|---|---|---|---|---|---|
+  | no fallback | 5,606 | 66.60% | 5,561 | 340 | 0.1870 | 0.1504 |
+  | kanji fallback, base geometry | **5,631** | **66.90%** | 5,584 | 340 | 0.1866 | 0.1502 |
+
+- The page set is the same. Geometry is identical on all 412 pages. 12 pages are better, 0
+  worse. The largest gains are ningen-mobu-02-jingai/res33 (17 → 24) and
+  tabemono-07/resK-97 (31 → 36).
+- **Train vs held-out:** exact-row rate 69.32% train / 66.60% held-out
+  without fallback, and 69.45% / 66.90% with it. The held-out gain (+0.30
+  points) is larger than the train gain (+0.13). This fits the P0C-07 finding
+  that held-out art uses more kanji outside the training alphabet.
+- **Decode time:** 18,527 → 22,738 page-seconds (+23%) on held-out.
+- **Stage:** Verified on the pinned AA-003 held-out every-25 sample. This is
+  the one post-choice held-out comparison, and nothing was tuned against it. It
+  is not Accepted as a general screenshot converter. The corpus is AAHub
+  renders at a known 16 px size and origin, not independent screenshots.
+- **Open items carried forward:**
+  1. Make `--kanji-fallback --fallback-geometry base` the evaluator/CLI
+     default, or document it as the recommended flag. `recover_proportional_aa.py`
+     `main` does not yet expose a geometry bank.
+  2. Ordinary-bank geometry defect: row count wrong on
+     ningen-mobu-02-sekai/res01 and yasai-kudamono/resK-530 (0 exact rows
+     without fallback).
+  3. Speed: float32 correlations and cheaper geometry search (about 60 s/page).
+  4. Bigram prior job 1 is shelved (see the cond tuning entry). Job 2, the
+     look-alike table plus raster re-render scoring, is next in the job list.
