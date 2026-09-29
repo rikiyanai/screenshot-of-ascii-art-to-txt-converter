@@ -1224,9 +1224,13 @@
   is not Accepted as a general screenshot converter. The corpus is AAHub
   renders at a known 16 px size and origin, not independent screenshots.
 - **Open items carried forward:**
-  1. Make `--kanji-fallback --fallback-geometry base` the evaluator/CLI
-     default, or document it as the recommended flag. `recover_proportional_aa.py`
-     `main` does not yet expose a geometry bank.
+  1. Done, 2026-09-29: `recover_proportional_aa.py --kanji-fallback` now
+     fits size and geometry with the ordinary bank (`--fallback-geometry`,
+     default `base`). Held-out page ningen-mobu-02-jingai/res33 run through the
+     CLI at 16 px, x0 8 gives 24/24 exact, matching the receipt. Suite 53/53.
+     The evaluator default stays `full`, so historical receipts reproduce.
+     Fallback is still opt-in (`--kanji-fallback`) because it costs +23%
+     decode time.
   2. Ordinary-bank geometry defect: row count wrong on
      ningen-mobu-02-sekai/res01 and yasai-kudamono/resK-530 (0 exact rows
      without fallback).
