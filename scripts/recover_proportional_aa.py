@@ -777,6 +777,12 @@ def main() -> None:
     parser.add_argument("--prior-weight", type=float, default=0.0)
     parser.add_argument("--kanji-fallback", action="store_true",
                         help="include every CJK Unified Ideograph supported by the declared font")
+    # P0C-10 2026-09-29: "base" won the matched train receipt (+25 rows, 0
+    # pages worse) and the one held-out comparison (+25 rows, 0 pages worse);
+    # "full" moved page geometry and lost rows. The CLI defaults to "base".
+    parser.add_argument("--fallback-geometry", choices=("base", "full"), default="base",
+                        help="with --kanji-fallback: fit size, pitch, phase and origin with the ordinary bank "
+                             "(base) or with the whole-CJK bank (full)")
     parser.add_argument("--x0", type=float, default=None, help="text-box origin in px; fitted when omitted")
     parser.add_argument("--no-phase-refine", action="store_true",
                         help="ablation: use the old mean-profile baseline fit")
@@ -785,14 +791,20 @@ def main() -> None:
     image = Image.open(args.source)
     prior = load_prior(args.prior)
     model = load_font_model(args.font, prior_alphabet(prior, args.kanji_fallback))
+    split_geometry = args.kanji_fallback and args.fallback_geometry == "base"
+    geometry_model = load_font_model(args.font, prior_alphabet(prior)) if split_geometry else model
 
     if args.size_px is None:
-        size_px, size_trace = fit_size(image, model, args.glyph_penalty)
+        size_px, size_trace = fit_size(image, geometry_model, args.glyph_penalty)
     else:
         size_px, size_trace = args.size_px, []
 
+    geometry_bank = None
+    if split_geometry:
+        geometry_bank = render_bank(geometry_model, size_px, int(math.ceil(size_px * 1.25)) + 2,
+                                    int(round(size_px)), prior)
     result = decode_image(image, model, size_px, args.glyph_penalty, args.x0, prior,
-                          args.prior_weight, not args.no_phase_refine)
+                          args.prior_weight, not args.no_phase_refine, geometry_bank=geometry_bank)
     lines = [row.text for row in result["rows"]]
     # drop blank leading/trailing lines
     while lines and not lines[-1]:
@@ -828,6 +840,7 @@ def main() -> None:
                   "sha256": sha256(args.prior) if args.prior.exists() else None,
                   "weight": args.prior_weight, "characters": len(prior)},
         "kanji_fallback": args.kanji_fallback,
+        "fallback_geometry": args.fallback_geometry if args.kanji_fallback else None,
         "rows": [
             {"text": r.text, "reconstruction_cost": round(r.cost, 3), "ink_energy": round(r.ink_energy, 3)}
             for r in result["rows"]
