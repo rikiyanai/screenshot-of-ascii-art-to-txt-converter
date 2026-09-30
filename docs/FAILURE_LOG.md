@@ -1369,3 +1369,40 @@
   tetsudou-haikei/resK-77.
 - **Stage:** Verified on the tuning sample only. Size is still given
   (16 px). No held-out screenshot run yet.
+
+### 2026-09-30 — screenshot mode v3: 99.2% of known-origin rows ignoring indentation; absolute indentation fixes
+
+- **Metric change (`55ce0c9`):** indentation-invariant rows now agree on
+  one page-wide shift, taking the shift that most rows share. Before, each
+  side was measured against its own least-indented row, so one misread row
+  (an unknown kanji on te-ude-03/resK-102 row 0) failed every other row.
+  Figures from before `55ce0c9` are not comparable.
+- **Decoder (`4636325`):** free-lead rows may start up to one advance past
+  their first ink, and skipped ink is charged. The common shift tolerates 5%
+  of rows and starts past the smallest gaps. te-ude-03/resK-102 went from
+  origin 22 px off and 0 exact to origin exact and 23/25 exact.
+- **Receipts** (tuning sample, 170 pages, 3,478 rows, 0 errors):
+  - `docs/receipts/2026-09-30-aahub-aa003-screenshot-margins31-tune-every200-off12-v3/eval.json`
+    (sha256 `e2aa1caa…729f`, decoder `4636325`)
+  - `docs/receipts/2026-09-30-aahub-aa003-tune-every200-off12-knownorigin-v3/eval.json`
+    (known origin, same decoder and scorer)
+
+  | receipt | exact rows | indentation-invariant | origin exact |
+  |---|---|---|---|
+  | known origin v3 | 2,611 (75.1%) | 2,613 (75.1%) | given |
+  | screenshot v3 | 1,562 (44.9%) | **2,591 (74.5%)** | 99/170 |
+
+- **Absolute indentation, measured:** most origin errors are whole full-space
+  multiples to the right (+11 px on 23 pages, +22 on 15, +33 on 4, …). On
+  those pages the key indents the whole artwork, which a screenshot without a
+  text-box edge cannot show. That loss is inherent to the task, not a decoder
+  error. 11 pages erred to the left (too much indentation). Probed cause: a
+  first-glyph misread in one row made the true origin look unspellable, and
+  pages under 20 rows had zero tolerance.
+  - `3a8c219` fix: tolerance of at least one row from 10 rows up. witches/resK-360
+    and jr-kokutetsu/resK-108 went from 0 exact to 13/15 and 11/18 exact.
+  - tetsudou-haikei/resK-77 still errs: 3/23 rows are an out-of-bank kanji
+    title.
+  - A filter that let only well-reconstructed rows vote was tried. It
+    changed none of 5 probed pages and was removed.
+- **Running:** screenshot v4 tuning receipt with the tolerance fix.
