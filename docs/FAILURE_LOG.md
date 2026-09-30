@@ -1421,3 +1421,29 @@
 - **Action:** tolerance restored to 5% with no floor, the v3 rule. v3 stays
   the screenshot-mode reference (2,591 indentation-invariant, 99.2% of known
   origin).
+
+### 2026-09-30 — held-out screenshot mode (frozen kanji fallback): 69.1% indentation-invariant, 43.0% exact
+
+- **Receipt:** `docs/receipts/2026-09-30-aahub-aa003-heldout-every25-screenshot-margins31-kanji-fallback-basegeom/eval.json`
+  (sha256 `a9756504…1afe`).
+  - Setup: AA-003 held-out, every 25, 412 pages, 8,417 rows. Random 0–31 px
+    margins, fitted origin, size given (16 px). `--kanji-fallback
+    --fallback-geometry base`.
+  - Decoder `57d27ac`, which is equivalent to v3. Scorer `55ce0c9`.
+  - 0 errors.
+- **Result:** exact 3,618 (43.0%), **indentation-invariant 5,817 (69.1%)**,
+  row counts right 349/412, canonical CER 0.1801. Origin exact on 233/412.
+  - Origin errors are mostly whole full spaces to the right: +11 px ×68,
+    +22 ×28, +44 ×6, +55 ×5. That is the whole-art indentation the pixels do
+    not show.
+  - Too much indentation: −11 ×13, −55 ×5.
+- **Reference:** the known-origin held-out receipt of 2026-09-28 (old
+  decoder, old metric) had 5,631 exact and 340 row counts right. It is not
+  a like-for-like comparison: the decoder's geometry and the scorer changed
+  since. Screenshot mode now gets more rows right up to one page-wide shift
+  (5,817) than that receipt got exactly.
+- **Held-out discipline:** every change since the 2026-09-29 held-out run
+  was chosen on training pages only (tuning sample and probes). This run
+  measures screenshot realism and is not tuned against.
+- **Next:** size fitting (size is still given), the automatic text-type and
+  font chooser, and pair generation from the AA-004 crawl for a larger split.
