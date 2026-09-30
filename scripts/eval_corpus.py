@@ -23,6 +23,13 @@ import recover_proportional_aa as rp  # noqa: E402
 from score_against_key import score  # noqa: E402
 from PIL import Image  # noqa: E402
 from archive_snapshot import SPLIT, load_split, read_blob  # noqa: E402
+from eval_fixed_grid_corpus import randomize_outer_margins  # noqa: E402
+import numpy as np  # noqa: E402
+
+# AAHub renders put the text box 8 px from the left and top edges, with at
+# least 8 px of paper on every side (measured on 28 pages across 14 slugs,
+# 2026-09-29). Screenshot mode crops exactly this pad before adding margins.
+AAHUB_PAD_PX = 8
 
 _STATE: dict = {}
 
@@ -36,7 +43,8 @@ def _rel(path: str) -> str:
 def _init(prior_path: str, weight: float, font: str, size_px: float, x0: float | None,
           archive: str, split: dict, phase_refine: bool, kanji_fallback: bool,
           bigram_path: str | None = None, bigram_weight: float = 0.0, bigram_score: str = "pmi",
-          fallback_geometry: str = "full") -> None:
+          fallback_geometry: str = "full", margin_max: int | None = None,
+          margin_seed: str = "") -> None:
     prior = rp.load_prior(Path(prior_path)) if prior_path else {}
     model = rp.load_font_model(Path(font), rp.prior_alphabet(prior, kanji_fallback))
     height = int(math.ceil(size_px * 1.25)) + 2
@@ -53,7 +61,7 @@ def _init(prior_path: str, weight: float, font: str, size_px: float, x0: float |
         geometry_bank = rp.render_bank(base_model, size_px, height, baseline, prior)
     _STATE.update(prior=prior, weight=weight, x0=x0,
                   model=model,
-                  bank=bank, geometry_bank=geometry_bank,
+                  bank=bank, geometry_bank=geometry_bank, margin_max=margin_max, margin_seed=margin_seed,
                   bigram=rp.bigram_bonus(Path(bigram_path), bank.characters, bigram_score) if bigram_path else {},
                   bigram_weight=bigram_weight,
                   archive=Path(archive), split=split, phase_refine=phase_refine)
@@ -64,7 +72,22 @@ def _run(job: tuple[str, float]) -> dict:
     started = time.time()
     try:
         png = stem + ".png"
-        result = rp.decode_image(Image.open(io.BytesIO(read_blob(_STATE["archive"], _STATE["split"], png))),
+        image = Image.open(io.BytesIO(read_blob(_STATE["archive"], _STATE["split"], png)))
+        margins = None
+        if _STATE["margin_max"] is not None:
+            # P0C-10 2026-09-29 screenshot mode: a real capture is not aligned
+            # to the text box. Crop the declared pad (refusing a page whose ink
+            # reaches into it), then add reproducible 0..max px margins per edge.
+            grey = np.asarray(image.convert("L"))
+            pad = AAHUB_PAD_PX
+            border = np.ones(grey.shape, dtype=bool)
+            border[pad:-pad, pad:-pad] = False
+            if (grey[border] < 128).any():
+                raise ValueError("ink inside the declared render pad")
+            canvas, margins = randomize_outer_margins(grey, _rel(png), {"padding_px": pad},
+                                                      _STATE["margin_seed"], _STATE["margin_max"])
+            image = Image.fromarray(canvas)
+        result = rp.decode_image(image,
                                  _STATE["model"], size, 0.02, _STATE["x0"],
                                  _STATE["prior"], _STATE["weight"], _STATE["phase_refine"],
                                  _STATE["bank"], _STATE["bigram"], _STATE["bigram_weight"],
@@ -75,7 +98,11 @@ def _run(job: tuple[str, float]) -> dict:
         key = read_blob(_STATE["archive"], _STATE["split"], stem + ".txt").decode("utf-8").splitlines()
         s = score(lines, key)
         s.pop("per_row")
-        return {"page": _rel(png), **s, "pitch": result["pitch"], "x0": result["x0"],
+        extra = {}
+        if margins is not None:
+            extra = {"margins": margins, "x0_true": float(margins["left"]),
+                     "x0_error": round(result["x0"] - margins["left"], 4), "x0_source": result["x0_source"]}
+        return {"page": _rel(png), **s, "pitch": result["pitch"], "x0": result["x0"], **extra,
                 "candidate_glyphs": len(result["bank"].characters),
                 "seconds": round(time.time() - started, 1)}
     except Exception as error:  # a crash is a result, not a silent skip
@@ -112,11 +139,17 @@ def main() -> None:
     parser.add_argument("--resume", action="store_true",
                         help="continue an interrupted run in OUT from its partial.jsonl checkpoint; "
                              "refused unless the checkpoint's configuration matches this command")
+    parser.add_argument("--random-margins", type=int, default=None, metavar="MAX_PX",
+                        help="screenshot mode: crop the 8 px render pad and add reproducible 0..MAX_PX margins "
+                             "per edge; the origin is then fitted (--x0 is refused)")
+    parser.add_argument("--margin-seed", default="p0c10-aahub-screenshot-margins-v1")
     parser.add_argument("--every-offset", type=int, default=0,
                         help="start index within each slug for the every-k sample (0 keeps the historical sample)")
     args = parser.parse_args()
     if args.every < 1 or args.workers < 1:
         parser.error("--every and --workers must both be positive")
+    if args.random_margins is not None and (args.x0 is not None or args.random_margins < 0):
+        parser.error("--random-margins needs a non-negative maximum and a fitted origin (omit --x0)")
     if args.out.exists() and not args.resume:
         parser.error("output directory already exists; use a new receipt path or --resume")
     if (args.out / "eval.json").exists():
@@ -169,6 +202,8 @@ def main() -> None:
         "prior_weight": args.prior_weight, "phase_refine": not args.no_phase_refine,
         "kanji_fallback": args.kanji_fallback,
         "fallback_geometry": args.fallback_geometry,
+        "random_margins": args.random_margins,
+        "margin_seed": args.margin_seed if args.random_margins is not None else None,
         "bigram_prior_sha256": (hashlib.sha256(Path(args.bigram_prior).read_bytes()).hexdigest()
                                 if args.bigram_prior else None),
         "bigram_weight": args.bigram_weight,
@@ -196,7 +231,8 @@ def main() -> None:
                              initargs=(args.prior, args.prior_weight, str(rp.DEFAULT_FONT), args.size_px, args.x0,
                                        str(args.archive), split, not args.no_phase_refine,
                                        args.kanji_fallback, args.bigram_prior, args.bigram_weight,
-                                       args.bigram_score, args.fallback_geometry)) as pool, \
+                                       args.bigram_score, args.fallback_geometry,
+                                       args.random_margins, args.margin_seed)) as pool, \
             partial.open("a", encoding="utf-8") as sink:
         for future in as_completed([pool.submit(_run, job) for job in todo]):
             row = future.result()
@@ -216,6 +252,14 @@ def main() -> None:
         "mean_canonical_cer": round(sum(p["canonical_cer"] for p in ok) / max(len(ok), 1), 4),
         "mean_strict_cer": round(sum(p["strict_cer"] for p in ok) / max(len(ok), 1), 4),
     }
+    if args.random_margins is not None and ok:
+        errors = [abs(p["x0_error"]) for p in ok]
+        summary["origin"] = {
+            "within_0.5px": sum(e <= 0.5 for e in errors),
+            "within_1px": sum(e <= 1.0 for e in errors),
+            "mean_abs_error_px": round(sum(errors) / len(errors), 3),
+            "max_abs_error_px": round(max(errors), 3),
+        }
     (args.out / "eval.json").write_text(json.dumps({
         "schema": "proportional_eval.v2", "archive_commit": split["archive_commit"],
         "manifest_sha256": split["manifest_sha256"],
@@ -224,6 +268,8 @@ def main() -> None:
         "phase_refine": not args.no_phase_refine,
         "kanji_fallback": args.kanji_fallback,
         "fallback_geometry": args.fallback_geometry,
+        "random_margins": args.random_margins,
+        "margin_seed": args.margin_seed if args.random_margins is not None else None,
         "size_px": args.size_px, "x0": args.x0, "prior": args.prior and Path(args.prior).name,
         "prior_weight": args.prior_weight,
         "bigram_prior": args.bigram_prior and Path(args.bigram_prior).name,
