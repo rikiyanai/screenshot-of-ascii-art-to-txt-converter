@@ -1334,3 +1334,38 @@
   `api/mlt` and `aa-storage` JSON that produces txt + Saitamaar-render pairs
   per mlt id. This is AA-004, with a new split lock. It needs operator approval
   because it is large (on the order of 15k pages).
+
+### 2026-09-29 — new geometry: known-origin +58 rows, 0 pages worse; screenshot mode at 98% of known origin (indentation-invariant)
+
+- **Receipts** (decoder `fa16bb7`, evaluator `7ceea06`, tuning sample every
+  200 offset 12, train, 170 pages, 3,478 rows, 0 errors on both):
+  - `docs/receipts/2026-09-29-aahub-aa003-tune-every200-off12-knownorigin-newgeom/eval.json`
+    (sha256 `09669032…2245`)
+  - `docs/receipts/2026-09-29-aahub-aa003-screenshot-margins31-tune-every200-off12-newgeom/eval.json`
+    (sha256 `6cd1e4cc…61e3`)
+
+  | receipt | exact rows | indentation-invariant | row counts right | canonical CER | origin within 0.5 px |
+  |---|---|---|---|---|---|
+  | known origin, old decoder (`…-w0`) | 2,553 (73.4%) | 2,520 (old metric) | 150 | 0.1219 | — |
+  | **known origin, new decoder** | **2,611 (75.1%)** | 2,558 | 153 | 0.1046 | — |
+  | screenshot, old decoder (165 pages scored) | 1,714 / 3,365 | 2,122 (old metric) | 146 | 0.1400 | 109/165 |
+  | **screenshot, new decoder** | 1,534 (44.1%) | **2,510 (72.2%)** | 153 | 0.1244 | 93/170 |
+
+- **Regression check passed:** with the known origin, the new decoder is
+  better on 5 pages (exact rows) and worse on 0. Pitch or row count changed on
+  8 pages. The rounding and edge-row fixes help the known-origin case too.
+- **Screenshot mode:** the indentation-invariant score is 2,510 against 2,558 with the
+  known origin (98.1%). Row counts equal the known-origin decode on all 170
+  pages. Largest remaining gaps: te-ude-03/resK-102 (−23 rows),
+  tetsudou-haikei/resK-77 (−17), gunkan/resK-283 (−11).
+- **Open:** absolute indentation. Exact rows fell 1,714 → 1,534 against the
+  old screenshot decoder. The fitted origin is often left of the truth
+  (x0_error −22, −55, −77, −108 px on the worst pages), so the whole page
+  gets extra indentation. Two possible causes: the common-shift search stops
+  at the first shift that spells every row, or a row's free-lead gap includes
+  spaces the DP emitted. With no text-box edge, absolute indentation is not in
+  the pixels, but "least indentation that spells every row" should still hold
+  where the truth does. Next: diagnose te-ude-03/resK-102 and
+  tetsudou-haikei/resK-77.
+- **Stage:** Verified on the tuning sample only. Size is still given
+  (16 px). No held-out screenshot run yet.
