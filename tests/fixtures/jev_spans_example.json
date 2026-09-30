@@ -1,0 +1,141 @@
+{
+  "schema": "jev-spans/v1",
+  "page": "example/hand-made-01",
+  "text_type": {
+    "fit_cost": {
+      "monospace": 0.41,
+      "proportional": 0.03
+    }
+  },
+  "font": {
+    "fit_cost": {
+      "Saitamaar @ 16px": 0.021,
+      "IPAGP-Mona @ 16px": 0.048
+    }
+  },
+  "rows": [
+    {
+      "text": "　　　 ＿＿＿",
+      "spans": []
+    },
+    {
+      "text": "　　／⌒　⌒＼|",
+      "spans": [
+        {
+          "cols": [
+            7,
+            8
+          ],
+          "kind": "lookalike",
+          "options": {
+            "a": "|",
+            "b": "｜"
+          },
+          "pixel_cost": {
+            "a": 0.118,
+            "b": 0.121
+          },
+          "pixel_identical": false,
+          "jev": null
+        }
+      ]
+    },
+    {
+      "text": "　 （ 人間 ）",
+      "spans": [
+        {
+          "cols": [
+            0,
+            2
+          ],
+          "kind": "width",
+          "options": {
+            "a": "　 ",
+            "b": " 　"
+          },
+          "pixel_cost": {
+            "a": 0.0,
+            "b": 0.0
+          },
+          "pixel_identical": false,
+          "jev": null
+        },
+        {
+          "cols": [
+            4,
+            5
+          ],
+          "kind": "kanji",
+          "options": {
+            "a": "人",
+            "b": "入"
+          },
+          "pixel_cost": {
+            "a": 0.241,
+            "b": 0.2463
+          },
+          "pixel_identical": false,
+          "jev": null
+        }
+      ]
+    },
+    {
+      "text": "　 ?ヽ　ノ",
+      "spans": [
+        {
+          "cols": [
+            2,
+            3
+          ],
+          "kind": "glyph",
+          "options": {
+            "a": "?"
+          },
+          "pixel_cost": {
+            "a": 0.5
+          },
+          "pixel_identical": false,
+          "jev": null
+        },
+        {
+          "cols": [
+            3,
+            4
+          ],
+          "kind": "glyph",
+          "options": {
+            "a": "ヽ",
+            "b": "丶"
+          },
+          "pixel_cost": {
+            "a": 0.1,
+            "b": 0.31
+          },
+          "pixel_identical": false,
+          "jev": null
+        },
+        {
+          "cols": [
+            4,
+            5
+          ],
+          "kind": "width",
+          "options": {
+            "a": "　",
+            "b": " "
+          },
+          "pixel_cost": {
+            "a": 0.3,
+            "b": 0.309
+          },
+          "pixel_identical": false,
+          "jev": null
+        }
+      ]
+    },
+    {
+      "text": "　 ＼＿＿／",
+      "spans": []
+    }
+  ]
+}
