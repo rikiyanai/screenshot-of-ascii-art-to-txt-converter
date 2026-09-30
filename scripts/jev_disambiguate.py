@@ -329,10 +329,17 @@ class JevError(RuntimeError):
     pass
 
 
-def api_key(env: Optional[dict[str, str]] = None) -> str:
+KEY_FILE = Path.home() / ".config" / "typesafe" / "key"  # written by ~/.config/typesafe/set_key.sh (mode 600)
+
+
+def api_key(env: Optional[dict[str, str]] = None, key_file: Optional[Path] = None) -> str:
+    """TYPESAFE_API_KEY, else the operator's key file. The key is never logged."""
     key = (env if env is not None else os.environ).get(API_KEY_ENV, "")
+    path = key_file if key_file is not None else (KEY_FILE if env is None else None)
+    if not key and path is not None and path.exists():
+        key = path.read_text(encoding="utf-8").strip()
     if not key:
-        raise JevError(f"{API_KEY_ENV} is not set; use --dry-run to write the request payloads instead")
+        raise JevError(f"{API_KEY_ENV} is not set and {KEY_FILE} is missing; use --dry-run instead")
     return key
 
 
