@@ -158,6 +158,39 @@ class FallbackGeometry(unittest.TestCase):
                             geometry_bank=rp.render_bank(model, 16, 24, 16, {}))
 
 
+class ScreenshotGeometry(unittest.TestCase):
+    """P0C-10 2026-09-29: screenshot mode (random margins, fitted origin)."""
+
+    def test_baselines_round_halves_consistently(self) -> None:
+        # round() gave 22, 38, 56, 72 for 21.5 + 17 i: every other line 1 px high
+        self.assertEqual([rp.baseline_px(21.5 + 17 * i) for i in range(4)], [22, 39, 56, 73])
+
+    def test_indent_spelling_obeys_the_half_space_law(self) -> None:
+        self.assertTrue(rp.indent_spellable(880 * 3 + 400 * 2, 880, 400))
+        self.assertFalse(rp.indent_spellable(400 * 3, 880, 400))  # needs two adjacent U+0020
+        self.assertFalse(rp.indent_spellable(480, 880, 400))
+        self.assertEqual(rp.spell_indent(880 + 400, 80, 880, 400), ("\u3000 ", True))
+
+    def test_common_indent_may_move_the_origin_left(self) -> None:
+        # true leads 10, 15 and 16 lattice steps of 80 units (800, 1200, 1280 = 880+400)
+        # are not all spellable from the first ink; moving left makes them so
+        leads = [20, 25, 26]
+        shift = rp.common_indent_steps(leads, 80, 880, 400)
+        self.assertTrue(all(rp.indent_spellable((g - shift) * 80, 880, 400) for g in leads))
+        self.assertLessEqual(shift, min(leads))
+
+    def test_underscore_row_survives_a_top_margin(self) -> None:
+        model = rp.load_font_model(rp.DEFAULT_FONT, "_/\\|")
+        rows = ["__", "/\\|", "|/\\"]
+        for top in range(0, 18):
+            baselines = [14 + top + 17 * i for i in range(len(rows))]
+            ink = rp.render_text(rows, model, 16, 17, 8, baselines, (top + 70, 60))
+            image = Image.fromarray((255 - 255 * (ink > 0.35)).astype(np.uint8))
+            result = rp.decode_image(image, model, 16, 0.02, 8, {}, 0)
+            self.assertEqual(len(result["rows"]), 3, f"top margin {top}")
+            self.assertEqual(result["rows"][0].text, "__", f"top margin {top}")
+
+
 class SubFloorPitch(unittest.TestCase):
     """P0C-10: 30/986 AA-003 train pages crashed with an empty pitch-candidate
     set. The autocorrelation locked onto bars inside a line (8-15 px) instead

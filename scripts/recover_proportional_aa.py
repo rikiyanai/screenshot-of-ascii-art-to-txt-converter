@@ -302,6 +302,7 @@ class RowDecode:
     cost: float
     ink_energy: float
     end_px: float
+    lead_steps: int = 0  # free_lead only: pen-lattice steps skipped before the first glyph
 
 
 def decode_row(
@@ -312,7 +313,12 @@ def decode_row(
     glyph_penalty: float,
     bigram: dict[int, tuple[np.ndarray, np.ndarray]] | None = None,
     bigram_weight: float = 0.0,
+    free_lead: bool = False,
 ) -> RowDecode:
+    """free_lead: the row may start at any lattice position before its first
+    ink at no cost, and the skipped width is returned as lead_steps instead of
+    being spelled with space glyphs. Used when the text-box edge is not in the
+    image, so the indentation is not known from the origin."""
     width = strip.shape[1]
     column_energy = (strip**2).sum(axis=0)
     cum = np.concatenate([[0.0], np.cumsum(column_energy)])
@@ -342,6 +348,12 @@ def decode_row(
     back_state = np.full((2, states), -1, dtype=np.int64)
     back_glyph = np.full((2, states), -1, dtype=np.int64)
     best[0, 0] = 0.0
+    if free_lead:
+        first_ink = int(np.nonzero(column_energy > 1e-9)[0][0])
+        for s0 in range(1, states):
+            if x0 + s0 * bank.step_px > first_ink:
+                break
+            best[0, s0] = 0.0  # back_state stays -1: the path starts here
     for s in range(states):
         if not (np.isfinite(best[0, s]) or np.isfinite(best[1, s])):
             continue
@@ -405,12 +417,12 @@ def decode_row(
                 finish, final = value, (layer, s)
     glyphs: list[str] = []
     layer, s = final
-    while s > 0:
+    while s > 0 and back_state[layer, s] >= 0:
         prev, g = back_state[layer, s], back_glyph[layer, s]
         glyphs.append(bank.characters[g])
         s, layer = divmod(int(prev), 2)
     text = canonical_spacing("".join(reversed(glyphs))).rstrip(FULL_SPACE + HALF_SPACE)
-    return RowDecode(text, float(finish), total_ink, x0 + final[1] * bank.step_px)
+    return RowDecode(text, float(finish), total_ink, x0 + final[1] * bank.step_px, int(s))
 
 
 def canonical_spacing(text: str) -> str:
@@ -482,6 +494,18 @@ def line_geometry(ink: np.ndarray, bank_height: int,
     return pitch, [first, last, count]
 
 
+def baseline_px(y: float) -> int:
+    """Nearest pixel row, halves rounded down the page.
+
+    2026-09-29 (P0C-10): Python's round() sends halves to the even integer, so
+    a lattice starting at 21.5 on a 17 px pitch landed on 22, 38, 56, 72:
+    every other line 1 px high. With a random top margin that put a row of
+    underscores 1 px off, fit_rows pruned it as blank, and every row of
+    kyoko-01/res129 shifted by one line (18 -> 0 exact rows).
+    """
+    return int(math.floor(y + 0.5))
+
+
 def fit_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, first: int, last: int,
              search: float = 0.15) -> tuple[float, list[int]]:
     """Baselines on one global lattice, baseline_i = b0 + i * pitch.
@@ -531,7 +555,7 @@ def fit_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, first: int, last: i
     best_b0, best_pitch, best_score = float(first), pitch, -1.0
     for trial in (np.arange(pitch - search, pitch + search + 1e-9, 0.005) if search else [pitch]):
         for b0 in np.arange(first, first + trial, 0.25):
-            score = sum(cached(int(round(y))) for y in lattice(b0, trial))
+            score = sum(cached(baseline_px(y)) for y in lattice(b0, trial))
             if score > best_score:
                 best_b0, best_pitch, best_score = float(b0), float(trial), score
     pitch = best_pitch
@@ -539,12 +563,43 @@ def fit_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, first: int, last: i
     # letting each line chase its own ink profile measured worse (a line of
     # dots and a line of slashes have different profiles, not different
     # baselines).
-    baselines = [int(round(y)) for y in lattice(best_b0, pitch)]
+    baselines = [baseline_px(y) for y in lattice(best_b0, pitch)]
     # Lattice lines with no ink above the first inked line or below the last
     # are not rows of the art. A blank line INSIDE the art is a row, and is
     # kept, so later rows keep their index.
     inked = [i for i, b in enumerate(baselines) if match(b) > 0]
     return pitch, baselines[inked[0] : inked[-1] + 1] if inked else []
+
+
+def restore_edge_rows(ink: np.ndarray, bank: GlyphBank, pitch: float, baselines: list[int]) -> list[int]:
+    """Re-add edge lines that fit_rows pruned before the phase was final.
+
+    2026-09-29 (P0C-10): fit_rows keeps a lattice line only if the face's
+    vertical profile sees ink in its box. An underscore sits one row below the
+    baseline, where the profile is 0.0011, and one row lower it is 0. The mean
+    profile fit can land 1 px high, prune a row of underscores, and phase
+    refinement then fixes the pixel but keeps the reduced row count, so every
+    row shifts by one line (kyoko-01/res129: 18 -> 0 exact). With the final
+    phase known, apply the same test to the line above the first row and
+    below the last. A line above a real first row sees only that row's caps
+    in its bottom rows, where the profile is 0, so it is not added.
+    """
+    if not baselines:
+        return baselines
+    profile = ink.sum(axis=1)
+    face = bank.templates[:, 0].sum(axis=(0, 2))
+
+    def inked(baseline_y: int) -> bool:
+        top = baseline_y - bank.baseline
+        lo, hi = max(0, top), min(len(profile), top + bank.height)
+        return hi > lo and float(profile[lo:hi] @ face[lo - top : hi - top]) > 0
+
+    rows = list(baselines)
+    while inked(baseline_px(rows[0] - pitch)) and baseline_px(rows[0] - pitch) - bank.baseline + bank.height > 0:
+        rows.insert(0, baseline_px(rows[0] - pitch))
+    while inked(baseline_px(rows[-1] + pitch)) and baseline_px(rows[-1] + pitch) - bank.baseline < len(profile):
+        rows.append(baseline_px(rows[-1] + pitch))
+    return rows
 
 
 def refine_pitch_phase(ink: np.ndarray, bank: GlyphBank, pitch: float,
@@ -569,7 +624,7 @@ def refine_pitch_phase(ink: np.ndarray, bank: GlyphBank, pitch: float,
     trace: list[tuple[int, float]] = []
     best_score, best_baselines = float("inf"), baselines
     for first_baseline in range(centre - radius, centre + radius + 1):
-        trial = [int(round(first_baseline + i * pitch)) for i in range(len(baselines))]
+        trial = [baseline_px(first_baseline + i * pitch) for i in range(len(baselines))]
         cost = energy = 0.0
         for i in probe:
             strip = row_strip(ink, trial[i], bank)
@@ -589,6 +644,53 @@ def refine_pitch_phase(ink: np.ndarray, bank: GlyphBank, pitch: float,
         if score < best_score:
             best_score, best_baselines = score, trial
     return best_score, best_baselines, trace
+
+
+def spell_indent(units: int, unit_step: int, full_u: int, half_u: int) -> tuple[str, bool]:
+    """Leading blank run of the given width: U+3000 and U+0020 with no two
+    U+0020 adjacent (b <= a + 1), as many U+3000 as possible. A width with no
+    such spelling gets the widest spellable one below it, reported as inexact."""
+    target = units
+    while target >= 0:
+        for a in range(target // full_u, -1, -1):
+            rest = target - a * full_u
+            if rest % half_u == 0 and rest // half_u <= a + 1:
+                return FULL_SPACE * a + HALF_SPACE * (rest // half_u), target == units
+        target -= unit_step
+    return "", units == 0
+
+
+def indent_spellable(units: int, full_u: int, half_u: int) -> bool:
+    if units < 0:
+        return False
+    for a in range(units // full_u, -1, -1):
+        rest = units - a * full_u
+        if rest % half_u == 0 and rest // half_u <= a + 1:
+            return True
+    return False
+
+
+def common_indent_steps(leads: list[int], unit_step: int, full_u: int, half_u: int,
+                        reach: int = 200) -> int:
+    """Lattice steps to move the origin right (negative: left) so that the most
+    rows can spell their gap exactly; the largest such shift on ties (the
+    least indentation the ink allows). The search also goes left, by up to
+    ``reach`` steps: the art's own indentation need not be spellable from
+    the first ink (kyoko-01/res129: 10,800 units, 11/21 rows unspellable
+    until the origin moved 135 px left). Every width above ~12,000 units is
+    spellable, so 200 steps of 80 units always reach a shift where all are.
+    Any shift that spells every row gives the same relative indentation,
+    which is all the pixels determine."""
+    if not leads:
+        return 0
+    best_shift, best_count = 0, -1
+    for shift in range(min(leads), min(leads) - reach - 1, -1):
+        count = sum(indent_spellable((g - shift) * unit_step, full_u, half_u) for g in leads)
+        if count > best_count:
+            best_shift, best_count = shift, count
+        if best_count == len(leads):
+            break
+    return best_shift
 
 
 def decode_image(
@@ -688,6 +790,7 @@ def decode_image(
             phase_trace.append((option, [(b, round(c, 5)) for b, c in offsets]))
             refined.append((score, option, option_baselines))
         _, pitch, baselines = min(refined, key=lambda t: (round(t[0], 6), abs(t[1] - round(t[1]))))
+        baselines = restore_edge_rows(ink, geometry, pitch, baselines)
     else:
         pitch, baselines = fit_rows(ink, geometry, pitch, first, last, search=0.0)
     strips = [row_strip(ink, b, bank) for b in baselines]
@@ -695,11 +798,9 @@ def decode_image(
     # float64, ~550 MB per 1,138 px row with the 7,530-glyph fallback bank.
     # Holding every row's array at once grew one worker to 24 GB, so arrays
     # are built only for the rows that need them and dropped after use.
-    if x0 is None:
-        if edge is not None:
-            low, high = float(edge), float(edge) + full_px
-        else:
-            low, high = max(0.0, float(ink_cols[0]) - full_px), float(ink_cols[0]) + 0.5
+    free = False
+    if x0 is None and edge is not None:
+        low, high = float(edge), float(edge) + full_px
         candidates = np.arange(low, high, 1.0 / SUPERSAMPLE)
         sample = [i for i, s in enumerate(strips) if s.sum() > 0][:: max(1, len(strips) // 6)]
         corrs = {i: correlations(strips[i], geometry) for i in sample}
@@ -710,13 +811,29 @@ def decode_image(
         # Shifting the origin by any legal run of spaces explains the ink
         # equally well, so the fit is a plateau, not a peak. With a container
         # rule, take the SMALLEST origin on the plateau: text starts at the box
-        # edge. Without one, the box edge is not in the image, so take the
-        # LARGEST: the least indentation the ink allows.
+        # edge.
         floor = scores.min()
         on_plateau = np.nonzero(scores <= floor + max(1e-6, 1e-3 * floor))[0]
-        pick = on_plateau[0] if edge is not None else on_plateau[-1]
-        x0 = float(candidates[int(pick)])
-        x0_source = "container_rule" if edge is not None else "least_indentation"
+        x0 = float(candidates[int(on_plateau[0])])
+        x0_source = "container_rule"
+    elif x0 is None:
+        # 2026-09-29 (P0C-10, screenshot mode): no text-box edge is visible,
+        # so the indentation is not in the pixels. The old fit chose one
+        # origin on a 14 px plateau and made every row spell its gap from it
+        # with U+3000 (880 units) and U+0020 (400); a gap no such sum can
+        # spell was filled with glyphs instead ('.' before the art on 11/21
+        # rows of kyoko-01/res129). Now only the sub-pixel phase is fitted;
+        # each row starts freely before its first ink, and the common
+        # indentation is chosen afterwards so that every gap can be spelled.
+        low = max(0.0, float(ink_cols[0]) - full_px)
+        candidates = np.arange(low, low + geometry.step_px, 1.0 / SUPERSAMPLE)
+        sample = [i for i, s in enumerate(strips) if s.sum() > 0][:: max(1, len(strips) // 6)]
+        corrs = {i: correlations(strips[i], geometry) for i in sample}
+        scores = [sum(decode_row(strips[i], corrs[i], geometry, c, geometry_penalty, free_lead=True).cost
+                      for i in sample) for c in candidates]
+        x0 = float(candidates[int(np.argmin(scores))])
+        x0_source = "free_lead"
+        free = True
     else:
         x0_source = "given"
 
@@ -724,7 +841,18 @@ def decode_image(
     # origin are chosen without it, so a receipt with the prior differs from one
     # without only in which glyphs were read, never in the page geometry.
     corrs = None  # release the origin-fit sample before the reading pass
-    rows = [decode_row(s, correlations(s, bank), bank, x0, glyph_penalty, bigram, bigram_weight) for s in strips]
+    rows = [decode_row(s, correlations(s, bank), bank, x0, glyph_penalty, bigram, bigram_weight, free_lead=free)
+            for s in strips]
+    unspellable = 0
+    if free:
+        full_u, half_u = model.advances[FULL_SPACE], model.advances[HALF_SPACE]
+        inked = [r for r in rows if r.text]
+        shift = common_indent_steps([r.lead_steps for r in inked], model.unit_step, full_u, half_u)
+        x0 += shift * bank.step_px
+        for r in inked:
+            spaces, exact = spell_indent((r.lead_steps - shift) * model.unit_step, model.unit_step, full_u, half_u)
+            unspellable += int(not exact)
+            r.text = canonical_spacing(spaces + r.text)
     return {
         "bank": bank,
         "pitch": pitch,
@@ -733,6 +861,7 @@ def decode_image(
         "baselines": baselines,
         "x0": x0,
         "x0_source": x0_source,
+        "unspellable_indent_rows": unspellable,
         "container_edge": edge,
         "rows": rows,
     }
