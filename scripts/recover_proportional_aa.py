@@ -349,11 +349,20 @@ def decode_row(
     back_glyph = np.full((2, states), -1, dtype=np.int64)
     best[0, 0] = 0.0
     if free_lead:
+        # A row may start anywhere up to one glyph advance past its first ink;
+        # ink left of the start is charged as unexplained. 2026-09-29: capping
+        # the start at the first ink column (no charge) was wrong whenever a
+        # glyph's ink begins left of its pen or a neighbouring line's ink
+        # reaches into the strip; the gap came out 80 units short, the true
+        # origin looked unspellable, and te-ude-03/resK-102 was indented
+        # 1,760 units too far (23 rows lost).
         first_ink = int(np.nonzero(column_energy > 1e-9)[0][0])
+        reach = first_ink + float(bank.advance_px.max())
         for s0 in range(1, states):
-            if x0 + s0 * bank.step_px > first_ink:
+            pen = x0 + s0 * bank.step_px
+            if pen > reach:
                 break
-            best[0, s0] = 0.0  # back_state stays -1: the path starts here
+            best[0, s0] = float(cum[min(width, int(math.floor(pen)))])  # back_state stays -1
     for s in range(states):
         if not (np.isfinite(best[0, s]) or np.isfinite(best[1, s])):
             continue
@@ -683,14 +692,17 @@ def common_indent_steps(leads: list[int], unit_step: int, full_u: int, half_u: i
     which is all the pixels determine."""
     if not leads:
         return 0
-    best_shift, best_count = 0, -1
-    for shift in range(min(leads), min(leads) - reach - 1, -1):
-        count = sum(indent_spellable((g - shift) * unit_step, full_u, half_u) for g in leads)
-        if count > best_count:
-            best_shift, best_count = shift, count
-        if best_count == len(leads):
-            break
-    return best_shift
+    # Tolerate a few rows: one misread row (an unknown kanji on
+    # te-ude-03/resK-102 row 0, start 80 units off) is unspellable at the
+    # true origin, and demanding every row pushed the page 22 px left. The
+    # same row also starts 1 step LEFT of the true origin, so the search
+    # starts at the (tolerance+1)-th smallest gap, not the smallest.
+    tolerance = len(leads) // 20  # 5%; pages under 20 rows stay strict
+    top = sorted(leads)[min(tolerance, len(leads) - 1)]
+    shifts = list(range(top, min(leads) - reach - 1, -1))
+    counts = [sum(indent_spellable((g - shift) * unit_step, full_u, half_u) for g in leads) for shift in shifts]
+    need = max(counts) - tolerance
+    return next(shift for shift, count in zip(shifts, counts) if count >= need)
 
 
 def decode_image(
