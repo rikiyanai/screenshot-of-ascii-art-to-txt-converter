@@ -1406,3 +1406,18 @@
   - A filter that let only well-reconstructed rows vote was tried. It
     changed none of 5 probed pages and was removed.
 - **Running:** screenshot v4 tuning receipt with the tolerance fix.
+
+### 2026-09-30 — screenshot v4 rejected: one-row tolerance for 10–19-row pages loses rows
+
+- **Receipt:** `docs/receipts/2026-09-30-aahub-aa003-screenshot-margins31-tune-every200-off12-v4/eval.json`
+  (sha256 `834ed47a…34d7`, decoder `3a8c219`). Exact 1,439 (v3: 1,562),
+  indentation-invariant 2,574 (v3: 2,591). 14 pages lost exact rows and 2
+  gained. 17 pages lost indentation-invariant rows. Origin exact on 86/170
+  (v3: 99).
+- **Cause:** the tolerated rows are spelled with the nearest lower
+  indentation, which breaks their relative width. The extra freedom also lets
+  pages shift one full space right. The gains on witches/resK-360 and
+  jr-kokutetsu/resK-108 did not generalise.
+- **Action:** tolerance restored to 5% with no floor, the v3 rule. v3 stays
+  the screenshot-mode reference (2,591 indentation-invariant, 99.2% of known
+  origin).
