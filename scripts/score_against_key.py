@@ -72,6 +72,26 @@ def dedent(rows: list[str]) -> list[str]:
     return out
 
 
+def relative_indent(rows: list[str]) -> list[tuple[int, list]]:
+    """(indentation beyond the page's common indentation, in Saitamaar font
+    units; canonical tokens of the rest of the row) for every row.
+
+    2026-09-29 (P0C-10): dedent() rewrote the leftover indentation as spaces,
+    but two rows' indentations can differ by a width no mix of U+3000 (880)
+    and U+0020 (400) spells, e.g. 880 - 400 = 480. Those rows kept their raw
+    prefix and could never match, so a correctly read but uniformly indented
+    page (kyoko-01/res129, fitted origin) scored 0. Comparing the width
+    itself has no such gap.
+    """
+    def lead(row: str) -> int:
+        n = len(row) - len(row.lstrip(" \u3000"))
+        return sum(880 if c == "\u3000" else 400 for c in row[:n])
+
+    widths = [lead(r) for r in rows if r.strip(" \u3000")]
+    common = min(widths) if widths else 0
+    return [(lead(r) - common if r.strip(" \u3000") else 0, canonical_tokens(r.lstrip(" \u3000"))) for r in rows]
+
+
 def score(recovered: list[str], key: list[str]) -> dict:
     rows = []
     strict_err = strict_len = canon_err = canon_len = exact = 0
@@ -86,11 +106,8 @@ def score(recovered: list[str], key: list[str]) -> dict:
         canon_len += len(canonical_tokens(want))
         exact += int(c == 0 and i < len(key))
         rows.append({"row": i, "strict_edits": s, "canonical_edits": c})
-    dr, dk = dedent(recovered), dedent(key)
-    indent_free = sum(
-        int(i < len(dr) and levenshtein(canonical_tokens(dr[i]), canonical_tokens(dk[i])) == 0)
-        for i in range(len(dk))
-    )
+    dr, dk = relative_indent(recovered), relative_indent(key)
+    indent_free = sum(int(i < len(dr) and dr[i] == dk[i]) for i in range(len(dk)))
     return {
         "exact_rows_indentation_invariant": indent_free,
         "rows_key": len(key),
