@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 BLANK = re.compile("[ 　]+")
@@ -106,8 +107,19 @@ def score(recovered: list[str], key: list[str]) -> dict:
         canon_len += len(canonical_tokens(want))
         exact += int(c == 0 and i < len(key))
         rows.append({"row": i, "strict_edits": s, "canonical_edits": c})
+    # Indentation-invariant: rows equal up to ONE indentation shift shared by
+    # the whole page (the part the pixels cannot fix without a text-box edge).
+    # 2026-09-29: measuring each side against its own least-indented row let
+    # a single misread row (an unknown kanji on te-ude-03/resK-102 row 0,
+    # 80 units off) shift every other row and score the page 0/25. Take the
+    # shift that most rows agree on instead.
     dr, dk = relative_indent(recovered), relative_indent(key)
-    indent_free = sum(int(i < len(dr) and dr[i] == dk[i]) for i in range(len(dk)))
+    shifts = Counter(dr[i][0] - dk[i][0] for i in range(min(len(dr), len(dk)))
+                     if dr[i][1] == dk[i][1] and dk[i][1])
+    common = shifts.most_common(1)[0][0] if shifts else 0
+    indent_free = sum(int(i < len(dr) and dr[i][1] == dk[i][1]
+                          and (dr[i][0] - dk[i][0] == common or not dk[i][1]))
+                      for i in range(len(dk)))
     return {
         "exact_rows_indentation_invariant": indent_free,
         "rows_key": len(key),

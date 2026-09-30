@@ -28,5 +28,13 @@ class IndentationInvariant(unittest.TestCase):
         self.assertEqual(score(wrong, key)["exact_rows_indentation_invariant"], 1)
 
 
+    def test_one_misread_row_does_not_shift_the_rest(self) -> None:
+        # te-ude-03/resK-102: an unknown kanji made row 0 start early; measured
+        # against each side's least-indented row, every other row then failed
+        key = ["\u3000詠唱", "\u3000\u3000a", "\u3000\u3000\u3000b"]
+        got = ["ﾆｌ唱", "\u3000\u3000a", "\u3000\u3000\u3000b"]
+        self.assertEqual(score(got, key)["exact_rows_indentation_invariant"], 2)
+
+
 if __name__ == "__main__":
     unittest.main()
