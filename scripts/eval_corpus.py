@@ -79,13 +79,19 @@ def _run(job: tuple[str, float]) -> dict:
             # to the text box. Crop the declared pad (refusing a page whose ink
             # reaches into it), then add reproducible 0..max px margins per edge.
             grey = np.asarray(image.convert("L"))
-            pad = AAHUB_PAD_PX
-            border = np.ones(grey.shape, dtype=bool)
-            border[pad:-pad, pad:-pad] = False
-            if (grey[border] < 128).any():
-                raise ValueError("ink inside the declared render pad")
-            canvas, margins = randomize_outer_margins(grey, _rel(png), {"padding_px": pad},
-                                                      _STATE["margin_seed"], _STATE["margin_max"])
+            inked = grey < 128
+            rows, cols = np.nonzero(inked.any(axis=1))[0], np.nonzero(inked.any(axis=0))[0]
+            # Crop the declared pad, but never ink: art that reaches into the
+            # pad (5/170 tuning pages) keeps those columns or rows. The true
+            # origin moves by whatever part of the left pad was kept.
+            cut = {"top": min(AAHUB_PAD_PX, int(rows[0])), "left": min(AAHUB_PAD_PX, int(cols[0])),
+                   "bottom": min(AAHUB_PAD_PX, grey.shape[0] - 1 - int(rows[-1])),
+                   "right": min(AAHUB_PAD_PX, grey.shape[1] - 1 - int(cols[-1]))}
+            content = grey[cut["top"]:grey.shape[0] - cut["bottom"], cut["left"]:grey.shape[1] - cut["right"]]
+            canvas, margins = randomize_outer_margins(np.pad(content, 1, constant_values=255), _rel(png),
+                                                      {"padding_px": 1}, _STATE["margin_seed"],
+                                                      _STATE["margin_max"])
+            margins["kept_left_pad"] = AAHUB_PAD_PX - cut["left"]
             image = Image.fromarray(canvas)
         result = rp.decode_image(image,
                                  _STATE["model"], size, 0.02, _STATE["x0"],
@@ -100,8 +106,8 @@ def _run(job: tuple[str, float]) -> dict:
         s.pop("per_row")
         extra = {}
         if margins is not None:
-            extra = {"margins": margins, "x0_true": float(margins["left"]),
-                     "x0_error": round(result["x0"] - margins["left"], 4), "x0_source": result["x0_source"]}
+            extra = {"margins": margins, "x0_true": float(margins["left"] + margins["kept_left_pad"]),
+                     "x0_error": round(result["x0"] - margins["left"] - margins["kept_left_pad"], 4), "x0_source": result["x0_source"]}
         return {"page": _rel(png), **s, "pitch": result["pitch"], "x0": result["x0"], **extra,
                 "candidate_glyphs": len(result["bank"].characters),
                 "seconds": round(time.time() - started, 1)}
