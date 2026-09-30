@@ -1,0 +1,3058 @@
+{
+ "audit": "AAHub intake coverage audit",
+ "date": "2026-09-29",
+ "auditor": "Claude subagent (read-only on archive)",
+ "archive": {
+  "path": "/Users/r/Projects/ascii-art-archive",
+  "head": "3687cc564d3f542a3aaaea98b351713b360599f4",
+  "worktree_txt_files_scanned": 33123,
+  "readme_pairs": 32950,
+  "slugs": 173
+ },
+ "page": {
+  "url": "https://aahub.org/mlt/4ffcb6c0e968fc342d21faebc63c5982",
+  "fetched_utc": "2026-09-30T02:28:33Z",
+  "page_type": "mlt (one AAHub MLT file = one page, Angular SPA; content loaded from https://aa-storage.aahub.org/folders/mlt/<uniqueKey>.json)",
+  "title": "近代的建築物01（外観）",
+  "folder_path": "汎用AA/背景・風景/近代的建築物/近代的建築物01（外観）",
+  "site_aaNum": 221,
+  "last_updated": "2026/05/25",
+  "mapping": "AAHub uniqueKey 4ffcb6c0e968fc342d21faebc63c5982 = one archive slug would-be; archive resNN = 0-based index into the mlt JSON aa[] list (section headers like res00 【中層建築物】 are non-art)",
+  "in_archive_as_slug": false,
+  "sibling_mlt": "近代的建築物02（周囲・屋上・内部） ca150024ec6fa838219dd4550fa4598b (234 AA), also not in archive"
+ },
+ "per_piece_summary": {
+  "entries": 221,
+  "art_pieces": 218,
+  "non_art_headers": 3,
+  "found_in_archive": 10,
+  "missing": 208,
+  "method": "for each aa[] entry: up to 5 most character-diverse stripped lines (>=12 chars) looked up in an exact-line index of every collections/aahub/*/*.txt; candidate with most hits then compared by difflib ratio after html.unescape; found = ratio>=0.95",
+  "found_note": "all found pieces are copies of the same art that also appears in other, archived mlt pages (goraku, sonota-tenpo, norimono-naibu, bakuhatsu-kemuri, senpaku); none come from this page"
+ },
+ "per_piece": [
+  {
+   "resid_by_index": "res00",
+   "aa_index": 0,
+   "is_art": false,
+   "n_lines": 1,
+   "first_distinctive_line": "【中層建築物】",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res01",
+   "aa_index": 1,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "|:.:.:.:.:.;　:.:|: :|i ｌ⌒ｌ:|: :|i ｌ⌒ｌ:|: :|i ｌ⌒ｌ:| |. : . : . : |: |:三三三|. : . : . : |: | ;;',;;';\";\"'''''ヽ`,:\"'.`　,:'.　: .　 : .\";`",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res02",
+   "aa_index": 2,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "／ . 　 ｜ﾆ| |＼| |ｉヾ|｜ﾆ| |ｉヾ| |ｉヾ|｜ﾆ| |ｉヾ| |ｉヾ|｜ﾆ|　 　 　 |二|　|＼|　|　　|ﾐ|　 |i　 |｡;:；ii:;;;：､;＿＿＿＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res03",
+   "aa_index": 3,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": "／ . 　 ｜ﾆ| |＼| |ｉヾ|｜ﾆ| |ｉヾ| |ｉヾ| ||二|　|＼|　|　　|ﾐ|　 |i　 |｡;:；ii:;;;：､;＿＿＿＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res04",
+   "aa_index": 4,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": "／ . 　 ｜ﾆ| |＼| |ｉヾ|｜ﾆ| |ｉヾ| |ｉヾ|　||二|　|ｉ＼| |　　|ﾐ|　 |i　 |｡;:；ii:;;;：､;＿＿＿＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res05",
+   "aa_index": 5,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": "___________________[三三三] ; ; ; ; ; ; ; ; ; ／／:i |:::iﾆ|:::i |;＼＼; ; ; ; ; ; ; ; ; ;;;[三三三]___________________",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res06",
+   "aa_index": 6,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "::ミ::ミ::ミ::ﾐ ヾ 　 |　|:|.二.二二二.二.ﾋ|.二.二.二二二ﾋ| 二二二二_ﾋ|.二.二.二.二 | |..|　Ｆ+────i　l　r───l　l　f´￣￣￣￣|　|￣",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res07",
+   "aa_index": 7,
+   "is_art": true,
+   "n_lines": 31,
+   "first_distinctive_line": ";;.:''ﾞ'　ﾞ'{　 ,､_,,.;.,'´￣ ヽ　;;|: : : :| | |: : : :|l＿|＿|| : :|l : :ll￣|￣l|: : : :| | |: : : :|;:　'\"⌒ヾﾞ､ /l　,;'　　,.　 ,;'r'\"",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res08",
+   "aa_index": 8,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": "斗{从ff:!廴__ハl|///ｲ拆拆拆____{:::::{_{_{朮朮朮朮_}={--＝＝==ニニ二二三: ┴--i------",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res09",
+   "aa_index": 9,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": ":ﾞ:ﾞ:ﾞ:ﾞ:ﾞ:ﾞ_|｣┘　　　　　　　Ｘ比比此比／ ＼:::｀Ｔ冖￢ｰ/￣￣￣／〉＼:| l.　　　　　 └|:ﾞ:ﾞ:ﾞ:ﾞ:ﾞ:爻爻狄狄ミ爻",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res10",
+   "aa_index": 10,
+   "is_art": true,
+   "n_lines": 21,
+   "first_distinctive_line": "￣￣￣￣ . |　　　ｉ 　 ＿i＿＿_i＿　　 i ||l　 ,.＜＼V／＞､　 .,.＜＼V／＞､　 ,..＜｀∀´＞ ､　|　 ＿i＿＿_i＿　　 i |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res11",
+   "aa_index": 11,
+   "is_art": true,
+   "n_lines": 14,
+   "first_distinctive_line": "ヽ ;;;;;;;;;;;;;;;;;;;;｀'';;‐-　,,_!::l::::l┌───┐┌──┐ ::!::_ノ;; -;;''\";;;;;;;;;;;;;;;;;;;;;;}",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res12",
+   "aa_index": 12,
+   "is_art": true,
+   "n_lines": 11,
+   "first_distinctive_line": ". 　 　 ｀ー|　　　　　　　　　　　　　　　＿[]＿└‐┘＿[]__　　　　　　 　 　 　 　 　 　 |-'\"",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res13",
+   "aa_index": 13,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": ";ゞゝヽﾐ;ｿミゝﾐゞ;;,| | |￣￣.|　 |　　　|~''|　　　　　　|　　　||;;;;;;;;; |;;;;;;;;; |;;;;;;;;; ||　　　 　ヾゞ:;ヾ　::ｿゞ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res14",
+   "aa_index": 14,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": "| |　　 |　|　　 | 　 | 　 | 　 　 | 　 |┴ｉ　 ｉ　 ||　|Ⅲ｀ｰ ､_ｉⅲｰ ､_r┬ｭrn-h-‐┐ﾄ､｀ヽ､　　ﾞ､'､.!ﾄ､i",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res15",
+   "aa_index": 15,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "｀Yﾞ＝＝＝＝厂￣￣￣￣￣￣￣￣￣￣￣￣￣￣＼　　ヾ 　　/／｀ー―-'-―一 ´ヽ . 　 ! r=j∨//ヽ",
+   "archive_match_txt": "collections/aahub/goraku/resK-72.txt",
+   "archive_match_png": "collections/aahub/goraku/resK-72.png",
+   "match_evidence": {
+    "probe_lines_hit": 5,
+    "probe_lines": 5,
+    "char_similarity": 0.99,
+    "exact_after_html_unescape": false
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res16",
+   "aa_index": 16,
+   "is_art": true,
+   "n_lines": 21,
+   "first_distinctive_line": "-‐ーｰ-:/　 /l┼|‐ﾐﾐﾐ;ﾐ;ﾐミ┼|┼|┼|┼|┼|┼|┿|爻爻爻爻　 ┼|┼|┼|┼┼|‐_　　　 ﾐ爻ﾐ爻ﾐ/_ﾐ爻＿＿_､-ﾆ￣．･‘",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res17",
+   "aa_index": 17,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "|┬┬┬.lllr ＝｀'ーｭ_ヾiiii〆i,.|　　l 　l　.l　l　i_ !oTo.:..ll　 .ll　　 　.ll 　.ll. ll..:.oTo! _i　l 　l.　l　　.l　|.,iﾍiiiiッ_ｭー'´＝rlll.┬┬┬|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res18",
+   "aa_index": 18,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "｀ﾞ ､　_;:'　ﾞ`　---一 ''ﾞﾞ\"´￣￣､;:ﾞ`''ｒ―――|ﾞ「￣￣￣￣￣￣￣￣￣￣￣￣",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res19",
+   "aa_index": 19,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "i'´ヽ、 |;　,,!　　　　/'___/--､'　　　　　　　　｀￣ヽi'　　 i　　 !;::l　〃",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res20",
+   "aa_index": 20,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "┬┬┬┐　 　 | |::::::::::::::::::::.l |:　　 ┌┬┬┬┬┐　　 ┌┬┬┬┬┐|　 　 　 　 　 |┌┬┬┬┬",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res21",
+   "aa_index": 21,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "|＿＿＿＿＿＿ 彡;;i;ﾐゞ＿＿_　　　　　,.ｿ;:ﾐゞ___＿＿＿＿＿＿＿＿＿.,ｿ;:ﾐゞ,::＿＿＿＿＿＿＿＿＿＿＿＿| 　 |　l　 |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res22",
+   "aa_index": 22,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "〃ｷﾒゞ・・・・・・・・・・|::::|　〃ﾒﾒｷ::￣￣|＼　　　　 　 |//l:　 l,\"／／　／ ;; ／　_,,.-''|::::l::::::::::::::::l::l:::::::l::l::::::::::::::::l::::|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res23",
+   "aa_index": 23,
+   "is_art": true,
+   "n_lines": 21,
+   "first_distinctive_line": "::::::::::::::::|　 |　　　　　　　　..:||　 | 　┌―┬―┐ 　 .|　 |　 |　 |　 |　 ||　 |::::::::::::::::::::::::::::::::::::::::::::::::::::::::::",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res24",
+   "aa_index": 24,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "::::::::::::::::|　 |;;|＿＿＿＿||＿＿＿||＿L.A.M.S.O.N.＿||＿＿＿||＿＿＿|.|::::::::::::::::::::::::::::::::::::::::::::::::::::::::::",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res25",
+   "aa_index": 25,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": "::::::::::::::::|王|□　　　 　 　 　||王||　 |□　　　 ／／　||　 |　　／／　　　..:||　 | |┌―┬―┐.ﾞ||　 |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res26",
+   "aa_index": 26,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "―――‐┴‐┴‐┴ ─ ┴ ┴――――‐　'´　 　|｣　　　 ﾞti'ニニ┴‐┴",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res27",
+   "aa_index": 27,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "￣”¨“　￢┛| Ｌ...,,,＿　 | |￣~ﾞ|「「「「|「「「「|　　　　　 ┌─……￢￢冖冖ニ二三￣:::::::::::::::::::::::::::＼　 |: ::|　　　　|　. ::|　 |: : : :",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res28",
+   "aa_index": 28,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "765プロのある雑居ビル（アイドルマスター）",
+   "archive_match_txt": "collections/aahub/sonota-tenpo/resK-05.txt",
+   "archive_match_png": "collections/aahub/sonota-tenpo/resK-05.png",
+   "match_evidence": {
+    "probe_lines_hit": 5,
+    "probe_lines": 5,
+    "char_similarity": 0.999,
+    "exact_after_html_unescape": false
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res29",
+   "aa_index": 29,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "346プロダクション本館入口(アイドルマスターシンデレラガールズ)",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res30",
+   "aa_index": 30,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "┌―――|三三三三三三|;; , -､:.　- ､ .: /ﾆ､　, - ;., - ､:ﾞl三三三三三三|―――┐",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res31",
+   "aa_index": 31,
+   "is_art": true,
+   "n_lines": 29,
+   "first_distinctive_line": "㌣'´　r攵爻爻爻ル､|冂| |　 |册|　 | | .　|: : ::├┤: : ├┤: : ├┤ : :├┤:: : :|　. | |　 |册|　 | |冂|　 |冂| 爻爻爻交丈t摶",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res32",
+   "aa_index": 32,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": ";ゞ ヾ; ;\"　　　　　　　　　　 　 　 　 　 |:::,-､::[._＿＿[((～.)（）(.～))].＿＿_]::: ,-､::|　　　　　　　　　　　　　　　　;ヾ ;\"/\" ;",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res33",
+   "aa_index": 33,
+   "is_art": true,
+   "n_lines": 9,
+   "first_distinctive_line": ",.;；:;:､＿＿＿＿＿r‐‐F三三三三!‐ ｭ＿___.;；';i；';,,';,,",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res34",
+   "aa_index": 34,
+   "is_art": true,
+   "n_lines": 16,
+   "first_distinctive_line": ".................. .......|.|_,i `''“ﾞﾟﾞ'l ::'il　　.“'･ｬ-､;;;ソ;;;;;;;;/ﾞ|￣| l lヽヾ;;ilY⌒Yli;;;;;l::;;;;,,...l! .|,,..,..,..,.;:;:;:;,...,..",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res35",
+   "aa_index": 35,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "──‐||‐────-||　　 ｌ`～､.─||‐──-i＼",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res36",
+   "aa_index": 36,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "`‐‐-+ ..,i___|　j||　 j| |　liノ|||穰鬱懶懶鬱懶\"\"~~　__,,....f-‐ ' \" _ ,",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res37",
+   "aa_index": 37,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "((､;;;;:ゞ),;:;'));:;ハﾉ;;:);;;:;;;;;;;ｿ;;:) ､ヾ;;;;;;(;:;ヾ､,,　　i⌒i　{}　i´ ｀i　{}　i⌒i　 　 三=w;;;;;w;;;;;;;从;;;w;;;w;;\"i\";*;ハヾ;\"i\";ヾ/从ﾘ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res38",
+   "aa_index": 38,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": "'´;':;ﾞ｀ヽ､:.:'':;;.:ゞ'';;i:ﾞ;;,;;'::;,' ;,:ゞﾆア''フ辷Lニlﾆlﾞ二ﾞlﾆlニ辷iヽ､＼ﾞー'二'ー''二'ー'二'ー''厂|二l\"",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res39",
+   "aa_index": 39,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "f'l￣||￣〕l￣￣￣￣|~|￣冂冂冂冂冂￣|~|￣￣￣￣l〔..(;;;,, ｿ,;;）、::;;::;ﾞﾞ)",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res40",
+   "aa_index": 40,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "￣~ /':; /≡≡≡≡≡ヽ.|　 ||_＿＿＿＿＿＿＿＿､〃,,,l└┴┴┴┴┴┴┴┴─",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res41",
+   "aa_index": 41,
+   "is_art": true,
+   "n_lines": 21,
+   "first_distinctive_line": "三三三三三}:::;:::;::::;::::;:::'､　　　　_r';::;:;:::::::::三三三|　 Ｉnspire ｔhe Next　　 |三三三",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res42",
+   "aa_index": 42,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": ".　　　　 ／|￣￣￣￣|　 |ﾆ|　　　　　　　　　　　　　　　　 ｀''＜ﾆﾆﾆﾆニ|:i:i:i| ￣￣￣ |:i:i:i|ﾆﾆﾆﾆニ＞''´",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res43",
+   "aa_index": 43,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "ヾ ヾ;ゞ ,;;====　D.A.I.M.A.R.U,====ヾ ヾ;ゞ;;=",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res44",
+   "aa_index": 44,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": ",\";;;`,,\";;;`,\";;;;;`ﾞ二二二二二二二|　 ＿＿＿＿＿＿[_キ_印_良_品_]_　(:::::(⌒::/:::ノ⌒:::ゞ:ﾉ::ゞ:::)::)",
+   "archive_match_txt": "collections/aahub/sonota-tenpo/resK-38.txt",
+   "archive_match_png": "collections/aahub/sonota-tenpo/resK-38.png",
+   "match_evidence": {
+    "probe_lines_hit": 5,
+    "probe_lines": 5,
+    "char_similarity": 1.0,
+    "exact_after_html_unescape": true
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res45",
+   "aa_index": 45,
+   "is_art": true,
+   "n_lines": 33,
+   "first_distinctive_line": "ﾟ T T ┬r z ．――　---　＿}.　｜ :::: |二　 ‐-　二]三[ﾆ -　二",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res46",
+   "aa_index": 46,
+   "is_art": true,
+   "n_lines": 15,
+   "first_distinctive_line": ", -'''二／　＿＿_｀ /　,,_|´＿_｀ヽー--､...",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res47",
+   "aa_index": 47,
+   "is_art": true,
+   "n_lines": 14,
+   "first_distinctive_line": "ミヾゞtソ|l l | |ｨﾚｸﾞｲ|　|　 |　|　ﾋｪｪｪｪｪｪｪｪｪｪｪﾖ||　|　|＿|　| |　 ｝ﾐソゞ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res48",
+   "aa_index": 48,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "ｯﾒ从xj　 ||￣| |￣￣ ﾐ爻彡ﾍ.￣￣ 爻彡ミ爻彡ミ爻 | l |＝i＝ｉ ||::::::::||::::::::::::::::||=i＝ｉ＝|　|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res49",
+   "aa_index": 49,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": "ﾐ爻ﾒ爻爻ミ.＿|,.:'　 ,|_|　__|_,.|__L!＿Lｌ_,|_,.|__　|_|_　ヽ.|＿＿_x爻ﾐXx爻",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res50",
+   "aa_index": 50,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": ";;ゝヾ;ヾ;:⌒;;Ｚ;）;.;)ヾﾐ|｜　　　　　　　　　　　｜| ゞ（(;;;ゝヾゝヾ;ヾ⌒;;;）)",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res51",
+   "aa_index": 51,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": ",; '\"￣｀ﾞ; 　 ,ｌ'\"￣｀ﾞ',ｌ|||||||||l;'´￣｀ﾞ=========================|l'\" ￣ ｀ｌ|||l,-‐-､,| |　,;'\"￣｀ﾞヽ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res52",
+   "aa_index": 52,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "ビルの屋上から、下を見下ろす",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": {
+    "probe_lines_hit": 2,
+    "probe_lines": 5,
+    "char_similarity": 0.315,
+    "exact_after_html_unescape": false
+   },
+   "note": "weak line overlap only, not the same art"
+  },
+  {
+   "resid_by_index": "res53",
+   "aa_index": 53,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "＿＿＿ j´＼ 「」　　　「」 ~＼,|￣￣￣￣_{/__7　　　　ｲ７／ ￣￣￣￣￣￣/",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res54",
+   "aa_index": 54,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "::::::::::::::::|　 |￣|　　　　|￣|..:||　 |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res55",
+   "aa_index": 55,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "某企画（テイコウペンギン）",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res56",
+   "aa_index": 56,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "i三三三l|　| |＿＿||＿＿| |　|三三三|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res57",
+   "aa_index": 57,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "─Ｌ＿]_,,|　　 | :|＿　 ¨' ‐-|　 |＿|＿|_|апiмаｔ e.|＿|＿|＿|　 |　　|　_┌=ﾆ”_,,.｡s≦ﾆニ|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res58",
+   "aa_index": 58,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "| |　 　 　 | l　　 ｜| |　 ｜: :└――――┘|工二|工二工二工二|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res59",
+   "aa_index": 59,
+   "is_art": true,
+   "n_lines": 46,
+   "first_distinctive_line": "＞‐|_　|_,ｨﾆ二三‐ｰ||　　　_｣　 -‐　¨~￣　　　 　 │､ ＼　 l|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res60",
+   "aa_index": 60,
+   "is_art": true,
+   "n_lines": 30,
+   "first_distinctive_line": "|┬ﾆ|Ｔ|Ｔ|ﾆ=‐-|:::::::］|￣|￣|ﾆﾆ_| 　 CREＡTIＯN　|_|iﾆiSUNRiSEiﾆi|ﾆﾆ|l　_｣|　 l|　｣|___｣__｣Llﾆ|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res61",
+   "aa_index": 61,
+   "is_art": true,
+   "n_lines": 33,
+   "first_distinctive_line": "三三l_┤L|丑丑¨＾¨＾¨¨^^¨寸寸寸寸寸寸寸寸寸寸寸寸ﾕｭ___｢=|_________{､__j( 　 （　　　　　　(⌒¨´",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res62",
+   "aa_index": 62,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "l＿!＿＿＿＿ !＿! /　　　ヽ＞'　.ｿ:￣￣.ゝｿ＜／　 ∧＿!＿!＿＿＿＿ !＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res63",
+   "aa_index": 63,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": ", ───────‐､爻 　 |__|　　　 　 　 └　|__ｌ 　 \"∧- ...＿＿＿__i爻爻ﾐ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res64",
+   "aa_index": 64,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "∠ニ∠! _　!ミ爻ﾐ}:{彡'''_¨ || |─┬‐┐ i i¨.{:{i''' ‐- .._　|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res65",
+   "aa_index": 65,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "i　＿＿,,,,,＿　 i　　￣.|　|￣┌──‐┐,' ,:! | n　 ￣￣￣　[二 ７[二ﾆﾆ二]　　｢ﾚ／. !.｣　　.,' ;　∨　 ., 7",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res66",
+   "aa_index": 66,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "＿＿___ミ＼ .:.:.:＼:::::::::::::: ::::｀=ヽﾐヽ,　ヽ=-r-=ェｴｴｴｴii;|￣|￣|￣|￣|￣||￣.|｀|^lﾐii=|工|≧!!三i .i l .|￣|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res67",
+   "aa_index": 67,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": ": : : : ｀`'＜ミﾐ;';';＼ﾉ／/: : : : : : : : : : : : : : : __,､＜⌒　　　　　⌒＞｡,__: : : : : : : : : : : : : :∨:/.:.:;;';爻爻＞:| ｉ⌒ｉ |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res68",
+   "aa_index": 68,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "Tl7　　　 「l .lFi'＜l──l＞l　　　　　　　」TT幵l┴┴┴┴┴┴┴┐l i..l 　 l幵叮卞ll 　 l.l三lf　lMlNN┬..l　l──l .l　ll　.l_鼎 ll　 !ll",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res69",
+   "aa_index": 69,
+   "is_art": true,
+   "n_lines": 28,
+   "first_distinctive_line": ".　　　　　　　 ,'/y/　　　　　　　　　　 　 　 　 　 　 　 　 　 　 _＿＿lzil_＿__rHk仁lュ＿_l幵l_l幵l_",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res70",
+   "aa_index": 70,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "｀' ｰ= ﾆニ二三三三三￣　　 _,.，-'ｲll",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res71",
+   "aa_index": 71,
+   "is_art": true,
+   "n_lines": 43,
+   "first_distinctive_line": "三三三三二ﾆ=-　 _'' ｰ-　...__　　　　└┴┘　　匚匚]　|￣¨¨|冖￢…ｰ┬┼TL￣|　|///,|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res72",
+   "aa_index": 72,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": ",ﾍ／　〉　/　　_[ﾛﾛ]_　ｰ一'　　　　 　 `ー-､",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res73",
+   "aa_index": 73,
+   "is_art": true,
+   "n_lines": 53,
+   "first_distinctive_line": "440 名前：名無しのやる夫だお 投稿日：2011/04/30(土) 21:11:11 [ F0McnfCg ]",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res74",
+   "aa_index": 74,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "｀゛ ''　‐-　||￣￣| |￣￣||___________________________________]|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res75",
+   "aa_index": 75,
+   "is_art": false,
+   "n_lines": 1,
+   "first_distinctive_line": "【高層建築物（ビルなど）】",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res76",
+   "aa_index": 76,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "とある架空の東京副都心、80年代後半の風景より。",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res77",
+   "aa_index": 77,
+   "is_art": true,
+   "n_lines": 13,
+   "first_distinctive_line": "───┐",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res78",
+   "aa_index": 78,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": "|..::|::::::::::::::::|　　|..::|::::::::::::::::|ヽ ﾋｭｯ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": {
+    "probe_lines_hit": 1,
+    "probe_lines": 5,
+    "char_similarity": 0.377,
+    "exact_after_html_unescape": false
+   },
+   "note": "weak line overlap only, not the same art"
+  },
+  {
+   "resid_by_index": "res79",
+   "aa_index": 79,
+   "is_art": true,
+   "n_lines": 11,
+   "first_distinctive_line": "|　　　　　　　　　　　　　　　　　　;:　ﾞ::´　\"\"｀,",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res80",
+   "aa_index": 80,
+   "is_art": true,
+   "n_lines": 13,
+   "first_distinctive_line": "l,,r'''i ,,r'''i,,r'''i:||'|　[]. : |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res81",
+   "aa_index": 81,
+   "is_art": true,
+   "n_lines": 21,
+   "first_distinctive_line": "┼| | |ﾚ| |　,小爻爻爻爻ミ}.　┼‐ﾄ､ﾄ､ﾄ､ﾄ､|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res82",
+   "aa_index": 82,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "ﾄrrrrffｧｧｧﾃﾃﾗﾗﾅ|: :|　　|:::::::::|　　|: :|ﾎﾎﾃﾃｴｴﾅﾅァｮｮｪｪrj引　　　　（＿＿＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res83",
+   "aa_index": 83,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": "|／　,'|-､ ＼＼＼|:...|ヽ　.... ...:::.. .......",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res84",
+   "aa_index": 84,
+   "is_art": true,
+   "n_lines": 21,
+   "first_distinctive_line": "⌒｀ ｰ-. ､.|下＼Ｙ'ｉ| ,ｨ　　!　ﾄ､. 　 i＼ ＼＼　 | ﾄ､| ニニ|　 | |i|￣ミi:! |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res85",
+   "aa_index": 85,
+   "is_art": true,
+   "n_lines": 36,
+   "first_distinctive_line": ": : : : : :|: : |: : : : : : : : : : : : : : : : : : : : : : : : : : : : : : :|」」「」ﾞl ||: :[]: :[]: :[]: :[]: :[]: :[]: :||:..|ｉ|_j:|「fr|＼!､:!__l 　 　 　 　 |: |:l_.|_.|_.|_.|_.|_.|: : |:",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res86",
+   "aa_index": 86,
+   "is_art": true,
+   "n_lines": 35,
+   "first_distinctive_line": "」」「」ﾞl ||: :[]: :[]: :[]: :[]: :[]: :[]: :||:..|ｉ|_j:|「fr|＼!､:!__l 　 　 　 　 |: |:￣￣￣￣: !:..:.|:",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res87",
+   "aa_index": 87,
+   "is_art": true,
+   "n_lines": 37,
+   "first_distinctive_line": "≧tx.: :|］: :r┬; :゜＜≧(ﾐf-L.l二!_.|-f‐iﾆﾄｨ≧､. ヽ :|: : : : : : |: : : : : : : : : : : : : : : : : : : : : : :|: : :|: :|ﾑ.　　 　 　 ／　|: |!／.: : : : : : :|: : |:",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res88",
+   "aa_index": 88,
+   "is_art": true,
+   "n_lines": 37,
+   "first_distinctive_line": "ビルの間を飛んでいる効果線なしバージョン",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res89",
+   "aa_index": 89,
+   "is_art": true,
+   "n_lines": 33,
+   "first_distinctive_line": "ビルの間を飛んでいる効果線なしバージョン",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res90",
+   "aa_index": 90,
+   "is_art": true,
+   "n_lines": 30,
+   "first_distinctive_line": "|／|≡|/|_,,.‐'ﾆiiiiｉ:|_.-＝ｉ|=|ii|､l-'|､|､|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res91",
+   "aa_index": 91,
+   "is_art": true,
+   "n_lines": 38,
+   "first_distinctive_line": ":|´::｀|_　┌─ｌ二ｌ┤≡≡≡≡≡　ｌ|　 :|lhlhlhlhlhlh ||H||H||H||H|￣￣::|￣￣|Ｌ＿＿＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res92",
+   "aa_index": 92,
+   "is_art": true,
+   "n_lines": 14,
+   "first_distinctive_line": ",ｲ:l::l::ﾚ''´ ＼/＼/＼/i l三三三liil;;;;;／ ￣￣￣￣￣￣ ＼;;;;ｌil三三三l ﾄ､＼/＼/＼/＼/＼/",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res93",
+   "aa_index": 93,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": ", ィl|l|l|l|l|!!!!!ｉ|l|l|l|l|`iﾞl|l|l|l|::::::::.＼.　| | | | | | | | | | [ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ[ｌ| | | | | | | | | | | | |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res94",
+   "aa_index": 94,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": ": : : :|::::|　l　l　l　l　l　ｌ ._､rｆ〔. . . .|　. . . . . . |. . . . . . ||:i:i:i:i:||:i:i:i:i:i||i:i:i:i:i:ij:j:j:jﾆ=-―:::::::￣ :::::::||:::::::::||",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res95",
+   "aa_index": 95,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": ";:;:;:;:;:;　|／|＿＿／／|￣|＼|　 ／|: | _. 「 「 「 [ ／|￣￣|　 |　　...|,, \"⌒ヾ　....）;;;;;",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res96",
+   "aa_index": 96,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "|／|＿＿／／|￣|＼|　 ／|: | _. 「 「 「 [ ／|￣￣|　 |　　...|,, \"⌒ヾ　....）;;;;;",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res97",
+   "aa_index": 97,
+   "is_art": true,
+   "n_lines": 35,
+   "first_distinctive_line": "|ﾛ　 |ロロロ|　ﾛ|ロロロロロロ|￣￣|ロロロロロ.|ﾛ　 |ロロロ|　ﾛ|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res98",
+   "aa_index": 98,
+   "is_art": true,
+   "n_lines": 34,
+   "first_distinctive_line": "ゞＹj夲;|　　|夾卒丱ﾄ仗士々!ぃftｋzr､､,:.;__|　　|;_,_:.　.:　. :　.:.　..:..:.:.　:.　.:　:. . .:. _|　　|‐'\".;:':,':. :.'.;",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res99",
+   "aa_index": 99,
+   "is_art": true,
+   "n_lines": 29,
+   "first_distinctive_line": ".　　 　 　　　,ｨ{/,ニ7ニ7ニ7ニ77,ニ∥i:i:i:i{ ｉ{___,||＿||￣￣￣¨..||＿||__,|i {!:i:i:,ﾆﾏ∧ﾆﾆﾑﾏﾆﾆﾑﾏﾆﾑ,'ム",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res100",
+   "aa_index": 100,
+   "is_art": true,
+   "n_lines": 42,
+   "first_distinctive_line": ".　　　　|　　 |┬…&#65506;ｉ | /￣　　 …┐ ＿　　￣ ¨¨ニ|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res101",
+   "aa_index": 101,
+   "is_art": true,
+   "n_lines": 41,
+   "first_distinctive_line": "|--------| |-----,' ニ､Y￣∨￣| |￣ﾞY.「I. 「I-[ ￣ ] 「二]. |￣　Y---△-..「,ニ i-------..|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res102",
+   "aa_index": 102,
+   "is_art": true,
+   "n_lines": 39,
+   "first_distinctive_line": "_／　 |::::::::::└r-／　　ブ＜　..＞'ZZ/_,ｨ7フ_|::::::::::::::::::|＿　　┬..._　￣&#65506; |　　 .V",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res103",
+   "aa_index": 103,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "|＿|＿|＿|＿|＿|＿|＿|:::::|＋┼|:::::| n　　　　　　　　　　　 　 　 　 r―|::|┼＋|:::::|:::::|┼┼┼┼|:::::|＿|＿|＿|＿|＿|_",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res104",
+   "aa_index": 104,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "ゞ, ';; ,;;'ﾞ;\"ィ;;''ヾ,\"l :::l l ﾆEll l---.l-l ﾆl.l .l ：：l：：|：：l：：l l：：l ≦三ﾆl lﾆ≧_,..,r;;';ﾞ;;,､ l　 ll ｪl__l_l_l_l_l l.l_ｴl'ｴｺﾆlTTTl.l　l..l_..l__lﾆl　 lT TT Tｺ l],.､::ll:: l,.､.| l ,.､.l l l-l--ｪ---l l:l l::l: :l　|/;,,._r';''\",;'\"ﾐ ､,,:;;''\";;:,':",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res105",
+   "aa_index": 105,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "|::::::::: |｡:ｌ|:|:::::::ｌ|::::|::::: : |/二>＜7!:::::::::;」」::]]|]]iii [[|[[i｣_｣:::::::::::::::L＿＿,",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res106",
+   "aa_index": 106,
+   "is_art": true,
+   "n_lines": 36,
+   "first_distinctive_line": "., ソ､イ､ ゝ　　　´｀ヽ.　　 　 　 l. .!i....l....!i ..l　　　 　 r‐＝─l￣　i t l i t!",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res107",
+   "aa_index": 107,
+   "is_art": true,
+   "n_lines": 40,
+   "first_distinctive_line": "|::::| [] [] []:|＿| ﾛ ﾛ ﾛ |[./XXX,=ｨXx/'xXXXXXXXXXｘﾍ三三|　|l≡≡≡|ﾐ|￣￣￣￣￣￣",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res108",
+   "aa_index": 108,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "//ｸく,'ﾀ　　　!',〉! ∧",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res109",
+   "aa_index": 109,
+   "is_art": true,
+   "n_lines": 36,
+   "first_distinctive_line": ",.ﾑ′｀＞＜　 j{　　＼|王‐_|_‐王|／　 .}!　 ＞＜´ ﾏt､",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res110",
+   "aa_index": 110,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "∨|/＞''~ ／ﾆﾆﾆﾆﾆ=‐--＼／　＿ﾟ + 。__｀`",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res111",
+   "aa_index": 111,
+   "is_art": true,
+   "n_lines": 10,
+   "first_distinctive_line": "東京タワー",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res112",
+   "aa_index": 112,
+   "is_art": true,
+   "n_lines": 28,
+   "first_distinctive_line": "`　､ ` ､　`､` ､ `､　` 　､`.､`　､　` ､`､`..：　：　：　：　：　：`､`､　　 `　､` `､　 `　､ ` .`､ `　､ ` ､ `､",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res113",
+   "aa_index": 113,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "イ^ト､:;:ィ'` ﾄ ､.,:;:,:;.:;:..:;.,,,.. .;;;:..　..r件t|r‐fi.r‐t_.,i,i'　 ..　y-／￣`i'￣￣`!､／￣￣",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res114",
+   "aa_index": 114,
+   "is_art": true,
+   "n_lines": 33,
+   "first_distinctive_line": "ﾆ三},r―===＝ﾆ二三￣ _　 .　 -‐=＝|=‐-　 _|_　‐-｜ﾄ､＼",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res115",
+   "aa_index": 115,
+   "is_art": true,
+   "n_lines": 37,
+   "first_distinctive_line": "茨城県東茨城郡大洗町　大洗マリンタワー",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res116",
+   "aa_index": 116,
+   "is_art": true,
+   "n_lines": 44,
+   "first_distinctive_line": "＿＿v＿＿＿＿++- 　 r─‐ｰ───一‐┐─. : : ¨¨￣|　 　 　 |l",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res117",
+   "aa_index": 117,
+   "is_art": true,
+   "n_lines": 32,
+   "first_distinctive_line": "o　+ |￣￣ |￣|||　　+　　┌――┬┐　。　　　+　　　o　+ |￣￣ |￣|x._辷辷_┌――┬┐　。",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res118",
+   "aa_index": 118,
+   "is_art": true,
+   "n_lines": 43,
+   "first_distinctive_line": "オスタンキノ・テレビ塔（ロシア）",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": {
+    "probe_lines_hit": 1,
+    "probe_lines": 4,
+    "char_similarity": 0.206,
+    "exact_after_html_unescape": false
+   },
+   "note": "weak line overlap only, not the same art"
+  },
+  {
+   "resid_by_index": "res119",
+   "aa_index": 119,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "ワールドトレードセンター(アメリカ・ニューヨーク)",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res120",
+   "aa_index": 120,
+   "is_art": true,
+   "n_lines": 35,
+   "first_distinctive_line": "__∥.,､-彡ﾐﾐーーーー ┌┼⊥..　-‐┴──‐┴------ｭ=ュ～～～～～ーー--",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res121",
+   "aa_index": 121,
+   "is_art": true,
+   "n_lines": 37,
+   "first_distinctive_line": "|､ |'^~￣　|- '' \"|~\"''--　､,,_~\"''--　､,,_|&#65374;s｡　 　 ,,_| 　 I斗f.|--　-------------- ''''~~__________ ___ 、-八",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res122",
+   "aa_index": 122,
+   "is_art": true,
+   "n_lines": 31,
+   "first_distinctive_line": "777777l　 .／ｌ|　　ｌ/// ∧三∧　//|―ｭ　　　　　　　　　ｒ-‐ｭ_　 ｊ　　　 　 　　　　　　　　 ｒ-ｭ　　　｣/ｌ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res123",
+   "aa_index": 123,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "|: : |ﾄ┼|iｺｺｺｺｺ|┼┼┼ ┌──────┐ニニ'´｜",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res124",
+   "aa_index": 124,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "_＿,7_＿7_＿7_＿_77_＿77_＿＿_,j{.￣|￣￣ !｀＞―＜＞――＜＞―＜'´l ￣￣|￣.}!._＿＿ﾑﾏ_＿_ﾑﾏ_＿ﾑﾏ＿ﾑﾏ_＿_＿ﾏ／",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res125",
+   "aa_index": 125,
+   "is_art": true,
+   "n_lines": 29,
+   "first_distinctive_line": "(´　　　....:::.....:::::::::::::Y\"´⌒ゝ､ノ⌒）::::::::::::::::,ﾉ⌒:::ﾍ:::::::::::く::⌒´:::｀)::::::｀)",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res126",
+   "aa_index": 126,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "(´　　　....:::.....:::::::::::::Y\"´⌒ゝ､ノ⌒）::::::::::::::::,ﾉ⌒:::ﾍ:::::::::::く::⌒´:::｀)::::::::(:::::::::::::::::::::ﾍ::::｀)",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res127",
+   "aa_index": 127,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "(´　　　....:::.....:::::::::::::Y\"´⌒ゝ､ノ⌒）::::::::::::::::,ﾉ⌒:::ﾍ:::::::::::く::⌒´:::｀)::::::::(:::::::::::::::::::::ﾍ::::｀)",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res128",
+   "aa_index": 128,
+   "is_art": true,
+   "n_lines": 33,
+   "first_distinctive_line": "|l:::l:::l:::l:::l:::l:::l:::|::::::::|　　　　　∠___二＿__,,ヽ._l　‐―　――　―　―",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res129",
+   "aa_index": 129,
+   "is_art": true,
+   "n_lines": 30,
+   "first_distinctive_line": ".|i　*'”￣.|i|-=ァ|i￣￣ﾐxミ.j{　ﾍ　{　　　 ヾ≧s､＞''´　　　 j{ヽ-　　 ./　　　　　　　　　　 　＿",
+   "archive_match_txt": "collections/aahub/bakuhatsu-kemuri/resK-104.txt",
+   "archive_match_png": "collections/aahub/bakuhatsu-kemuri/resK-104.png",
+   "match_evidence": {
+    "probe_lines_hit": 5,
+    "probe_lines": 5,
+    "char_similarity": 1.0,
+    "exact_after_html_unescape": true
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res130",
+   "aa_index": 130,
+   "is_art": true,
+   "n_lines": 37,
+   "first_distinctive_line": ". 　 　 　 / : : /.::.:.:＼三三三＼＼: : :.:,: : : : : : : : : : : : / : : : : : : : : : : : : : : :",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res131",
+   "aa_index": 131,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "飛電インテリジェンス 本社ビル(仮面ライダーゼロワン)",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res132",
+   "aa_index": 132,
+   "is_art": true,
+   "n_lines": 34,
+   "first_distinctive_line": "[　ﾛ　 | -‐=ﾆ :!∧∨∧∨∧!Ⅹ:,￣ ¨　　‐ｌ∨V:!/:!　 | 」 」 j.:ｒ＜:|:. :.|:.:.」:.:.-┘:.:.:.:.:.:.:.:.",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res133",
+   "aa_index": 133,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "惑星ハイネセン　統合作戦本部ビル（銀河英雄伝説）",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res134",
+   "aa_index": 134,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "-‐…￢冖'　::|:　　　| ￤｜└L｢ｈ　｀ヽ| 　 |￣~| 　 |　　｜ |￣￣|_|_├|::┼┼┼┼|　　 |: : : : : : : : : :",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res135",
+   "aa_index": 135,
+   "is_art": true,
+   "n_lines": 28,
+   "first_distinctive_line": "〉',／/　!∧::ト/\"　､",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res136",
+   "aa_index": 136,
+   "is_art": true,
+   "n_lines": 50,
+   "first_distinctive_line": "▼&#9605;&#9619;〓&#9602; 　 　 &#9614; 　 ┃　　　 &#9603;▲　&#9605;&#9608;",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res137",
+   "aa_index": 137,
+   "is_art": true,
+   "n_lines": 29,
+   "first_distinctive_line": "--ヽ---ﾊ　/:::/　　-=ﾆ　　:´/ 八_.／///＼",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res138",
+   "aa_index": 138,
+   "is_art": true,
+   "n_lines": 33,
+   "first_distinctive_line": "頭部が壊れた自由の女神像（CLOVERFIELD）",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res139",
+   "aa_index": 139,
+   "is_art": false,
+   "n_lines": 1,
+   "first_distinctive_line": "【その他】",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res140",
+   "aa_index": 140,
+   "is_art": true,
+   "n_lines": 35,
+   "first_distinctive_line": ". .|| 　￣　　―　--　 |　　　＞　　　　　　　　 　 }　＼_,.．-'''\"　　　|凵 i_ || |i　.||i　.|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res141",
+   "aa_index": 141,
+   "is_art": true,
+   "n_lines": 19,
+   "first_distinctive_line": "￣　￣_...　　-=ﾆ二二ﾆ=＝-―:::::::::::::￣　-=ﾆ二三三三三|`三=≦.　 -≧三≦二ﾕ}ｨiト--=ｷ=Ⅳ^~⌒^´",
+   "archive_match_txt": "collections/aahub/sonota-tenpo/resK-185.txt",
+   "archive_match_png": "collections/aahub/sonota-tenpo/resK-185.png",
+   "match_evidence": {
+    "probe_lines_hit": 5,
+    "probe_lines": 5,
+    "char_similarity": 0.998,
+    "exact_after_html_unescape": false
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res142",
+   "aa_index": 142,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "＿[ 二 ] ― l　l|::::」　 |　| 　 　 　 |　　|＿ | |__ll二二／_＿＿__.ll_＿＿＿l|＿l|二 l_＿ll 　 | ||　 　 |",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res143",
+   "aa_index": 143,
+   "is_art": true,
+   "n_lines": 12,
+   "first_distinctive_line": "|:| ＿｣ニ=┘|　 　 |　 | :|＿_|, .. = -‐..''｡\"ィー ―└'-=. _　-┴‐|::|::|::|:|::::::::::::::!「 |:::::::::::::::::::::::＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res144",
+   "aa_index": 144,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "[][][][][][][][][][][][][][][][][][][][] ﾛﾛﾛﾛrrrr|　 l￣￣|￣｀f竺Y竺ﾊi{_}i||::|-||ｨ㌻ |::::|__{(|H|Ｏ|:|‐|i||/||0 |::ﾞ, ┬_‐_┐ﾞ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res145",
+   "aa_index": 145,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "[][][][][][][][][][][][][][][][][][][][] ﾛﾛﾛﾛrrrr|　 l￣￣|￣｀f竺Y竺ﾊi{_}i||::|-||ｨ㌻ |::::|__{(|H|Ｏ|:|‐|i||/||0 |::ﾞ, ┬_‐_┐ﾞ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res146",
+   "aa_index": 146,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "｀゛¨ '' ‐-　...,, _　　　 |/ *''¨j ''*､ヽ|　　　　_ ,,...　-‐　'' \"´",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res147",
+   "aa_index": 147,
+   "is_art": true,
+   "n_lines": 38,
+   "first_distinctive_line": "[￣丁二マ＝=‐- ｡.. __　　　 　 　 i{i|ｌ.ｨi〔 　 　 | 　 ㍉i|lｉ　　　　　　 __ ..｡ -‐=＝マ二丁￣]",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res148",
+   "aa_index": 148,
+   "is_art": true,
+   "n_lines": 30,
+   "first_distinctive_line": "｀ 　 ‐-=ﾆ(　 ヽ. ＿_(＿__ ｲ　 ): lﾆ=-‐　´",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res149",
+   "aa_index": 149,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "＿＿　　　　　　　　＿_」」L⊥ﾆ/ｿ＼＿＿＿＿＿＿＿＿＿人ゝ＝=ﾆ⊥⊥L」＿　　　　　＿」」",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res150",
+   "aa_index": 150,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "│　X彳庁llllllll丶、iiiii`ゝ ヽiii／iiiiiiiiiiiiiiiiiiiiiiii　　　　　　　iiiiiiiiiii　　 /",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res151",
+   "aa_index": 151,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "＼ﾆ⊥L」_　　　　　　ﾉ＞ ／ 「、ヽﾍ　　　　　　　_」LL⊥=ﾂ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res152",
+   "aa_index": 152,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "│　ｵ`ヽ」__＿＿＿」L＝イ｢　　 │",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res153",
+   "aa_index": 153,
+   "is_art": true,
+   "n_lines": 28,
+   "first_distinctive_line": "7￢=ﾆ」丁宇＝w_─　│ √lllllll ﾉ､､　＼へ　　／　　　　　 ＼",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res154",
+   "aa_index": 154,
+   "is_art": true,
+   "n_lines": 14,
+   "first_distinctive_line": "＞''＞'''iー-- 　 ,,___ \"　''　‐｀ ｭ　,, _",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res155",
+   "aa_index": 155,
+   "is_art": true,
+   "n_lines": 16,
+   "first_distinctive_line": "j｢　　　　｜　 　と思うハローマックであった",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res156",
+   "aa_index": 156,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "収縮・膨張による床壁のひびを防ぐため、隙間を開け金属カバーをつけて建物を接合した部分",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res157",
+   "aa_index": 157,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "≡::::≡:::::::::::|: r─────―ｲ///////////////////////////|:::［工エェ]| |: : : :|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res158",
+   "aa_index": 158,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "≡::::≡:::::::::::|: r─────―ｲ///////////////////////////|:::［工エェ]| |: : :|::||::|　|::| |:|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res159",
+   "aa_index": 159,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "| |＿　 　 |　 　 |　 |　　|　 ｉ|＿＿_|＿_＼__|-ｒ= '”　　　　 ,｡s≦ﾆﾆﾆ//≧s｡,_　 　”'+｡,_　　”／／　　 ”'+｡_　　｀''＜. 　 　 ＼　　　　＼",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res160",
+   "aa_index": 160,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "＿＿_┌──┬ー| i i |　 |‐|‐|¨|ｉ＾ｉ＾ｉ＾| |∩| |Υ| ｉ |｢|| i|「| | | ｉ|ｉ⌒ｉ|⌒||⌒||⌒||⌒|| |i^Y^Y^Y| |⌒||⌒||⌒||⌒||⌒|　ｉ⌒ｉ｜",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res161",
+   "aa_index": 161,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "二二二二二二二二二二三三三三≧===- ､ ;;;;;;;;;＞―≦三三＞､＿∧_｀Y´｀´｀YYYYYY.!!;';'!!　;';';'|!;';' .人ヾ;';';',';,';';';'",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res162",
+   "aa_index": 162,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "i:|ヾ::ゞ|:|^'Y￣|^'ﾞT':| |.:ｉ|{　| ^'|'ﾞ __:j」:Ｌ⊥ﾆ=＝-－　　 　　／三三三＼　　　　　‐-＝=⊥Ｌ」＿｣ 匸丁|_丁匸丁]",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res163",
+   "aa_index": 163,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "￣|　 　 　 　 　 ｜|￢ｉｰ┬┴┬::|-‐|…'T¨|二ﾆ=||‐ |／＼__|三三三|　　|＼|´|_|,,.. ⊥ -一 |'' ~￣|ミﾄ|ﾐ|:::|　|工工工工工工",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res164",
+   "aa_index": 164,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "_,,.斗t≦二二ﾆ=-|￣＿　|: ＿　￣ ≧s｡",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res165",
+   "aa_index": 165,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "| |￣|￣|　|¨:|¨:|　|￣|￣|　|Ｔ]|ﾃﾞﾘﾊﾞﾘ ｰﾍﾙｽ |］］］］］］］］］］］］］］］］］］］］］］|　　｜",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res166",
+   "aa_index": 166,
+   "is_art": true,
+   "n_lines": 15,
+   "first_distinctive_line": "＿＿二二ﾆ＝─…宀冖￣￣￣__ --　¨|　|　　　　　　|　|_」┘　　 /￣￣￣￣￣￣~\"''～　..,,_￣└- 凵　 |:_:_:_;';';';';';'|;';';';'|;';'};';';';';';';';';';';';';'",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res167",
+   "aa_index": 167,
+   "is_art": true,
+   "n_lines": 30,
+   "first_distinctive_line": "⌒￣￣ﾞ,ﾞﾆ二ﾆ=‐''\"´;:;:;:;:;:_,,,..../r,　　　　　　,iﾞ / 彡爻/ ! 　 爻ミｌ　　 ヽ爻",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res168",
+   "aa_index": 168,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "-　　￣　　　-　　　　￣　　 ノ　　 　 　 .|　 :!:i !　　./,，ﾟ´ : - : . ､ ｀ヾ　:i! : :! ﾉ ;　lﾟﾞ ´",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res169",
+   "aa_index": 169,
+   "is_art": true,
+   "n_lines": 12,
+   "first_distinctive_line": "~~~~~~~~~~~~~~~~~~（下流側水面）",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res170",
+   "aa_index": 170,
+   "is_art": true,
+   "n_lines": 15,
+   "first_distinctive_line": "｜:;!\",;:;;.;l;i^,;;｜",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res171",
+   "aa_index": 171,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "~~~\"''||''''''''''''''''''-------||--| ::|------------|| 　 .ll....| l i___",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res172",
+   "aa_index": 172,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "工工工工工工工工工工厂冂￣￣|￣|　　|//|￣:|ｰjfＶ.ｌ|‐‐|Vij{.|∨∨∨ll|二ﾆﾆﾆﾆ|--ノ..│|‐‐ﾉ　l |‐┰──‐┬┐＿＿＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res173",
+   "aa_index": 173,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "､_.. -…ミ:ヽ:～:～ｰ:～:.厶.i:─┴‐┘　　 ! 　 l:──┴‐┐　|～:～:ミ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res174",
+   "aa_index": 174,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": "､_.. -…ミ:ヽ:～:～ｰ:～:.厶.i:─┴‐┘　　 ! 　 l:──┴‐┐　|～:～:ミ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res175",
+   "aa_index": 175,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "_　-　　　　　 　X´ ∠ﾆﾆ=　　　　　　　　 　 .//_Vﾊ”''*x,,",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res176",
+   "aa_index": 176,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": ".. 　 l l二l| |] |]zz:ll　| |ｌ:|ﾚイXlllA/＼ll|:l‐=彡ｲゝ─┬冂¨|￣￣￣￣￣|＞＜───‐..┬‐ァ二二二))┐",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res177",
+   "aa_index": 177,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "洲洲洲洲洲ﾊﾊ┴｡s'´￣￣ ｀ s｡ |H |￣|￣|:i{0八 i|ﾉ 圦 ||/|/＾f=-s｡|::|　||Y⌒Y＾fﾊ/ﾞ'iト．----||ｉ|:|‐|:|o0|,.ィ=ミ'＾Ｙ| |。oﾉ|/|'.|/i{s｡||_|::|ィ'´￣,.:'´,.:",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res178",
+   "aa_index": 178,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": ".　　 i|{//ﾞ|::::||/Ｖ|}i　＿__,|　　　 |　　　ｎ二「」[　　　　　 　 ∈∋　　|　　 |‐'|\"|　　|]　　　　　rzzzzzzzｭ",
+   "archive_match_txt": "collections/aahub/norimono-naibu/resK-156.txt",
+   "archive_match_png": "collections/aahub/norimono-naibu/resK-156.png",
+   "match_evidence": {
+    "probe_lines_hit": 5,
+    "probe_lines": 5,
+    "char_similarity": 1.0,
+    "exact_after_html_unescape": true
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res179",
+   "aa_index": 179,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "‐|jｉ⌒ｉ=| |T0(| :|=|ﾆ7⌒ﾞく三|　|竺|｜|__||=|=||　｢|_}i,∩≦ﾆＴﾆT「| |=|=|..)|]|　 |=|　|￣￣:|:|lこ|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res180",
+   "aa_index": 180,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": "＿__匸|￣　|㍉|-|　　斗--‐‐十=ﾆ二三三三三l|「「「「ll=ァ……ヽ＼‐‐|┼ﾄ､＿＿,.ｨ㌻ィ㌻Ⅵヽl|l〈/,'|]　|i￣￣::|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res181",
+   "aa_index": 181,
+   "is_art": true,
+   "n_lines": 27,
+   "first_distinctive_line": ",rr─‐ 、.;.;.;.;.;; |i ﾛ| 　　 |　　| 　 |i］i］i　　|　　┌|::::|.,.,.,.,.|文_!,.,.,.,.,.,.,.｣斗rｾ升≠≠厂｣　||.;.;.,.,,.,,",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res182",
+   "aa_index": 182,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": ". 　　|/||/|l￣／,|刀ﾌ7l|」」─‐..|/|/||/|/|_｡sＹ＿|--|¨￣|　Ⅵ丁「￣/ﾞ灯 ,ｲ__,ｨ㌣..,ｨタ||＼＼￣￣￣　,ﾊ:::ﾍ　(_|　r─┴┴──┴┴──",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res183",
+   "aa_index": 183,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "||V||V||Ｖ||_|_l￣　ｰ-=ﾆ二三||￣ﾞ|二ﾆ=- ___|/||Χ|ｉ|＿|‐|X|Χ|＿|_,|＿|竺竺竺竺竺竺|　|竺竺竺广「」─／|＿|:|＿|_|＼",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res184",
+   "aa_index": 184,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": ";';';';'爻ミ;';';';';';'||;';'ﾐx爻彡;';';';';'彡ﾑ斗r≦　　　　 _　 -=ﾆ「i:i:i:i:i:i:i:|」L　‐ェｴ工|:|:||i|i|i|「Tェ-　__ : : : ≧s｡.　　　　　　　爻彡",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res185",
+   "aa_index": 185,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": ":|;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;; ;＼＼;;;;;|i:i:i|､,ｨく＾ﾞ|:lヽ／／||＼`'く:::::: |i:i:i:i:i:||i:i:i:rーー┬::┬─ｰ‐┐'/,-_-_-_-_-_-７ﾆﾆﾆ[]ﾆ∨;'",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res186",
+   "aa_index": 186,
+   "is_art": true,
+   "n_lines": 31,
+   "first_distinctive_line": "｀丶､　|　 :|　　／／　　　　　 :|∨￣７三三/　,.ｲ |ll|三三ﾏｺｺ７ﾘｌ|　 |-=ミ 圦寸≧=- 　 ,_||　|　{__)ソ-l:|:::::::::::::Ｙ　　_ﾏﾑ__厂　ｰ=ﾆﾏ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res187",
+   "aa_index": 187,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "| [] []　[] 「」　[] [〕 []:|￣￣~:|´　　　 ｀ﾞ|竺竺竺竺ニ| lニ| ||_|: :|__￣~ﾞ|　　|二二二二二xヘ￣￣＼ |:::: : : :.:| 癶　 ／＼￣ヽ癶ﾆ＼|￣~ﾞ| |/__癶",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res188",
+   "aa_index": 188,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": ".　　　　　　　　 　 　 ／／/:::/二{:::{TT}:::}｜Ｌ＿ﾉﾉ「「冂‐┴_|∨|／＼|: |¨|¨:| |: : : | : : : : ＼_」」斗ｬﾔ¨¨¨㍉==ｧ'\"~￣: : |／／|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res189",
+   "aa_index": 189,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": ",ﾑﾏ/,ﾑ////////,ヘ//＼　　　　　 |:＼＼|/::|:::`' └─ー:|└「┌:::::≧s｡.,└「」:r‐ﾊﾆi:i:i:i:i:i:i:i癶└li:i:Lli|_|/i:i:/::::::::ノ´;';';';';';'⌒",
+   "archive_match_txt": "collections/aahub/norimono-naibu/resK-151.txt",
+   "archive_match_png": "collections/aahub/norimono-naibu/resK-151.png",
+   "match_evidence": {
+    "probe_lines_hit": 5,
+    "probe_lines": 5,
+    "char_similarity": 1.0,
+    "exact_after_html_unescape": true
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res190",
+   "aa_index": 190,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "Y　￣||_||￢ｰ-　_rzzzz||]]||∧|ト.|l￣￣||＾|l¨l||lﾍﾆﾆ...::::::::......i|,.ｨ'|i:i:ィ´ fj.||＾||_,.｡sェ≠ﾆ||ー|]|／||__二ﾆ==-‐ェ￢「」￣＿",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res191",
+   "aa_index": 191,
+   "is_art": true,
+   "n_lines": 29,
+   "first_distinctive_line": "l　 l　 //　 /|ﾆﾆ|／xヘ ＼__｡s＜ミs｡￣｀ヾ:､~ヽ　　 |::i　//　　:}ii{　　 i{圦.|::::::::|]　|　|　:||＼＼|(__)(__)／,,..　 -r‐‐ｭ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res192",
+   "aa_index": 192,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": ": :: : : : : : : : : : : : : : : : : : : : : : : : : : ::::_|_,|_|_|_ﾄﾐﾆﾆﾆ||_|_|_||Ｙｰ|_|_|_|_|＿＿＿＿｀ﾞ'|＜＞r─┐,.｡o1＿|_|‐ |i:i:i:|_I_I_I",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res193",
+   "aa_index": 193,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "__|:I:|／￣￣|¨ﾞ| []　　[]　|_I_I_I I..I|　 | |_| | | |_| |　　　　 γ´ ｀ヽ　 .|:|　　　|　　　　≧s｡,ｌ|　| ∨;';';';';';';';';';';';';';';';';';';'､_I_I_",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res194",
+   "aa_index": 194,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": ",;;: ,;;ｿ..:..:...:. ,ｲ_ｱ工工工エ|ﾆﾆﾆﾆ;;|ｰ_‐_‐_‐_ｰ┬‐┬_‐_‐,,|/Ｖ∧[]_|＼＼-,,|:.:.ﾏﾑ-_-_-__-_-_-_-_-|─┴''\"",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res195",
+   "aa_index": 195,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "｡s个＞'１ｉｉ|￣￣|i:|＿￣￣　　.-=ﾆ二|＾＼　　:|| 　 .｡s1_　-=≦三二ﾆ=-ｧァ7ﾌ刀///,トミ≧s｡",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res196",
+   "aa_index": 196,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": ":廴山」ﾆヽ───‐┬zzュ,,|jI斗ｬヤさ二二丁jI斗≦竺jjl| :|l　|| |_|l　||‐‐|‐||┘ |　|　||　::|]=l|　|-l|l 　 :|　| |zzzl|zく...廴＿|￣|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res197",
+   "aa_index": 197,
+   "is_art": true,
+   "n_lines": 28,
+   "first_distinctive_line": "|:|:|=|=|=|KK|┴:|‐|ｭ八　|‐|‐|‐|.|::|‐ｭ　}i:::|i二l　l￣￣|￣｀f竺Y竺ﾊi{_}i||::|-||ｨ㌻ |::::|__{(|H|Ｏ|:|‐|i||/||0 |:::::|::|´ﾞlDﾉ:|:lー|:|‐|:|:|::|_|_|:::|￣￣￣",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res198",
+   "aa_index": 198,
+   "is_art": true,
+   "n_lines": 25,
+   "first_distinctive_line": "ニ|ｰ|」_,,|.||zzzzﾘ |ｌ|:|zz⌒Y´￣￣ヽ/|‐||]￣|｡s≦三三三｡s≦「≧s｡＿_|　|エエエ| lｴ||エエ　|二二}}竺竺竺",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res199",
+   "aa_index": 199,
+   "is_art": true,
+   "n_lines": 29,
+   "first_distinctive_line": "|　　　|　 　 :| l'´　 ｀Y|　 }　 } i|≧z≦i||_｀ﾞ''ミs｡,／⌒＼|ﾆﾆ|トi|:||(_)_||ﾆﾆ|/|=i|_| |_||=弋__アj{ニﾆｉ|:|ﾆｌ|======彳zzzzイ,ィ´￣￣｀ヽ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res200",
+   "aa_index": 200,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "jl［=|i|ﾄ=ﾏﾑニﾆﾆ｀`～､、ﾆニﾏﾑ 　　.｡s≦|ｉｉ|ｉｉ|i:i:i:i:i:i:i:i::i:ゝ __ノ:i:i:i:i:i:ﾐh｡zｭ",
+   "archive_match_txt": "collections/aahub/norimono-naibu/resK-183.txt",
+   "archive_match_png": "collections/aahub/norimono-naibu/resK-183.png",
+   "match_evidence": {
+    "probe_lines_hit": 5,
+    "probe_lines": 5,
+    "char_similarity": 1.0,
+    "exact_after_html_unescape": true
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res201",
+   "aa_index": 201,
+   "is_art": true,
+   "n_lines": 17,
+   "first_distinctive_line": ",|| 　 || 　 .(_┃_ ||　　　. . . . . ..||: : : : : : : : : : :||:.:.:.:.:.:.:||,　　　 　 　 　 　 　 |´　　　、",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res202",
+   "aa_index": 202,
+   "is_art": true,
+   "n_lines": 13,
+   "first_distinctive_line": "㌍￣””””’? f|gkhj|gxkji|L──┴─┴─,,f㍍!?-┴-┴-㌶ニ巛㍍㎞㍑㎞ニ≠-┴””””\"　　”\"”",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res203",
+   "aa_index": 203,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": "_厂　 ∥　　　　 ∥　　　　|l￣\"ﾞﾞ￣ナ‐'―=┼v---....厶＿＿＿＿＿]l＿--..ﾑv+==一モ'‐''''ﾞﾞ~~ﾞl厂´ 　　 \"'、　　　　 ﾞ∟　　　 廴",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res204",
+   "aa_index": 204,
+   "is_art": true,
+   "n_lines": 15,
+   "first_distinctive_line": ". 　 　 　 　 /　＼　＞ ．＿＿＿＿＿＿＿_＼＼＼＼ ＿　イ ／　／",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res205",
+   "aa_index": 205,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "|　|` ＜_ 　　　　　　　＿　 ＞'⌒`ヽﾍ= !　!┌┰─┰┴┰─┰─┰─┰─┰─",
+   "archive_match_txt": "collections/aahub/goraku/resK-97.txt",
+   "archive_match_png": "collections/aahub/goraku/resK-97.png",
+   "match_evidence": {
+    "probe_lines_hit": 2,
+    "probe_lines": 5,
+    "char_similarity": 0.962,
+    "exact_after_html_unescape": false
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res206",
+   "aa_index": 206,
+   "is_art": true,
+   "n_lines": 24,
+   "first_distinctive_line": ",ｨ´~ヾ=Y⌒;:;:;:;:ヽ;:;:;:;};:;:;:`､=≦〒|　　 |丕弱抖m　 r'´;:;r'´;:;:;:;:;f;:;:;:;:r;:;:;:;m;:;:;;:;:;:;:;:;:;:;:=;:;:`ｰ'’;:;:;:;:;",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res207",
+   "aa_index": 207,
+   "is_art": true,
+   "n_lines": 21,
+   "first_distinctive_line": "＼(　 　 ／/丶､　　_　　-=ﾆ二三三三三三三二ﾆ=-　　_ _､‐'' ∨',　　 )／",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res208",
+   "aa_index": 208,
+   "is_art": true,
+   "n_lines": 26,
+   "first_distinctive_line": "￣¨ | |　 　 | |￣￣￣￣　￣￣　　￣￣　 _,､+''ﾟ _,､+'Τ⌒〕iト　｀{　　{‐ｲ─ﾉ⌒川￣￣　　￣￣　￣ゝ'~￣||￣ゝィァァ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res209",
+   "aa_index": 209,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": "/ ｨ=ﾆｌ｢￣　 |ﾚ{　　　　　 ｌ|　ｌ|　　　　　　 ﾉi|　　￣￣￣Τlー―--＜ミ｢廴＿, イ",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res210",
+   "aa_index": 210,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "it　Y^Y　 |~\"\"'''　‐- ．..,,__　 __,,.. ．-‐　'''\"\"~~\"\"'''　‐-",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res211",
+   "aa_index": 211,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "国連太平洋方面第３軍ユーコン陸軍基地　（マブラヴ　トータル・イクリプス）",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res212",
+   "aa_index": 212,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "r―‐ｪｪｪｪｪｪ| 　|　　　　　　　　 |　 | 　 .:l　:|: . :. :. :.｀: .: ..:..:≧=‐-＼三三三三＼:_:_:_:_:_:／三三三",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res213",
+   "aa_index": 213,
+   "is_art": true,
+   "n_lines": 28,
+   "first_distinctive_line": "-┴'～ '''^ﾞ '┴ｰ┴'^^v＞''^~￣　　　　　　　　,||,_¨¨　 　 　 ヾ! | I | |　_N|　 rL_ lﾍ|　|:::/ﾞ　 :| ｉ|:＼....lF.:.l::l.i::.::.::i::;::;:",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res214",
+   "aa_index": 214,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "`ｰ‐‐…&#65506; '|　|二l　.|二|二lﾆニL　　 .|￣￣￣|￣￣￣|￣￣￣|´|　　　　　　　　 |　 |",
+   "archive_match_txt": "collections/aahub/senpaku/resK-239.txt",
+   "archive_match_png": "collections/aahub/senpaku/resK-239.png",
+   "match_evidence": {
+    "probe_lines_hit": 4,
+    "probe_lines": 5,
+    "char_similarity": 1.0,
+    "exact_after_html_unescape": true
+   },
+   "note": null
+  },
+  {
+   "resid_by_index": "res215",
+   "aa_index": 215,
+   "is_art": true,
+   "n_lines": 23,
+   "first_distinctive_line": "｀`&#65374;､、.:.:.:.:.:.:.:.:.://| |://| |‐‐ｎｎ;';';';';';';';';';' //| | //| ||:|」|　　　　　　￣￣￣＼.:.:.:.:.:.:.:.:.:.:.::／;';';';';';'─'＾ｰ‐‐へ:;.:, ／＼／￣￣￣＼",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res216",
+   "aa_index": 216,
+   "is_art": true,
+   "n_lines": 40,
+   "first_distinctive_line": "|i:i:i:i:|　　　　 　 _､rf〔ﾆニニニニニニ:L_｣i:i:L_｣i:i:ｉ:|i:i:i:i[i:i:i:|　 　 　 |i:i:i:i:ｉ|／￣￣￣￣￣￣￣￣￣￣￣￣￣.ｉ][i:i:i:i:i:i:i:i:i＼──────────┘ ＿ノL_｣ L_｣:.L_｣ .L_｣:L_｣ )＿＿L_｣i:i:i:i:i:i:i:i:i:i:i:i:i:i:i:｀`～､、",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res217",
+   "aa_index": 217,
+   "is_art": true,
+   "n_lines": 18,
+   "first_distinctive_line": ".　　 　 　 ￣￣￣￣￣￣　└─────┴‐─‐|＿＿＿＿＿＿＿＿| |　　 ￣￣￣/￣",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res218",
+   "aa_index": 218,
+   "is_art": true,
+   "n_lines": 20,
+   "first_distinctive_line": "＿＿l|: : : : ｢ ﾆ=- -‐ｧ=|ｪｪｪｪ|／＿_￣: : --―r┐: : : :/＿＿_＼＼: : |｀ﾄ|| .._|Z[|Z|",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res219",
+   "aa_index": 219,
+   "is_art": true,
+   "n_lines": 21,
+   "first_distinctive_line": "冖￢==―--　　　_| ＼　　 ＿∨ﾑ ＿_.||_| ＿　　 /_　 ￣／／／＿　　　　 ----――====￢￢冖冖　　三￣",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  },
+  {
+   "resid_by_index": "res220",
+   "aa_index": 220,
+   "is_art": true,
+   "n_lines": 22,
+   "first_distinctive_line": "|__|二二二||__|／／|　　　 ＼／ ／　　　 　 　 /厂￣j￣￣ l 　 　 l 　 　 l 　 　 l 　 　 l 　 　 　 　l　 　 　 l",
+   "archive_match_txt": null,
+   "archive_match_png": null,
+   "match_evidence": null,
+   "note": null
+  }
+ ],
+ "intake": {
+  "method": "manual: operator saved individual AAHub mlt pages from a browser to ~/Downloads as \"<title> _ AAHub - スマホ対応のアスキーアートビューアー.html\"; an extractor (not located in the archive or converter repo) split each saved page into <slug>/<resid>.txt + Saitamaar 16px .png + manifest.txt under ~/Downloads/aahub-consolidated/; tools/build_archive.py copies that directory into collections/aahub/ (sync, sha256).",
+  "scripts": [
+   {
+    "path": "/Users/r/Projects/ascii-art-archive/tools/build_archive.py",
+    "role": "copy/sync ~/Downloads/aahub-consolidated -> collections/aahub (lines 71, 559-584); no network, no crawling"
+   },
+   {
+    "path": "/Users/r/Projects/ascii-art-archive/docs/FAILURE_LOG.md",
+    "role": "AA-001..AA-003 intake notes; AA-003 = 173 slugs / 32,950 pairs"
+   },
+   {
+    "path": "per-slug manifest.txt source: field",
+    "role": "records the saved HTML file path in ~/Downloads, never an aahub.org URL"
+   }
+  ],
+  "extractor_script": null,
+  "url_types_covered": [
+   "/mlt/<uniqueKey> pages, only the 172 the operator saved by hand (plus 1 saved home page aahub-index with 0 art)"
+  ],
+  "url_types_not_covered": [
+   "all other /mlt/<uniqueKey> pages (no crawler; folder tree api/mlt/folders never walked)",
+   "BBS threads (/api/bbs/*)",
+   "movies (/api/movies/*)"
+  ],
+  "no_pagination_issue": "an mlt page JSON holds its whole aa[] list; there are no paginated subpages within an mlt",
+  "extractor_search": {
+   "result": "not found",
+   "method": "grep -rl for 'aa-frame' or 'aahub-consolidated' in *.py/*.js/*.sh under ~/Projects, ~/Downloads, ~/.claude/skills (first 10 hits)",
+   "hits": [
+    "/Users/r/Projects/ascii-art-archive/tools/build_archive.py (copy only)",
+    "/Users/r/Projects/daily-neovim-ascii-art-tutor/share/test_stone_story_provenance.py (unrelated)",
+    "~/Downloads/* _ AAHub …_files/main-G7G3LE5I.js (saved-page site bundles)"
+   ],
+   "note": "the HTML->txt/png extractor was likely run ad hoc (inferred); ~/Downloads/aahub-consolidated holds 175 entries = 173 slug dirs + 2 font files"
+  }
+ },
+ "missed_scope": {
+  "site_total_mlts": {
+   "value": 15063,
+   "status": "measured",
+   "source": "https://aahub.org/api/mlt/meta (mltVersion 32.3, 2026-09-28)"
+  },
+  "archive_mlts": {
+   "value": 172,
+   "status": "measured",
+   "note": "173 slugs minus aahub-index; kyubey-basic is an older 0-piece shell of kyubey-01-basic, so 171 distinct mlts with art"
+  },
+  "missed_mlts": {
+   "value": 14891,
+   "status": "measured (difference)"
+  },
+  "subtree_汎用AA_背景風景": {
+   "mlts": 54,
+   "aa_total": 9405,
+   "in_archive": [
+    {
+     "dir": "汎用AA/背景・風景",
+     "name": "乗り物・メカ内部・モニタールーム・工場・工房・倉庫",
+     "uniqueKey": "808aa45be035a023a55b8877a1fd3815",
+     "aaNum": 229,
+     "archive_slug": "norimono-naibu"
+    },
+    {
+     "dir": "汎用AA/背景・風景",
+     "name": "背景",
+     "uniqueKey": "29bbdb9128e7655193cb54559cd127cf",
+     "aaNum": 293,
+     "archive_slug": "haikei"
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "扉・ドア",
+     "uniqueKey": "4b45864e4f20cf2af289c528da2b21b2",
+     "aaNum": 200,
+     "archive_slug": "tobira-door"
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "その他店舗",
+     "uniqueKey": "d19e94cd633f30379be0381c867c2e1c",
+     "aaNum": 308,
+     "archive_slug": "sonota-tenpo"
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "娯楽系",
+     "uniqueKey": "f6135c43d73e9b8e40fd85629cc6ec20",
+     "aaNum": 248,
+     "archive_slug": "goraku"
+    }
+   ],
+   "missing_mlts": 49,
+   "missing_aa": 8127,
+   "status": "measured (full walk of this subtree, 8 folder requests)",
+   "mlts_list": [
+    {
+     "dir": "汎用AA/背景・風景",
+     "name": "乗り物・メカ内部・モニタールーム・工場・工房・倉庫",
+     "uniqueKey": "808aa45be035a023a55b8877a1fd3815",
+     "aaNum": 229,
+     "archive_slug": "norimono-naibu"
+    },
+    {
+     "dir": "汎用AA/背景・風景",
+     "name": "実験室",
+     "uniqueKey": "f2c6919c2b6efd385116f35e107987b9",
+     "aaNum": 74,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景",
+     "name": "未来都市",
+     "uniqueKey": "8fbf1a6f77f8d8d4408d243a6813a750",
+     "aaNum": 59,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景",
+     "name": "背景",
+     "uniqueKey": "29bbdb9128e7655193cb54559cd127cf",
+     "aaNum": 293,
+     "archive_slug": "haikei"
+    },
+    {
+     "dir": "汎用AA/背景・風景",
+     "name": "門",
+     "uniqueKey": "507aa63dd53d5784d119f13f1ad77e01",
+     "aaNum": 50,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/伝統的建築物",
+     "name": "伝統的建築物01（和風その１）",
+     "uniqueKey": "7ae9eddda39bd434dd6ba0ec119f5002",
+     "aaNum": 212,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/伝統的建築物",
+     "name": "伝統的建築物02（和風その２）",
+     "uniqueKey": "feb82cda662629ed2029facd5e728f95",
+     "aaNum": 189,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/伝統的建築物",
+     "name": "伝統的建築物03（洋風の城その１）",
+     "uniqueKey": "6fb9fdb56a1705c0b6228052326eb940",
+     "aaNum": 264,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/伝統的建築物",
+     "name": "伝統的建築物04（洋風の城その２）",
+     "uniqueKey": "1cd7c5f4df6c8f8be3a401adb5df710d",
+     "aaNum": 257,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/伝統的建築物",
+     "name": "伝統的建築物05（洋風その他）",
+     "uniqueKey": "2eace909ee902daaae576cd4c715f13a",
+     "aaNum": 287,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "ダイニング・キッチン",
+     "uniqueKey": "e6799c5f1a2edd10bad1d0065fde4202",
+     "aaNum": 122,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "和室",
+     "uniqueKey": "0bd77d32b9d0101dd0eb6a3104ae4e15",
+     "aaNum": 116,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "外観",
+     "uniqueKey": "df1c7bd6c2c76d2c9d27547bfbf48951",
+     "aaNum": 233,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "廊下・階段",
+     "uniqueKey": "235584eb04feaf6537b32180abe4f58e",
+     "aaNum": 187,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "扉・ドア",
+     "uniqueKey": "4b45864e4f20cf2af289c528da2b21b2",
+     "aaNum": 200,
+     "archive_slug": "tobira-door"
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "洋室",
+     "uniqueKey": "9f36713f503951b985f1082aacd3189c",
+     "aaNum": 310,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "玄関",
+     "uniqueKey": "d22b8bd5ad6a2d6c7548b6a7eb529437",
+     "aaNum": 84,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "窓・ベランダ・庭",
+     "uniqueKey": "bb01050c8ae6efe0faa3d6a9ae9e6319",
+     "aaNum": 160,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "車庫・ガレージ",
+     "uniqueKey": "de5a94c279a0901cb8a3a1434ade9cfe",
+     "aaNum": 2,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/住居・施設内部",
+     "name": "風呂・トイレ",
+     "uniqueKey": "1e06f41a23f7e70bf8ced8309c06c41b",
+     "aaNum": 86,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/地形",
+     "name": "地形（山・鉱山・桟道）",
+     "uniqueKey": "1823425068f1993743f2308e797c2c2c",
+     "aaNum": 161,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/地形",
+     "name": "地形（川・川岸・湖・沼・滝）",
+     "uniqueKey": "9492a00e57a2d702554b9e1800bccd21",
+     "aaNum": 160,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/地形",
+     "name": "地形（木・草原・荒野・砂漠・地割れ・クレーター）",
+     "uniqueKey": "9636c2401facd04b90778f4bfea720c3",
+     "aaNum": 199,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/地形",
+     "name": "地形（森林）",
+     "uniqueKey": "490d77b2635026ab95abd5fd8762aa72",
+     "aaNum": 195,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/地形",
+     "name": "地形（洞窟）",
+     "uniqueKey": "867a95d32dac8d0eb8fe4ffeef5af441",
+     "aaNum": 74,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/地形",
+     "name": "地形（海・砂浜・島）",
+     "uniqueKey": "3c33aa91ad5a95d68ec09a85919643be",
+     "aaNum": 244,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "その他店舗",
+     "uniqueKey": "d19e94cd633f30379be0381c867c2e1c",
+     "aaNum": 308,
+     "archive_slug": "sonota-tenpo"
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "スポーツ施設",
+     "uniqueKey": "b032289c33c17a11860c33bf93290863",
+     "aaNum": 175,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "公園・公衆便所",
+     "uniqueKey": "ee9e1a4ae3a322e40e3c65f39236bfbb",
+     "aaNum": 93,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "娯楽系",
+     "uniqueKey": "f6135c43d73e9b8e40fd85629cc6ec20",
+     "aaNum": 248,
+     "archive_slug": "goraku"
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "学校・図書館",
+     "uniqueKey": "da4f40ddb664ee4f9152bfc042a894a9",
+     "aaNum": 319,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "宗教施設（教会・その他）",
+     "uniqueKey": "2f0353dc8e23bde120d1c050746f937c",
+     "aaNum": 167,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "宗教施設（神社・仏閣）",
+     "uniqueKey": "5ccdf71426e256e8238f3e2639141b43",
+     "aaNum": 191,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "宿泊施設・銭湯",
+     "uniqueKey": "7e78d5fe96e5d239b2c861dcc4fc53dc",
+     "aaNum": 167,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "屋台・縁日・バザー",
+     "uniqueKey": "599d389273f3d1b27b6b9ddd32d4ea34",
+     "aaNum": 89,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "病院・墓地",
+     "uniqueKey": "322e057fa98043c354759d9d90c9d494",
+     "aaNum": 152,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "警察・法関係施設",
+     "uniqueKey": "3c8416a65c4bd50f194a8eb993826871",
+     "aaNum": 95,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/店舗・施設",
+     "name": "飲食・食料品店",
+     "uniqueKey": "6cbc7b8c14173f8492fac33c5379a40f",
+     "aaNum": 354,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/空模様・宇宙",
+     "name": "夜空、星座、オーロラ",
+     "uniqueKey": "41bbc3851027dc87341e56918bac0d84",
+     "aaNum": 124,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/空模様・宇宙",
+     "name": "天候、自然現象",
+     "uniqueKey": "a1072593f8bbf3fad033b50b7c455d0b",
+     "aaNum": 219,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/空模様・宇宙",
+     "name": "宇宙",
+     "uniqueKey": "2ede1f347077eb17e0c71997147bf761",
+     "aaNum": 261,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み01（近景・通路水平）",
+     "uniqueKey": "d850fc5a3d76884699f6bb37fd96465c",
+     "aaNum": 118,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み02（近景・通路3D）",
+     "uniqueKey": "e3aee1980117c1983273c35cbc6a5d70",
+     "aaNum": 182,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み03（駅前・ビル街・商店街・横丁）",
+     "uniqueKey": "6832af8786d7b1039b3a3fc26ae244f5",
+     "aaNum": 65,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み04（路地裏・スラム・廃墟・下水道）",
+     "uniqueKey": "8510df5d530fcc44cb6b6fac937b4c27",
+     "aaNum": 225,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み05（夜の街・雨の街）",
+     "uniqueKey": "e152ef916b9eacd423ae143ca873b278",
+     "aaNum": 47,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み06（燃えている街・破壊される街）",
+     "uniqueKey": "ea2e1523c12ba9428fef4b24f095be79",
+     "aaNum": 50,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み07（車道・駐車場・橋・その他）",
+     "uniqueKey": "f21ac3d63ab4c641ac673955776e8045",
+     "aaNum": 222,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み08（山村・農村・牧場・街道・並木道）",
+     "uniqueKey": "c3653b450b13714e3d6929f61ac881af",
+     "aaNum": 208,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "街並み09（水辺の街・港）",
+     "uniqueKey": "a1b9f5eff7df0f90b710a24cf9fc9290",
+     "aaNum": 170,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "遠景01（街・村のみ）",
+     "uniqueKey": "dcd1e5ea629209861c16c400953d0bae",
+     "aaNum": 194,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/街・村・一次産業",
+     "name": "遠景02（街・村＋山海）",
+     "uniqueKey": "b140928b7218be458c5b5b3fb78e14c9",
+     "aaNum": 60,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/近代的建築物",
+     "name": "近代的建築物01（外観）",
+     "uniqueKey": "4ffcb6c0e968fc342d21faebc63c5982",
+     "aaNum": 221,
+     "archive_slug": null
+    },
+    {
+     "dir": "汎用AA/背景・風景/近代的建築物",
+     "name": "近代的建築物02（周囲・屋上・内部）",
+     "uniqueKey": "ca150024ec6fa838219dd4550fa4598b",
+     "aaNum": 234,
+     "archive_slug": null
+    }
+   ]
+  },
+  "aa_per_mlt_sample": {
+   "n": 647,
+   "mean": 195.2,
+   "median": 154,
+   "source": "api/mlt/changes?limit=2000 (mlts changed in v32.3; biased sample)",
+   "subtree_mean": 174.2
+  },
+  "site_total_aa_estimate": {
+   "low": 2319702,
+   "mid": 2786655,
+   "high": 2940298,
+   "status": "estimated: 15,063 mlts x per-mlt AA (median 154 / blended ~185 / mean 195)",
+   "archive_share_percent_mid": 1.18
+  },
+  "top_level_categories": [
+   "2ch",
+   "A・0・記号",
+   "あ行",
+   "か行",
+   "さ行",
+   "た行",
+   "な行",
+   "は行",
+   "ま行",
+   "や行",
+   "ら行",
+   "わ・を・ん",
+   "企業・ご当地キャラクター",
+   "実在人物パロディ",
+   "汎用AA"
+  ]
+ },
+ "urls_fetched": [
+  "https://aahub.org/mlt/4ffcb6c0e968fc342d21faebc63c5982",
+  "https://aahub.org/main-BMBCDB6Q.js",
+  "https://aahub.org/api/mlt/meta",
+  "https://aahub.org/api/mlt/folders?r18Mode=hide",
+  "https://aa-storage.aahub.org/folders/mlt/4ffcb6c0e968fc342d21faebc63c5982.json?v=32.3-r2",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF%2F%E8%BF%91%E4%BB%A3%E7%9A%84%E5%BB%BA%E7%AF%89%E7%89%A9&r18Mode=hide",
+  "https://aahub.org/api/mlt/changes?limit=2000",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF%2F%E4%BC%9D%E7%B5%B1%E7%9A%84%E5%BB%BA%E7%AF%89%E7%89%A9&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF%2F%E4%BD%8F%E5%B1%85%E3%83%BB%E6%96%BD%E8%A8%AD%E5%86%85%E9%83%A8&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF%2F%E5%9C%B0%E5%BD%A2&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF%2F%E5%BA%97%E8%88%97%E3%83%BB%E6%96%BD%E8%A8%AD&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF%2F%E7%A9%BA%E6%A8%A1%E6%A7%98%E3%83%BB%E5%AE%87%E5%AE%99&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF%2F%E8%A1%97%E3%83%BB%E6%9D%91%E3%83%BB%E4%B8%80%E6%AC%A1%E7%94%A3%E6%A5%AD&r18Mode=hide",
+  "https://aahub.org/api/mlt/folders?path=%E6%B1%8E%E7%94%A8AA%2F%E8%83%8C%E6%99%AF%E3%83%BB%E9%A2%A8%E6%99%AF%2F%E8%BF%91%E4%BB%A3%E7%9A%84%E5%BB%BA%E7%AF%89%E7%89%A9&r18Mode=hide"
+ ]
+}

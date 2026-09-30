@@ -1293,3 +1293,44 @@
   (2,553), then the screenshot-mode tuning receipt with the new decoder.
   Receipts `…-tune-every200-off12-knownorigin-newgeom` and
   `…-screenshot-margins31-tune-every200-off12-newgeom`.
+
+### 2026-09-29 — AAHub intake coverage audit: the operator's example page is 208/218 missing; intake covered 172 hand-saved pages of 15,063
+
+- **Operator request:** confirm that the art on
+  `https://aahub.org/mlt/4ffcb6c0e968fc342d21faebc63c5982` is in the archive
+  as pairs. If not, find what intake missed.
+- **Receipt:** `docs/receipts/2026-09-29-aahub-intake-coverage-audit/audit.json`
+  (subagent audit, read-only on the archive at `3687cc5`; 22 URLs fetched,
+  all listed).
+- **Page:** 近代的建築物01（外観） (汎用AA/背景・風景/近代的建築物), 221
+  entries: 218 art pieces and 3 headers. It loads its art as JSON from
+  `aa-storage.aahub.org`.
+- **Result (verified by content match, not name):** 10/218 pieces are in the
+  archive, only because the same art also appears on other saved pages
+  (goraku, sonota-tenpo, norimono-naibu, bakuhatsu-kemuri, senpaku). The
+  other 208 are missing. The page was never taken in. Its companion page 02
+  (234 pieces) is also absent. Parent spot-check: matched lines are present
+  in `goraku/resK-72.txt`, `sonota-tenpo/resK-05.txt`,
+  `sonota-tenpo/resK-38.txt` and `bakuhatsu-kemuri/resK-104.txt`.
+- **Cause:** there was no crawler. 172 AAHub pages were saved by hand from the
+  browser into `~/Downloads`, then extracted into
+  `~/Downloads/aahub-consolidated/`. `tools/build_archive.py` only copies that
+  folder. The extraction script was not found. Per-slug `manifest.txt`
+  records saved-HTML paths, not aahub.org URLs. The category tree was never
+  walked.
+- **Scale:**
+  - Measured: `https://aahub.org/api/mlt/meta` reports `totalMlts` 15,063,
+    re-fetched by the parent. So about 14,891 pages were never taken in. The
+    背景・風景 category alone has 54 pages and 9,405 pieces, and 49 pages
+    and 8,127 pieces of it are missing.
+  - Estimated from 647 recently updated pages: 2.3–2.9 M pieces site-wide.
+    On that estimate the archive's 32,950 pairs are about 1.2%. This is not
+    a measured total.
+- **Implication for P0C-10:** the AA-003 split covers a small, hand-picked
+  slice of AAHub, so train/held-out figures describe that slice.
+  Background/scenery art is badly under-represented.
+- **Owner / next:** intake belongs to the ascii-art-archive repository, which
+  this task treats as read-only. Proposed: an AAHub crawler over
+  `api/mlt` and `aa-storage` JSON that produces txt + Saitamaar-render pairs
+  per mlt id. This is AA-004, with a new split lock. It needs operator approval
+  because it is large (on the order of 15k pages).
