@@ -697,7 +697,9 @@ def common_indent_steps(leads: list[int], unit_step: int, full_u: int, half_u: i
     # true origin, and demanding every row pushed the page 22 px left. The
     # same row also starts 1 step LEFT of the true origin, so the search
     # starts at the (tolerance+1)-th smallest gap, not the smallest.
-    tolerance = len(leads) // 20  # 5%; pages under 20 rows stay strict
+    # 5%, and at least one row from 10 rows up (witches/resK-360: 15 rows, one
+    # first-glyph misread pushed the page 11 px left); tiny pages stay strict
+    tolerance = max(len(leads) // 20, 1 if len(leads) >= 10 else 0)
     top = sorted(leads)[min(tolerance, len(leads) - 1)]
     shifts = list(range(top, min(leads) - reach - 1, -1))
     counts = [sum(indent_spellable((g - shift) * unit_step, full_u, half_u) for g in leads) for shift in shifts]
