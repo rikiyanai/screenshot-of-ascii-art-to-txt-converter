@@ -1237,3 +1237,59 @@
   3. Speed: float32 correlations and cheaper geometry search (about 60 s/page).
   4. Bigram prior job 1 is shelved (see the cond tuning entry). Job 2, the
      look-alike table plus raster re-render scoring, is next in the job list.
+
+### 2026-09-29 — screenshot mode (random margins, fitted origin): baseline loss and three geometry defects
+
+- **Operator requirement (2026-09-29):** measure what a real, unaligned
+  screenshot gives. All AAHub receipts so far were given the text origin
+  (`--x0 8`) and the archive's clean pad. They overstate screenshot accuracy.
+- **Evaluator (`ceaefc6`, `7ceea06`):** `eval_corpus.py --random-margins 31`
+  crops the 8 px render pad and adds reproducible 0–31 px margins per edge
+  (seed `p0c10-aahub-screenshot-margins-v1`). This mirrors the fixed-grid
+  evaluator. The origin is fitted, and every page records its margins,
+  `x0_true` and `x0_error`. Art that reaches into the pad keeps those columns
+  and rows, and its true origin is corrected. Size stays given (16 px).
+  Fitting the size is a later step.
+- **Before-fix receipt:** `docs/receipts/2026-09-29-aahub-aa003-screenshot-margins31-tune-every200-off12/eval.json`
+  (sha256 `e8a60b72…0cdb`). Tuning sample (every 200, offset 12, train),
+  decoder before `fa16bb7`. 170 pages, 5 errors (ink in the pad, since
+  fixed), 3,365 rows on 165 pages: **1,714 exact (50.9%), 2,122
+  indentation-invariant**. The known-origin reference on the same sample is
+  2,553/3,478 (73.4%). Origin within 0.5 px: 109/165. This receipt was
+  scored with the old indentation metric.
+- **Defects found on kyoko-01/res129** (18/21 exact with origin given,
+  0/21 in screenshot mode):
+  1. *Row lost at the top.* Python `round()` sends halves to even, so a
+     lattice at 21.5 + 17i gave 22, 38, 56, 72, with every other line 1 px
+     high. Separately, `fit_rows`' mean-profile fit placed the lattice 1 px
+     high, so the top row of underscores (ink at baseline + 1, face profile
+     0.0011, and 0 one row lower) was pruned as blank. Phase refinement
+     then fixed the pixel but kept the reduced row count, so every row
+     shifted by one line. Fix: `baseline_px` (halves rounded one way), and
+     `restore_edge_rows` re-tests the lines above and below with the final
+     phase. A first attempt that let phase refinement vary the row count was
+     rejected: probe-row costs are not comparable across lattices, and it
+     also broke the known-origin decode of the same page (18 → 0).
+  2. *Margin filled with glyphs.* With no text-box edge, the old fit chose
+     one origin on a 14 px plateau, so every row had to spell its gap in
+     U+3000 (880 units) and U+0020 (400 units, never two adjacent). An
+     unspellable gap was filled with `.` before the art on 11/21 rows. Fix:
+     only the origin's sub-pixel phase is fitted (8 candidates, not about 113).
+     Rows start freely before their first ink (`decode_row(free_lead=True)`).
+     The common indentation is then the largest shift, searched left by up
+     to 200 steps, that lets every row spell its gap. Any such shift gives
+     the same relative indentation, which is all the pixels determine.
+  3. *Metric.* `dedent` rewrote leftover indentation as spaces and kept the
+     raw prefix when the width was unspellable (e.g. 880 − 400 = 480), so a
+     correctly read page scored 0. Fix (`02534e9`): indentation-invariant
+     rows compare relative indentation width in font units plus the
+     canonical row body. Historical receipts' indentation-invariant figures
+     were computed with the old metric.
+- **Page result:** kyoko-01/res129 in screenshot mode now gives 18/21
+  indentation-invariant, equal to the known-origin decode. The known-origin
+  decode of the same page is unchanged at 18/21. Suite 59/59.
+- **Running (sequential):** the known-origin tuning receipt with the new
+  decoder, as a regression check against `…-bigram-tune-every200-off12-w0`
+  (2,553), then the screenshot-mode tuning receipt with the new decoder.
+  Receipts `…-tune-every200-off12-knownorigin-newgeom` and
+  `…-screenshot-margins31-tune-every200-off12-newgeom`.
