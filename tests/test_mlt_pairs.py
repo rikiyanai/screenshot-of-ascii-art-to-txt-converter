@@ -28,6 +28,10 @@ class MltPairs(unittest.TestCase):
             self.assertEqual(got.shape, want.shape, page)
             self.assertEqual(int((got ^ want).sum()), 0, page)
 
+    def test_numeric_references_are_decoded(self) -> None:
+        # ~3 % of AA-004 pieces store e.g. a thin space as &#8201;; AAHub shows the character
+        self.assertEqual(mlt_pairs.piece_text({"value": "a&#8201;b&#x2588;"}), "a b█")
+
     def test_headers_are_not_art(self) -> None:
         self.assertFalse(mlt_pairs.is_art("【建物】\n"))
         self.assertTrue(mlt_pairs.is_art("　 ／￣＼\n　 ＼＿／\n"))

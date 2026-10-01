@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import hashlib
+import html
 import json
 import math
 import subprocess
@@ -82,6 +83,15 @@ def load_record_checked(archive: Path, row: dict) -> dict:
     return json.loads(raw)
 
 
+def piece_text(entry: dict) -> str:
+    """The piece as AAHub's viewer shows it. 2026-10-01: ~3 % of AA-004 pieces
+    store characters as numeric HTML references (&#8201; thin space, &#9617; ░,
+    &#x2588; █ ...); the viewer decodes them, and AA-003's extracted text holds
+    the decoded characters (no literal '&#' in 32,950 files). Raw values must
+    not be rendered or scored as-is."""
+    return html.unescape(entry["value"])
+
+
 def is_art(text: str) -> bool:
     """Section headers are single short lines; a piece has at least two lines."""
     return text.strip("\n").count("\n") >= 1
@@ -104,7 +114,7 @@ def main() -> None:
     for key in keys:
         record = load_record(archive, split["archive_commit"], rows[key])
         for i, entry in enumerate(record["aa"]):
-            text = entry["value"]
+            text = piece_text(entry)
             if not is_art(text) or (key, i) in leaking:
                 continue
             if n % args.every == 0:

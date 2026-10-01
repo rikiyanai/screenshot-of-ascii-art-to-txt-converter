@@ -90,7 +90,7 @@ def _mlt_text(stem: str) -> str:
     if key not in _MLT_CACHE:
         _MLT_CACHE.clear()  # jobs arrive grouped by page; keep one record per worker
         _MLT_CACHE[key] = mlt_pairs.load_record_checked(_STATE["archive"], _STATE["mlt_rows"][key])
-    return _MLT_CACHE[key]["aa"][int(index)]["value"]
+    return mlt_pairs.piece_text(_MLT_CACHE[key]["aa"][int(index)])
 
 
 def _run(job: tuple[str, float]) -> dict:
@@ -229,7 +229,7 @@ def main() -> None:
         for key in keys:
             record = mlt_pairs.load_record_checked(args.archive.resolve(), mlt_rows[key])
             for i, entry in enumerate(record["aa"]):
-                if not mlt_pairs.is_art(entry["value"]) or (key, i) in leaking:
+                if not mlt_pairs.is_art(mlt_pairs.piece_text(entry)) or (key, i) in leaking:
                     continue
                 if n % args.every == args.every_offset % args.every:
                     jobs.append((f"mlt:{key}:{i}", args.size_px))
