@@ -1447,3 +1447,47 @@
   measures screenshot realism and is not tuned against.
 - **Next:** size fitting (size is still given), the automatic text-type and
   font chooser, and pair generation from the AA-004 crawl for a larger split.
+
+### 2026-10-01 — AA-004 crawl wired in: split lock, derived pairs, HTML-reference decoding, font builds
+
+- **Split (`a3c9657`):** `data/aahub_mlt_split.json` (sha256 `983848da…b52347`),
+  built by `scripts/build_mlt_split.py` from ascii-art-archive `f498eb3`.
+  - The unit is an MLT page, grouped by AAHub folder.
+  - The 172 AA-003 slugs, mapped by title, keep their side. `witches` was
+    resolved by content.
+  - Other folders are held out when sha256(folder) / 2^256 < 0.30.
+  - Result: train 10,559 pages / 905,073 entries, held-out 3,422 / 338,675.
+    11,576 held-out entries also occur verbatim in train and are excluded from
+    scoring. That leakage was computed on raw values before the decoding fix
+    below, so pieces containing references may be slightly under-detected.
+- **Derived pairs (`d0d0761`):** `scripts/mlt_pairs.py`.
+  - `render_aahub` uses Saitamaar 16 px, 8 px pad, 17 px pitch, baseline 22,
+    width = widest row + 16, height = rows × 17 + 16, 1-bit.
+  - It reproduces AA-003 archive PNGs pixel for pixel: goraku/resK-72 and
+    kyoko-01/res129, 0 px differ (`tests/test_mlt_pairs.py`).
+  - Pairs are rendered on demand rather than stored (1.24 M PNGs ≈ 12 GB;
+    21 GB free).
+  - `eval_corpus.py --mlt-split` samples AA-004 art pieces, checks each record
+    against the pinned index sha256, and renders in memory.
+- **Decoding fix (`4c194a3`):** about 3 % of AA-004 pieces (3.06 % on a 350-page
+  sample) store characters as numeric HTML references. The most common are
+  `&#8198;`, `&#8201;`, `&#8202;`, `&#9617;` ░, `&#8197;` and `&#x2588;` █.
+  AAHub decodes them, and AA-003 text holds the decoded characters (no literal
+  `&#` in AA-003). AA-003 altina-orion/res08 equals its crawled piece only
+  after `html.unescape`. Found by the AA-004 style lane. The first AA-004
+  baseline run had started on raw text; it was stopped at 66 pieces and
+  discarded, not receipted.
+- **Font builds (measured):**
+  - The archive's `collections/aahub/Saitamaar.ttf` (sha256 `592bf6be…`,
+    FontForge 2013) is the build that reproduces AAHub's PNGs.
+  - The converter's `fonts/Saitamaar-Regular.ttf` (sha256 `8f8c9b6e…`) is a
+    ttfautohint build of the same design: identical cmap (10,125 code points),
+    identical advances, units per em 1280.
+  - 130 / 10,125 glyphs render differently at 16 px bilevel, all rare
+    accented Latin or Cyrillic (ů Ǻ й ž …), by at most 12 px.
+  - The decoder has used the converter build for every receipt so far.
+    Expected impact is negligible but not measured. Open item: decode AAHub
+    renders with the archive build and confirm with one tuning receipt.
+- **Running:** AA-004 train screenshot baseline (every 2,000th art piece,
+  kanji fallback, base geometry, random margins), receipt
+  `docs/receipts/2026-10-01-aahub-aa004-train-every2000-screenshot-margins31-kanji-fallback-basegeom`.
