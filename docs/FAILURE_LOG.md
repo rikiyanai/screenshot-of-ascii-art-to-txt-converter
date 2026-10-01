@@ -1488,6 +1488,19 @@
   - The decoder has used the converter build for every receipt so far.
     Expected impact is negligible but not measured. Open item: decode AAHub
     renders with the archive build and confirm with one tuning receipt.
-- **Running:** AA-004 train screenshot baseline (every 2,000th art piece,
-  kanji fallback, base geometry, random margins), receipt
-  `docs/receipts/2026-10-01-aahub-aa004-train-every2000-screenshot-margins31-kanji-fallback-basegeom`.
+- **AA-004 train screenshot baseline:**
+  `docs/receipts/2026-10-01-aahub-aa004-train-every2000-screenshot-margins31-kanji-fallback-basegeom/eval.json`
+  (sha256 `893f837d…02d2`).
+  - Setup: every 2,000th TRAIN art piece (404 pieces, 9,412 rows), random
+    0–31 px margins, fitted origin, size given (16 px), `--kanji-fallback
+    --fallback-geometry base`. Decoder `57d27ac`, which is equivalent to v3.
+    Pieces decoded (`4c194a3`). 0 errors.
+  - Exact 3,825 (40.6 %), **indentation-invariant 7,315 (77.7 %)**, row
+    counts right 378/404, canonical CER 0.093.
+  - 62 pieces fully right and 26 with 0 rows right. Origin exact on 197/404.
+    The other origin errors are mostly whole full spaces (+11 ×87, +22 ×29,
+    +33 ×15); too much indentation (−11) on 13.
+  - First converter figure on the AAHub site as a whole rather than the 172
+    hand-saved pages. It is a TRAIN sample; there is no AA-004 held-out run yet.
+  - The prior (`aa_char_prior.json`) is still AA-003 TRAIN only. Next: rebuild
+    the prior from AA-004 TRAIN, then one frozen AA-004 held-out run.
