@@ -206,7 +206,12 @@ def main() -> None:
         if (bigram_metadata.get("corpus_commit") != split["archive_commit"] or
                 bigram_metadata.get("split_sha256") != hashlib.sha256(args.split.read_bytes()).hexdigest()):
             raise SystemExit("bigram prior was not built from this locked archive and split")
-    if prior_metadata and (prior_metadata.get("corpus_commit") != split["archive_commit"] or
+    if prior_metadata and "mlt_split_sha256" in prior_metadata:
+        # An AA-004 TRAIN prior is valid only for AA-004 scoring against the same split.
+        if not args.mlt_split or prior_metadata["mlt_split_sha256"] != hashlib.sha256(
+                args.mlt_split.read_bytes()).hexdigest():
+            raise SystemExit("AA-004 prior requires --mlt-split with the split it was built from")
+    elif prior_metadata and (prior_metadata.get("corpus_commit") != split["archive_commit"] or
                            prior_metadata.get("manifest_sha256") != split["manifest_sha256"] or
                            prior_metadata.get("split_sha256") != hashlib.sha256(args.split.read_bytes()).hexdigest()):
         raise SystemExit("prior was not built from this locked archive and split")

@@ -29,13 +29,55 @@ BIGRAM_MIN_COUNT = 3
 SPACES = " \u3000"
 
 
+def build_mlt_prior(args: argparse.Namespace) -> None:
+    """P0C-10 2026-10-01: the AA-003 prior covers 23,363 hand-saved pages; the
+    AA-004 crawl's TRAIN partition has 905,073 entries on 10,559 pages. Count
+    decoded art pieces (mlt_pairs.piece_text / is_art) from train_keys only.
+    Held-out records are never opened. This prior is valid only for --mlt-split
+    evaluation: AA-004 TRAIN folders are disjoint from AA-004 held-out, not
+    from every AA-003 held-out piece."""
+    import mlt_pairs
+
+    archive = args.archive.resolve()
+    split, rows = mlt_pairs.load_split(archive, args.mlt_split)
+    counts: Counter[str] = Counter()
+    pieces = pages = 0
+    for key in split["train_keys"]:
+        record = mlt_pairs.load_record_checked(archive, rows[key])
+        pages += 1
+        for entry in record["aa"]:
+            text = mlt_pairs.piece_text(entry)
+            if mlt_pairs.is_art(text):
+                counts.update(ch for ch in text if ch not in "\r\n")
+                pieces += 1
+    out = args.out if args.out != REPO / "data/aa_char_prior.json" else REPO / "data/aa004_char_prior.json"
+    out.write_text(json.dumps({
+        "schema": "aa_char_prior.v1",
+        "corpus": "ascii-art-archive:collections/aahub-mlt",
+        "corpus_commit": split["archive_commit"],
+        "index_sha256": split["index_sha256"],
+        "mlt_split_sha256": hashlib.sha256(args.mlt_split.read_bytes()).hexdigest(),
+        "train_pages": pages,
+        "train_art_pieces": pieces,
+        "total_characters": sum(counts.values()),
+        "counts": dict(counts.most_common()),
+    }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"{pages} AA-004 training pages, {pieces} art pieces, {len(counts)} distinct characters -> {out}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("archive", type=Path, help="ascii-art-archive checkout")
     parser.add_argument("--split", type=Path, default=SPLIT)
     parser.add_argument("--out", type=Path, default=REPO / "data/aa_char_prior.json")
     parser.add_argument("--bigram-out", type=Path, default=REPO / "data/aa_bigram_prior.json")
+    parser.add_argument("--mlt-split", type=Path, default=None,
+                        help="count AA-004 TRAIN art pieces (data/aahub_mlt_split.json) instead of AA-003; "
+                             "writes --out only (default data/aa004_char_prior.json), no bigram file")
     args = parser.parse_args()
+    if args.mlt_split:
+        build_mlt_prior(args)
+        return
 
     split, jobs = load_split(args.archive, args.split)
     held_out = set(split["held_out_slugs"])
