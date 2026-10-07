@@ -1,0 +1,2 @@
+{"pages": 170, "errors": 5, "candidate_glyphs": 3135, "rows": 3365, "exact_rows": 1714, "exact_rows_indentation_invariant": 2122, "exact_row_rate": 0.5094, "row_count_match": 146, "mean_canonical_cer": 0.14, "mean_strict_cer": 0.1412, "origin": {"within_0.5px": 109, "within_1px": 109, "mean_abs_error_px": 15.784, "max_abs_error_px": 231.0}}
+5 pages failed; inspect the receipt

@@ -1,0 +1,1 @@
+{"pages": 170, "errors": 0, "candidate_glyphs": 3135, "rows": 3478, "exact_rows": 1562, "exact_rows_indentation_invariant": 2591, "exact_row_rate": 0.4491, "row_count_match": 153, "mean_canonical_cer": 0.1246, "mean_strict_cer": 0.1181, "origin": {"within_0.5px": 99, "within_1px": 99, "mean_abs_error_px": 12.675, "max_abs_error_px": 155.0}}

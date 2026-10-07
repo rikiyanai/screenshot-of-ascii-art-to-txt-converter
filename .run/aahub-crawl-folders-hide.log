@@ -1,0 +1,4 @@
+folder walk (hide): 1823 folders, 13980 page entries
+site {'mltVersion': '32.3', 'mltUpdate': '2026-09-28', 'totalMlts': 15063}; sitemap 13980 keys; indexed 13981; to fetch 0
+{"sitemap_keys": 13980, "fetched": 0, "pieces_fetched": 0, "bytes_stored": 0, "indexed_total": 13981, "stopped": null, "errors": 0, "conflicts": 0}
+receipt: docs/receipts/aahub-mlt-crawl-2026-09-30-folders-hide.json
