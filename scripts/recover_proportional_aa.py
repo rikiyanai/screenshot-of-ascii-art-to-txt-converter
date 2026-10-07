@@ -303,6 +303,10 @@ class RowDecode:
     ink_energy: float
     end_px: float
     lead_steps: int = 0  # free_lead only: pen-lattice steps skipped before the first glyph
+    # (pen state, glyph index) per emitted glyph, in text order. Text index k is
+    # path[k]: canonical_spacing reorders spaces inside a blank run but keeps its
+    # length, so every non-space glyph keeps its index.
+    path: tuple = ()
 
 
 def decode_row(
@@ -425,13 +429,57 @@ def decode_row(
             if value < finish:
                 finish, final = value, (layer, s)
     glyphs: list[str] = []
+    steps_taken: list[tuple[int, int]] = []
     layer, s = final
     while s > 0 and back_state[layer, s] >= 0:
         prev, g = back_state[layer, s], back_glyph[layer, s]
         glyphs.append(bank.characters[g])
         s, layer = divmod(int(prev), 2)
+        steps_taken.append((int(s), int(g)))
     text = canonical_spacing("".join(reversed(glyphs))).rstrip(FULL_SPACE + HALF_SPACE)
-    return RowDecode(text, float(finish), total_ink, x0 + final[1] * bank.step_px, int(s))
+    return RowDecode(text, float(finish), total_ink, x0 + final[1] * bank.step_px, int(s),
+                     tuple(reversed(steps_taken)))
+
+
+def glyph_alternatives(strip: np.ndarray, corr: np.ndarray, bank: GlyphBank, x0: float,
+                       glyph_penalty, row: RowDecode, share: float = 0.25, limit: int = 4) -> list[dict]:
+    """Near-tie readings for each non-space glyph on the decoded path (for Jev).
+
+    Only same-advance substitutes are offered: they occupy the same lattice
+    steps, so swapping one leaves the rest of the row's path valid. A
+    substitute qualifies when its local reconstruction cost is within `share`
+    of the chosen glyph's own template energy. Costs are the decoder's local
+    terms (lower is better); templates identical at that phase are flagged
+    pixel_identical (2026-10-01, P0C-10 Jev wiring)."""
+    width = strip.shape[1]
+    cum = np.concatenate([[0.0], np.cumsum((strip ** 2).sum(axis=0))])
+    penalty = glyph_penalty if isinstance(glyph_penalty, np.ndarray) else np.full(len(bank.characters), glyph_penalty)
+    out = []
+    for k, (state, g) in enumerate(row.path):
+        if bank.characters[g] in (FULL_SPACE, HALF_SPACE):
+            continue
+        pen = x0 + state * bank.step_px
+        col = int(math.floor(pen))
+        phase = int(round((pen - col) * SUPERSAMPLE))
+        if phase == SUPERSAMPLE:
+            col, phase = col + 1, 0
+        if col >= width:
+            continue
+        same = np.nonzero(bank.advance_steps == bank.advance_steps[g])[0]
+        end = np.minimum(col + bank.widths[same, phase], width)
+        cost = (cum[end] - cum[col]) - 2.0 * corr[col, same, phase] + bank.energy[same, phase] + penalty[same]
+        chosen = float(cost[np.nonzero(same == g)[0][0]])
+        margin = share * max(float(bank.energy[g, phase]), 1e-9)
+        order = np.argsort(cost)
+        alts = [(int(same[j]), float(cost[j])) for j in order
+                if same[j] != g and cost[j] <= chosen + margin][: limit - 1]
+        if not alts:
+            continue
+        options = [(g, chosen)] + alts
+        identical = [bool(np.array_equal(bank.templates[a, phase], bank.templates[g, phase])) for a, _ in alts]
+        out.append({"index": k, "options": [(bank.characters[a], round(c, 4)) for a, c in options],
+                    "pixel_identical": all(identical)})
+    return out
 
 
 def canonical_spacing(text: str) -> str:
@@ -721,6 +769,7 @@ def decode_image(
     bigram: dict[int, tuple[np.ndarray, np.ndarray]] | None = None,
     bigram_weight: float = 0.0,
     geometry_bank: GlyphBank | None = None,
+    alternatives: bool = False,
 ) -> dict:
     ink, grey = ink_of(image)
     height = int(math.ceil(size_px * 1.25)) + 2
@@ -856,18 +905,43 @@ def decode_image(
     # origin are chosen without it, so a receipt with the prior differs from one
     # without only in which glyphs were read, never in the page geometry.
     corrs = None  # release the origin-fit sample before the reading pass
-    rows = [decode_row(s, correlations(s, bank), bank, x0, glyph_penalty, bigram, bigram_weight, free_lead=free)
-            for s in strips]
+    rows, row_alts = [], []
+    for s in strips:
+        corr = correlations(s, bank)
+        row = decode_row(s, corr, bank, x0, glyph_penalty, bigram, bigram_weight, free_lead=free)
+        rows.append(row)
+        row_alts.append(glyph_alternatives(s, corr, bank, x0, glyph_penalty, row) if alternatives else [])
+        corr = None
     unspellable = 0
+    offsets = [0] * len(rows)
     if free:
         full_u, half_u = model.advances[FULL_SPACE], model.advances[HALF_SPACE]
         inked = [r for r in rows if r.text]
         shift = common_indent_steps([r.lead_steps for r in inked], model.unit_step, full_u, half_u)
         x0 += shift * bank.step_px
-        for r in inked:
+        for i, r in enumerate(rows):
+            if not r.text:
+                continue
             spaces, exact = spell_indent((r.lead_steps - shift) * model.unit_step, model.unit_step, full_u, half_u)
             unspellable += int(not exact)
             r.text = canonical_spacing(spaces + r.text)
+            offsets[i] = len(spaces)
+    spans = []
+    for i, (r, alts) in enumerate(zip(rows, row_alts)):
+        row_spans = []
+        for a in alts:
+            col = offsets[i] + a["index"]
+            if col >= len(r.text) or r.text[col] != a["options"][0][0]:
+                continue  # index moved (should not happen); never emit a span that misnames the text
+            chars = [c for c, _ in a["options"]]
+            kind = ("lookalike" if a["pixel_identical"] else
+                    "kanji" if any("一" <= c <= "鿿" for c in chars) else "glyph")
+            keys = "abcdefgh"
+            row_spans.append({"cols": [col, col + 1], "kind": kind,
+                              "options": {keys[j]: c for j, (c, _) in enumerate(a["options"])},
+                              "pixel_cost": {keys[j]: v for j, (_, v) in enumerate(a["options"])},
+                              "pixel_identical": a["pixel_identical"], "jev": None})
+        spans.append(row_spans)
     return {
         "bank": bank,
         "pitch": pitch,
@@ -879,6 +953,7 @@ def decode_image(
         "unspellable_indent_rows": unspellable,
         "container_edge": edge,
         "rows": rows,
+        "spans": spans,  # per row, jev-spans/v1 span dicts; empty unless alternatives=True
     }
 
 
@@ -930,6 +1005,9 @@ def main() -> None:
     parser.add_argument("--x0", type=float, default=None, help="text-box origin in px; fitted when omitted")
     parser.add_argument("--no-phase-refine", action="store_true",
                         help="ablation: use the old mean-profile baseline fit")
+    parser.add_argument("--jev-spans", action="store_true",
+                        help="also write OUTPUT/jev_spans.json (jev-spans/v1): same-advance near-tie readings per "
+                             "glyph, for scripts/jev_disambiguate.py; the recovered text is unchanged")
     args = parser.parse_args()
 
     image = Image.open(args.source)
@@ -948,7 +1026,8 @@ def main() -> None:
         geometry_bank = render_bank(geometry_model, size_px, int(math.ceil(size_px * 1.25)) + 2,
                                     int(round(size_px)), prior)
     result = decode_image(image, model, size_px, args.glyph_penalty, args.x0, prior,
-                          args.prior_weight, not args.no_phase_refine, geometry_bank=geometry_bank)
+                          args.prior_weight, not args.no_phase_refine, geometry_bank=geometry_bank,
+                          alternatives=args.jev_spans)
     lines = [row.text for row in result["rows"]]
     # drop blank leading/trailing lines
     while lines and not lines[-1]:
@@ -961,6 +1040,15 @@ def main() -> None:
 
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "recovered.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if args.jev_spans:
+        # Text type and font are fixed by this decoder; their fit costs are not
+        # measured here, so each is reported as the single option it is.
+        page = {"schema": "jev-spans/v1", "page": display_path(args.source),
+                "text_type": {"fit_cost": {"proportional": 0.0}},
+                "font": {"fit_cost": {f"{model.path.stem} @ {size_px:g}px": 0.0}},
+                "rows": [{"text": line, "spans": spans} for line, spans in zip(lines, result["spans"])]}
+        (args.output / "jev_spans.json").write_text(json.dumps(page, ensure_ascii=False, indent=1) + "\n",
+                                                   encoding="utf-8")
     Image.fromarray((255 - recon * 255).astype(np.uint8)).save(args.output / "reconstruction.png")
     receipt = {
         "schema": "proportional_aa_recovery.v1",
