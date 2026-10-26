@@ -1,37 +1,29 @@
 # Screenshot of ASCII Art to TXT Converter
 
-Experimental converter for turning screenshots of fixed-grid character art back into text.
+Experimental screenshot to text conversion for character art.
 
-Current status: two separate experimental decoders, not a general screenshot
-converter. The fixed-grid path has one scored real screenshot (54/67 characters
-exact); the proportional Saitamaar path has one scored real screenshot (22/24
-rows exact under spacing-canonical comparison). Neither is accepted across
-sources, and no automatic selector connects them. The older published AAHub
-scores refer only to earlier snapshots; the current training/evaluation lock is
-archive commit `3687cc5`, containing 32,950 matched AAHub pairs across 173
-slugs. The current work is recorded in
-[P0C-10](docs/FAILURE_LOG.md#p0c-10--2026-09-26--full-aa-003-corpus-training-and-scoring).
+There are two decoders: one for a regular character grid and one for
+proportional Saitamaar art. Choose the decoder yourself. Neither has been
+validated across a broad range of real screenshots.
 
-The current evaluation sequence uses the frozen split and full training prior,
-then measures a matched training baseline, tests whole-CJK fallback using only
-training evidence, and performs one held-out comparison after the choice is
-frozen. The 12,816-pair fixed-grid ascii-art.de corpus is scored separately
-with deterministic 0–31 px random margins on every screenshot edge; synthetic
-renders do not replace independent screenshots for acceptance.
+The grid decoder recovered 54 of 67 characters on one real screenshot. The
+proportional decoder recovered 22 of 24 rows on one real screenshot after
+normalizing spaces within blank runs. Details and sample commands are below.
 
-The complete fixed-grid diagnostic now covers all 12,816 ascii-art.de pairs
-after replacing each uniform source pad with four independent 0–31 px margins.
-It recovered 112,909/217,049 strict exact rows (52.02%) and 153,396/217,049
-indentation-invariant exact rows (70.67%), with zero crashes. The result exposed
-both hard-thresholded and Floyd–Steinberg bilevel pages plus an open crop-origin
-problem; details and the rejected exact-only predecessor are in P0C-10.
+## Corpus evaluation
 
-The AAHub split is pinned in `data/aahub_split.json`: 23,363 training pairs
-across 116 slugs and 9,587 held-out pairs across 57 slugs. The training prior
-was rebuilt from every training TXT and contains 23,746,955 characters. The
-archive checkout may be dirty; the commands below read and hash Git blobs from
-the pinned commit, never the live worktree. The archive is private and must be
-available locally.
+On 12,816 ascii-art.de pairs with independently varied image margins of
+0 to 31 pixels, the grid decoder recovered 112,909 of 217,049 rows exactly
+(52.02%). Ignoring indentation, 153,396 rows matched (70.67%). The run had no
+crashes. Image dithering and finding the grid origin remain sources of error.
+These corpus results do not establish accuracy on arbitrary screenshots.
+
+The AAHub dataset contains 32,950 matched pairs across 173 slugs at archive
+commit `3687cc5`. Its split is recorded in `data/aahub_split.json`: 23,363
+training pairs across 116 slugs and 9,587 evaluation pairs across 57 slugs.
+The character prior contains 23,746,955 characters from the training text.
+The corpus scripts read the pinned Git objects. They require a separate
+dataset checkout that is not distributed with this repository.
 
 ```sh
 python3 scripts/build_char_prior.py ../ascii-art-archive
@@ -39,34 +31,29 @@ python3 scripts/eval_corpus.py ../ascii-art-archive OUT --partition train --ever
 python3 scripts/eval_fixed_grid_corpus.py ../ascii-art-archive FIXED-RECEIPT.json
 ```
 
-The evaluation command writes a receipt to `OUT/eval.json`. Replace `OUT` with
-a new directory; use `--partition heldout` only after training decisions are
-frozen, apart from the one pre-tuning baseline already recorded. A synthetic
-render score is a model diagnostic, not screenshot acceptance.
+The evaluation command writes results to `OUT/eval.json`. Use a new output
+directory. Keep evaluation data separate from training and parameter tuning.
+Results on generated images measure a different task from real screenshots.
 
-The earlier AA-002 baseline sampled one page per nonempty slug. Baseline-phase
-refinement improved the matched training sample from 432/641 to 559/641 exact
-rows and its one post-fix held-out comparison from 271/357 to 278/357. All 41
-sampled page row counts now match; no sampled page lost exact rows. These small,
-composition-sensitive samples are not full-corpus accuracy estimates. Their
-receipts and the remaining kanji work are recorded in
-[P0C-09](docs/FAILURE_LOG.md#p0c-09--2026-09-26--converter-status-and-archive-snapshot-audit).
-Do not quote it as the AA-003 result.
+Earlier results used a smaller dataset snapshot and sampled one page per
+nonempty slug. Training results improved from 432/641 to 559/641 exact rows;
+the separate evaluation sample improved from 271/357 to 278/357. Row counts
+matched on all 41 sampled pages, with no loss of exact rows on any page.
+Those figures describe that sample, not the current full corpus.
 
-Nothing about the source is assumed. The converter measures the character lattice
+## How it works
+
+The grid decoder measures the character lattice
 from the image, infers the typeface and size by fitting a library of monospaced
 fonts to that measured cell, and decides every cell by a recorded score. A cell is
-written only when its best candidate beats the runner-up by a recorded margin;
+written only when its best candidate beats the next candidate by a recorded margin;
 otherwise it is `?`. It does not guess missing glyphs.
 
-No cell aspect is built in. 1:1, 1:2 and 16:29 are all just fits, and the measured
-aspect is reported in the receipt.
+Cell aspect is measured rather than fixed. The tested geometries include 1:1,
+1:2 and 16:29. The output records the measured aspect.
 
-Tesseract is no longer used by default. It stays reachable through
-`--engine tesseract` for comparison only, because it classifies against an
-unbounded prose alphabet with no score — which is how earlier versions of this
-tool emitted letters, an em dash and a euro sign on art containing no letters at
-all.
+Tesseract is available through `--engine tesseract` for comparison. It is not
+the default because prose OCR can introduce characters absent from the artwork.
 
 ## What the numbers are
 
@@ -82,12 +69,10 @@ demand the characters back. Measured with Menlo on 2026-09-21:
 | code | 8 x 9 (near square) | 27/29 (93%) | 0 | 0.866 | Menlo @ 13 |
 | line art | 16 x 29 | 40/40 (100%) | 0 | 1.000 | Menlo @ 27 |
 
-The typeface and size are recovered correctly in each case, which is the part
-that proves the machinery rather than the fixture.
+The fitted typeface and size matched the source in each of these three tests.
 
-**A real screenshot with an operator transcript.** This is the strongest
-evidence: a screen capture, not a render, scored against a transcript supplied by
-hand. Measured 2026-09-21 on `sample/bonsai.source.png`:
+**A real screenshot with a manual transcript.** Measured September 21, 2026 on
+`sample/bonsai.source.png`:
 
 - **54 of 67 characters exact (80.6%)**, 1 ambiguous
 - measured lattice 15.72 x 30.42 px, aspect 0.5168, inferred Menlo @ 26
@@ -101,8 +86,8 @@ face.
 That run also validates the self-check. Forcing Courier instead of the fitted
 Menlo gives a *lower* agreement (0.544 against 0.605) and a *lower* true
 accuracy (67.2% against 80.6%), so the reported IoU ranked the two fits in the
-same order as the ground truth. The receipt's agreement figure is a usable proxy
-for accuracy when no transcript exists.
+same order as the transcript score in this example. That does not establish
+IoU as a reliable accuracy estimate for other images.
 
 Add more pairs by dropping `<name>.source.png` and `<name>.expected.txt` into
 `sample/` and extending `PAIRS` in `tests/test_roundtrip.py`. The suite gates
@@ -119,13 +104,12 @@ accuracy can be quoted for it — only the self-consistency figures:
 - 106 of 106 ink-bearing cells resolved
 - reconstruction agreement, ink IoU: 0.557
 
-An IoU of 0.557 is the honest signal that the reference typeface does not match
-the source. Treat the bundled result as a candidate, not a reconstruction.
+The reference typeface does not match this image. Treat the output as an
+approximation.
 
-**Known gap.** On the bundled sample the run reports zero ambiguous cells despite
-that 0.557 agreement. The margin threshold is not yet calibrated against a
-reference-font mismatch, so it is not yet refusing cells it should refuse. Do not
-read "0 ambiguous" as confidence.
+The bundled sample reports zero ambiguous cells despite that 0.557 agreement.
+The margin threshold has not been calibrated for a mismatched font. Zero
+ambiguous cells therefore does not mean the recovered characters are correct.
 
 ## Run the bundled sample
 
@@ -202,15 +186,13 @@ On the one real screenshot with an answer key, 22 of 24 rows come out exact and
 the character error rate is 0.56%. That comparison ignores the order of spaces
 within a blank run, which the pixels do not determine. The strict character
 error rate is 1.61%. This is one sample in one face, so the result is
-experimental and unaccepted. See `docs/receipts/2026-09-26-proportional-madonna/`.
+experimental. See `docs/receipts/2026-09-26-proportional-madonna/`.
 
 ## Coverage accounting
 
-Coverage is measured against ink-bearing source cells, never against the tool's
-own output. An earlier version reported "16 of 78 emitted cells unresolved",
-which divided the output by itself and hid 43 source cells that had been dropped
-to spaces without ever being scored. A space inside the ink region is now a
-scored decision that the blank template won.
+Coverage is measured against source cells containing ink. A space inside the
+ink region is scored as a blank template decision. Counting only emitted
+characters would miss source cells incorrectly dropped as spaces.
 
 ## Repository contents
 
