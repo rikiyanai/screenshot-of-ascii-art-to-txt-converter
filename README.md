@@ -1,5 +1,11 @@
 # Screenshot of ASCII Art to TXT Converter
 
+## License
+
+Original project code is available under the [MIT License](LICENSE).
+
+Bundled fonts, sample artwork and other third party material retain their respective terms. See [dependencies and attribution](docs/DEPENDENCIES.md) and [source provenance](docs/provenance.md).
+
 Experimental screenshot to text conversion for character art.
 
 There are two decoders: one for a regular character grid and one for
